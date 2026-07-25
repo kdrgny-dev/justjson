@@ -56,4 +56,10 @@ describe('createServer', () => {
     const list = (await listRes.json()) as { slugs: string[] }
     expect(list.slugs).not.toContain('ilk-yazi')
   })
+
+  it('GET path traversal ile dosya okuyamaz', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/posts/..%2F..%2F..%2F..%2Fetc%2Fpasswd')
+    expect(res.status).not.toBe(200)
+  })
 })

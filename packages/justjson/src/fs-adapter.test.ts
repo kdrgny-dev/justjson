@@ -51,4 +51,10 @@ describe('FsAdapter', () => {
     await a.delete('x.json')
     expect(await a.exists('x.json')).toBe(false)
   })
+
+  it('kök dışına çıkan yolu reddeder', async () => {
+    const a = new FsAdapter(root)
+    await expect(a.read('../../../../etc/passwd')).rejects.toThrow()
+    await expect(a.write('../escape.json', '1')).rejects.toThrow()
+  })
 })

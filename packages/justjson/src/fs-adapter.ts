@@ -1,12 +1,17 @@
 import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import { dirname, resolve, sep } from 'node:path'
 import type { StorageAdapter } from '@justjson/core'
 
 export class FsAdapter implements StorageAdapter {
   constructor(private readonly root: string) {}
 
   private abs(path: string): string {
-    return join(this.root, path)
+    const rootAbs = resolve(this.root)
+    const full = resolve(rootAbs, path)
+    if (full !== rootAbs && !full.startsWith(rootAbs + sep)) {
+      throw new Error(`Yol kök dışına çıkıyor: ${path}`)
+    }
+    return full
   }
 
   async read(path: string): Promise<string | null> {
