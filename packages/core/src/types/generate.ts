@@ -16,6 +16,8 @@ function fieldTsType(field: Field): string {
       return 'boolean'
     case 'select':
       return (field.options ?? []).map((o) => `'${o}'`).join(' | ') || 'string'
+    case 'relation':
+      return 'string[]'
     default:
       return 'string'
   }

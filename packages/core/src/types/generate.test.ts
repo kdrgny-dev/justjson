@@ -13,6 +13,7 @@ const schema = parseSchema({
         { key: 'body', type: 'richtext' },
         { key: 'status', type: 'select', options: ['draft', 'published'], required: true },
         { key: 'views', type: 'number' },
+        { key: 'tags', type: 'relation', to: 'blog_posts' },
       ],
     },
   ],
@@ -36,6 +37,10 @@ describe('generateTypes', () => {
 
   it('select alanı birleşim tipine dönüşür', () => {
     expect(out).toContain("status: 'draft' | 'published'")
+  })
+
+  it('relation alanı string dizisine dönüşür', () => {
+    expect(out).toContain('tags?: string[]')
   })
 
   it('koleksiyon dizi tipi üretir', () => {

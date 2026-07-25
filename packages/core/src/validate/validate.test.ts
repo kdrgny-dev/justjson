@@ -7,6 +7,7 @@ const fields: Field[] = [
   { key: 'age', type: 'number' },
   { key: 'live', type: 'boolean' },
   { key: 'status', type: 'select', options: ['a', 'b'] },
+  { key: 'tags', type: 'relation', to: 'tags' },
 ]
 
 describe('validateEntry', () => {
@@ -46,5 +47,22 @@ describe('validateEntry', () => {
     const r = validateEntry(fields, { title: 'X', status: 'z' })
     expect(r.ok).toBe(false)
     expect(r.issues.some((i) => i.key === 'status' && i.level === 'error')).toBe(true)
+  })
+
+  it('relation slug dizisi kabul edilir', () => {
+    const r = validateEntry(fields, { title: 'X', tags: ['a', 'b'] })
+    expect(r.ok).toBe(true)
+  })
+
+  it('relation tekil string → error (dizi bekleniyor)', () => {
+    const r = validateEntry(fields, { title: 'X', tags: 'a' })
+    expect(r.ok).toBe(false)
+    expect(r.issues.some((i) => i.key === 'tags' && i.level === 'error')).toBe(true)
+  })
+
+  it('relation dizideki string olmayan öğe → error', () => {
+    const r = validateEntry(fields, { title: 'X', tags: ['a', 1] })
+    expect(r.ok).toBe(false)
+    expect(r.issues.some((i) => i.key === 'tags' && i.level === 'error')).toBe(true)
   })
 })

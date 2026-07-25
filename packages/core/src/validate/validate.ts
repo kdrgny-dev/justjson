@@ -20,9 +20,13 @@ function typeError(field: Field, value: unknown): string | null {
     case 'text':
     case 'richtext':
     case 'date':
-    case 'relation':
     case 'image':
       return typeof value === 'string' ? null : 'metin bekleniyor'
+    case 'relation':
+      if (!Array.isArray(value) || value.some((v) => typeof v !== 'string')) {
+        return 'slug dizisi bekleniyor'
+      }
+      return null
     case 'number':
       return typeof value === 'number' ? null : 'sayı bekleniyor'
     case 'boolean':
