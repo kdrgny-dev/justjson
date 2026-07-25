@@ -27,19 +27,19 @@ describe('parseSchema', () => {
   })
 
   it('select alanı options olmadan reddedilir', () => {
-    const bad = structuredClone(valid)
+    const bad = JSON.parse(JSON.stringify(valid))
     bad.collections[0].fields[2] = { key: 'status', type: 'select' } as never
     expect(() => parseSchema(bad)).toThrow()
   })
 
   it('relation alanı "to" olmadan reddedilir', () => {
-    const bad = structuredClone(valid)
+    const bad = JSON.parse(JSON.stringify(valid))
     bad.collections[0].fields[3] = { key: 'tags', type: 'relation' } as never
     expect(() => parseSchema(bad)).toThrow()
   })
 
   it('bilinmeyen alan tipi reddedilir', () => {
-    const bad = structuredClone(valid)
+    const bad = JSON.parse(JSON.stringify(valid))
     bad.collections[0].fields[0] = { key: 'x', type: 'wysiwyg' } as never
     expect(() => parseSchema(bad)).toThrow()
   })
