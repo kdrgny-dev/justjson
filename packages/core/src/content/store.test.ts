@@ -60,3 +60,13 @@ describe('ContentStore singleton', () => {
     expect(await a.exists('content/settings.json')).toBe(true)
   })
 })
+
+describe('ContentStore slug güvenliği', () => {
+  const store = new ContentStore(new MemoryAdapter(), schema)
+
+  it('path traversal içeren slug reddedilir (read/write/delete)', async () => {
+    await expect(store.readEntry('posts', '../../etc/passwd')).rejects.toThrow()
+    await expect(store.writeEntry('posts', 'a/b', { title: 'X' })).rejects.toThrow()
+    await expect(store.deleteEntry('posts', '..')).rejects.toThrow()
+  })
+})

@@ -8,6 +8,12 @@ function schemaPath(contentDir: string): string {
   return `${contentDir}/${SCHEMA_FILE}`
 }
 
+function assertSafeSlug(slug: string): void {
+  if (slug.length === 0 || slug.includes('/') || slug.includes('\\') || slug.includes('..')) {
+    throw new Error(`Güvensiz slug: ${slug}`)
+  }
+}
+
 export async function loadSchema(
   adapter: StorageAdapter,
   contentDir = 'content',
@@ -45,6 +51,7 @@ export class ContentStore {
   }
 
   private entryPath(col: Collection, slug: string): string {
+    assertSafeSlug(slug)
     return `${this.contentDir}/${col.path}/${slug}.json`
   }
 
