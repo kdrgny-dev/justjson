@@ -60,11 +60,7 @@ export class ContentStore {
     return raw === null ? null : (JSON.parse(raw) as Record<string, unknown>)
   }
 
-  async writeEntry(
-    collection: string,
-    slug: string,
-    data: Record<string, unknown>,
-  ): Promise<void> {
+  async writeEntry(collection: string, slug: string, data: Record<string, unknown>): Promise<void> {
     const col = this.collection(collection)
     await this.adapter.write(this.entryPath(col, slug), `${JSON.stringify(data, null, 2)}\n`)
   }
