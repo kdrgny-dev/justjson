@@ -8,6 +8,7 @@ export type {
   Schema,
 } from './schema/types'
 export { parseSchema, serializeSchema } from './schema/schema'
+export { slugify } from './util/slug'
 
 export type { StorageAdapter } from './storage/adapter'
 export { MemoryAdapter } from './storage/memory'

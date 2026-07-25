@@ -44,11 +44,40 @@ const zSingleton = z.object({
   fields: z.array(zField),
 })
 
-const zSchema = z.object({
-  version: z.literal(1),
-  collections: z.array(zCollection),
-  singletons: z.array(zSingleton),
-})
+const zSchema = z
+  .object({
+    version: z.literal(1),
+    collections: z.array(zCollection),
+    singletons: z.array(zSingleton),
+  })
+  .superRefine((schema, ctx) => {
+    const names = new Set<string>()
+    const paths = new Set<string>()
+    const collectionNames = new Set(schema.collections.map((c) => c.name))
+    const containers = [...schema.collections, ...schema.singletons]
+
+    for (const c of containers) {
+      if (names.has(c.name)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `tekrar eden ad: ${c.name}` })
+      }
+      names.add(c.name)
+      if (paths.has(c.path)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `tekrar eden path: ${c.path}` })
+      }
+      paths.add(c.path)
+
+      const keys = new Set<string>()
+      for (const f of c.fields) {
+        if (keys.has(f.key)) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: `tekrar eden field key: ${f.key}` })
+        }
+        keys.add(f.key)
+        if (f.type === 'relation' && f.to && !collectionNames.has(f.to)) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: `relation hedefi yok: ${f.to}` })
+        }
+      }
+    }
+  })
 
 export function parseSchema(input: unknown): Schema {
   return zSchema.parse(input) as Schema
