@@ -6,7 +6,7 @@ describe('slugify', () => {
     expect(slugify('Merhaba Dünya')).toBe('merhaba-dunya')
   })
   it('Türkçe karakterleri eşler', () => {
-    expect(slugify('İçğüşçı ÇĞÜŞÇI')).toBe('icgusci-cgusci')
+    expect(slugify('İçğüşöı ÇĞÜŞÖI')).toBe('icgusoi-cgusoi')
   })
   it('yol karakterlerini temizler (path traversal)', () => {
     expect(slugify('../../etc/passwd')).toBe('etc-passwd')
