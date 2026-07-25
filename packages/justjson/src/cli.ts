@@ -5,9 +5,6 @@ import { Command } from 'commander'
 
 const program = new Command()
 
-program
-  .name('justjson')
-  .description('Lokalde çalışan, JSON üreten mini CMS')
-  .version('0.0.0')
+program.name('justjson').description('Lokalde çalışan, JSON üreten mini CMS').version('0.0.0')
 
 program.parse()
