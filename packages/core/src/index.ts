@@ -1,4 +1,23 @@
-// @justjson/core — genel giriş noktası.
-// Modüller uygulama planında TDD ile doldurulacak:
-//   schema, validate, export, types
 export const VERSION = '0.0.0'
+
+export type {
+  Field,
+  FieldType,
+  Collection,
+  Singleton,
+  Schema,
+} from './schema/types'
+export { parseSchema, serializeSchema } from './schema/schema'
+
+export type { StorageAdapter } from './storage/adapter'
+export { MemoryAdapter } from './storage/memory'
+
+export { ContentStore, loadSchema, saveSchema } from './content/store'
+
+export type { ValidationIssue, ValidationResult } from './validate/validate'
+export { validateEntry } from './validate/validate'
+
+export { generateTypes } from './types/generate'
+
+export type { ExportInput } from './export/bundle'
+export { buildExportManifest } from './export/bundle'
