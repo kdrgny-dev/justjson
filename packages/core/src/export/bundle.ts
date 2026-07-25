@@ -13,9 +13,7 @@ function json(data: unknown): string {
   return `${JSON.stringify(data, null, 2)}\n`
 }
 
-export function buildExportManifest(
-  input: ExportInput,
-): Record<string, string | Uint8Array> {
+export function buildExportManifest(input: ExportInput): Record<string, string | Uint8Array> {
   const out: Record<string, string | Uint8Array> = {}
   out['content/_schema.json'] = serializeSchema(input.schema)
 

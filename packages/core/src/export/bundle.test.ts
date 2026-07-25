@@ -5,17 +5,16 @@ import { buildExportManifest } from './bundle'
 const schema = parseSchema({
   version: 1,
   collections: [{ name: 'posts', path: 'posts', fields: [{ key: 'title', type: 'text' }] }],
-  singletons: [{ name: 'settings', path: 'settings.json', fields: [{ key: 'site', type: 'text' }] }],
+  singletons: [
+    { name: 'settings', path: 'settings.json', fields: [{ key: 'site', type: 'text' }] },
+  ],
 })
 
 describe('buildExportManifest', () => {
   const manifest = buildExportManifest({
     schema,
     entries: {
-      posts: [
-        { slug: 'merhaba', title: 'Merhaba' },
-        { title: 'Slugsuz' },
-      ],
+      posts: [{ slug: 'merhaba', title: 'Merhaba' }, { title: 'Slugsuz' }],
     },
     singletons: { settings: { site: 'X' } },
     media: { 'content/media/a.webp': new Uint8Array([1, 2, 3]) },
