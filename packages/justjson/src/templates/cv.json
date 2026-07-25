@@ -1,0 +1,31 @@
+{
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "experience",
+        "label": "Deneyim",
+        "path": "experience",
+        "fields": [
+          { "key": "role", "label": "Pozisyon", "type": "text", "required": true },
+          { "key": "company", "label": "Şirket", "type": "text", "required": true },
+          { "key": "summary", "label": "Özet", "type": "richtext" }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "profile",
+        "label": "Profil",
+        "path": "profile.json",
+        "fields": [
+          { "key": "name", "label": "Ad", "type": "text", "required": true },
+          { "key": "headline", "label": "Başlık", "type": "text" }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "experience": [{ "role": "Yazılımcı", "company": "Örnek A.Ş.", "summary": "..." }]
+  }
+}

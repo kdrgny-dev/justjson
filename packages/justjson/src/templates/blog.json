@@ -1,0 +1,29 @@
+{
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "posts",
+        "label": "Yazılar",
+        "path": "posts",
+        "fields": [
+          { "key": "title", "label": "Başlık", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "date", "label": "Tarih", "type": "date" },
+          { "key": "body", "label": "İçerik", "type": "richtext" }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "settings",
+        "label": "Ayarlar",
+        "path": "settings.json",
+        "fields": [{ "key": "title", "label": "Site adı", "type": "text" }]
+      }
+    ]
+  },
+  "samples": {
+    "posts": [{ "title": "İlk yazı", "slug": "ilk-yazi", "body": "Merhaba." }]
+  }
+}
