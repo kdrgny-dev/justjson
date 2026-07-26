@@ -1,5 +1,6 @@
-import type { Schema } from '@justjson/core'
+import type { EntryRow, Schema } from '@justjson/core'
 
+export type { EntryRow }
 export type Entry = Record<string, unknown>
 
 async function ok(res: Response): Promise<Response> {
@@ -24,10 +25,14 @@ export async function putSchema(schema: Schema): Promise<void> {
   }
 }
 
-export async function listEntries(collection: string): Promise<string[]> {
+export async function listRows(collection: string): Promise<EntryRow[]> {
   const res = await ok(await fetch(`/api/${encodeURIComponent(collection)}`))
-  const data = (await res.json()) as { slugs: string[] }
-  return data.slugs
+  const data = (await res.json()) as { items: EntryRow[] }
+  return data.items
+}
+
+export async function listEntries(collection: string): Promise<string[]> {
+  return (await listRows(collection)).map((r) => r.slug)
 }
 
 export async function getEntry(collection: string, slug: string): Promise<Entry | null> {

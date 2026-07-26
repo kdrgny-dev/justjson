@@ -8,4 +8,6 @@ export interface StorageAdapter {
   /** dir altındaki doğrudan dosyaların basename listesi; dizin yoksa []. */
   list(dir: string): Promise<string[]>
   exists(path: string): Promise<boolean>
+  /** Dosyanın son değişiklik zamanı (ms); desteklenmiyorsa/yoksa null. */
+  mtime(path: string): Promise<number | null>
 }

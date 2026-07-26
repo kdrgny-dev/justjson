@@ -13,7 +13,9 @@ export { slugify } from './util/slug'
 export type { StorageAdapter } from './storage/adapter'
 export { MemoryAdapter } from './storage/memory'
 
+export type { EntryRow } from './content/store'
 export { ContentStore, loadSchema, saveSchema } from './content/store'
+export { entryTitle } from './content/title'
 
 export type { ValidationIssue, ValidationResult } from './validate/validate'
 export { validateEntry } from './validate/validate'
