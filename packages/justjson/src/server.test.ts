@@ -126,6 +126,27 @@ describe('createServer', () => {
     })
     expect(res.status).toBe(400)
   })
+
+  it('GET /api/_export zip döndürür', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_export')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('application/zip')
+    const bytes = new Uint8Array(await res.arrayBuffer())
+    expect(bytes.length).toBeGreaterThan(0)
+    expect(bytes[0]).toBe(0x50) // 'P'
+    expect(bytes[1]).toBe(0x4b) // 'K'
+  })
+
+  it('POST /api/_import dolu şemada 400 döner', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_import', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ schema: { version: 1, collections: [], singletons: [] } }),
+    })
+    expect(res.status).toBe(400)
+  })
 })
 
 describe('createServer boş klasörde', () => {
@@ -170,6 +191,40 @@ describe('createServer boş klasörde', () => {
         items: Array<{ slug: string }>
       }
       expect(rows.items.length).toBeGreaterThan(0)
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('POST /api/_import kendi şemasını uygular, geçersizde 400', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'justjson-imp-'))
+    try {
+      const app = await createServer(dir)
+      const bad = await app.request('/api/_import', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ schema: { nope: true } }),
+      })
+      expect(bad.status).toBe(400)
+
+      const mySchema = {
+        version: 1,
+        collections: [
+          { name: 'kitaplar', path: 'kitaplar', fields: [{ key: 'ad', type: 'text' }] },
+        ],
+        singletons: [],
+      }
+      const ok = await app.request('/api/_import', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ schema: mySchema, content: { kitaplar: [{ slug: 'x', ad: 'A' }] } }),
+      })
+      expect(ok.status).toBe(200)
+
+      const schema = (await (await app.request('/api/_schema')).json()) as {
+        collections: Array<{ name: string }>
+      }
+      expect(schema.collections.map((c) => c.name)).toContain('kitaplar')
     } finally {
       await rm(dir, { recursive: true, force: true })
     }

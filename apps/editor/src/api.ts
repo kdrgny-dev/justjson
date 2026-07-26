@@ -52,6 +52,32 @@ export async function applyTemplate(template: string): Promise<void> {
   }
 }
 
+export async function importProject(
+  schema: unknown,
+  content?: Record<string, Record<string, unknown>[]>,
+): Promise<void> {
+  const res = await fetch('/api/_import', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ schema, content }),
+  })
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string }
+    throw new Error(err.error ?? `İçe aktarılamadı: ${res.status}`)
+  }
+}
+
+export const exportUrl = '/api/_export'
+
+export function downloadExport(): void {
+  const a = document.createElement('a')
+  a.href = exportUrl
+  a.download = 'justjson-export.zip'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+}
+
 export async function putSchema(schema: Schema): Promise<void> {
   const res = await fetch('/api/_schema', {
     method: 'PUT',

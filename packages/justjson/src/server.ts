@@ -6,6 +6,7 @@ import { serve } from '@hono/node-server'
 import { ContentStore, loadSchema, parseSchema, saveSchema, slugify } from '@justjson/core'
 import type { Schema } from '@justjson/core'
 import { Hono } from 'hono'
+import { collectExportZip } from './commands/export'
 import { applyTemplate, getTemplate, templateList } from './commands/init'
 import { resolveContentDir } from './config'
 import { FsAdapter } from './fs-adapter'
@@ -61,6 +62,39 @@ export async function createServer(root: string): Promise<Hono> {
     schema = await applyTemplate(adapter, contentDir, t)
     store = new ContentStore(adapter, schema, contentDir)
     return c.json({ ok: true })
+  })
+
+  app.post('/api/_import', async (c) => {
+    if (schema.collections.length > 0 || schema.singletons.length > 0) {
+      return c.json({ error: 'Bu klasörde zaten bir şema var.' }, 400)
+    }
+    const body = (await c.req.json()) as {
+      schema?: unknown
+      content?: Record<string, Record<string, unknown>[]>
+    }
+    try {
+      parseSchema(body.schema)
+    } catch (e) {
+      return c.json({ error: `Geçersiz şema: ${(e as Error).message}` }, 400)
+    }
+    schema = await applyTemplate(adapter, contentDir, {
+      title: '',
+      description: '',
+      schema: body.schema,
+      samples: body.content ?? {},
+    })
+    store = new ContentStore(adapter, schema, contentDir)
+    return c.json({ ok: true })
+  })
+
+  app.get('/api/_export', async (c) => {
+    const zipped = await collectExportZip(adapter, contentDir)
+    return new Response(zipped, {
+      headers: {
+        'content-type': 'application/zip',
+        'content-disposition': 'attachment; filename="justjson-export.zip"',
+      },
+    })
   })
 
   app.get('/api/_schema', (c) => c.json(schema))
