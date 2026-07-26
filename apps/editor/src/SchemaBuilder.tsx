@@ -129,75 +129,79 @@ export function SchemaBuilder({
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between border-b bg-background px-8 py-4">
-        <div>
-          <h1 className="font-heading text-lg font-semibold text-foreground">Şema</h1>
-          <p className="text-sm text-muted-foreground">Koleksiyonlarını ve alanlarını tasarla.</p>
+      <header className="shrink-0 border-b bg-background px-8 py-4">
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
+          <div>
+            <h1 className="font-heading text-lg font-semibold text-foreground">Şema</h1>
+            <p className="text-sm text-muted-foreground">Koleksiyonlarını ve alanlarını tasarla.</p>
+          </div>
+          <Button type="button" onClick={save} disabled={saving}>
+            <Check />
+            {saving ? 'Kaydediliyor…' : 'Şemayı kaydet'}
+          </Button>
         </div>
-        <Button type="button" onClick={save} disabled={saving}>
-          <Check />
-          {saving ? 'Kaydediliyor…' : 'Şemayı kaydet'}
-        </Button>
       </header>
 
       <div className="flex-1 overflow-y-auto px-8 py-6">
-        {error && (
-          <p className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {error}
-          </p>
-        )}
+        <div className="mx-auto w-full max-w-4xl">
+          {error && (
+            <p className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </p>
+          )}
 
-        {isEmpty ? (
-          <SchemaEmpty
-            onAddCollection={() => update(newCollection)}
-            onAddSingleton={() => update(newSingleton)}
-            onBrowseTemplates={onBrowseTemplates}
-          />
-        ) : (
-          <div className="mx-auto max-w-3xl space-y-10">
-            <Section
-              title="Koleksiyonlar"
-              hint="Çok kayıtlı içerik (yazılar, ürünler…)"
-              onAdd={() => update(newCollection)}
-            >
-              {draft.collections.map((col, ci) => (
-                <ContainerCard
-                  // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
-                  key={ci}
-                  container={col}
-                  kind="collection"
-                  collectionNames={collectionNames}
-                  onChange={(fn) => update((d) => fn(d.collections[ci] as Container))}
-                  onRemove={() => update((d) => d.collections.splice(ci, 1))}
-                  onMove={(dir) => update((d) => move(d.collections, ci, dir))}
-                  onAddField={() => setPicker({ kind: 'collection', ci, fi: null })}
-                  onChangeType={(fi) => setPicker({ kind: 'collection', ci, fi })}
-                />
-              ))}
-            </Section>
+          {isEmpty ? (
+            <SchemaEmpty
+              onAddCollection={() => update(newCollection)}
+              onAddSingleton={() => update(newSingleton)}
+              onBrowseTemplates={onBrowseTemplates}
+            />
+          ) : (
+            <div className="space-y-10">
+              <Section
+                title="Koleksiyonlar"
+                hint="Çok kayıtlı içerik (yazılar, ürünler…)"
+                onAdd={() => update(newCollection)}
+              >
+                {draft.collections.map((col, ci) => (
+                  <ContainerCard
+                    // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
+                    key={ci}
+                    container={col}
+                    kind="collection"
+                    collectionNames={collectionNames}
+                    onChange={(fn) => update((d) => fn(d.collections[ci] as Container))}
+                    onRemove={() => update((d) => d.collections.splice(ci, 1))}
+                    onMove={(dir) => update((d) => move(d.collections, ci, dir))}
+                    onAddField={() => setPicker({ kind: 'collection', ci, fi: null })}
+                    onChangeType={(fi) => setPicker({ kind: 'collection', ci, fi })}
+                  />
+                ))}
+              </Section>
 
-            <Section
-              title="Tekil"
-              hint="Tek kayıt (site ayarları, profil…)"
-              onAdd={() => update(newSingleton)}
-            >
-              {draft.singletons.map((s, ci) => (
-                <ContainerCard
-                  // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
-                  key={ci}
-                  container={s}
-                  kind="singleton"
-                  collectionNames={collectionNames}
-                  onChange={(fn) => update((d) => fn(d.singletons[ci] as Container))}
-                  onRemove={() => update((d) => d.singletons.splice(ci, 1))}
-                  onMove={(dir) => update((d) => move(d.singletons, ci, dir))}
-                  onAddField={() => setPicker({ kind: 'singleton', ci, fi: null })}
-                  onChangeType={(fi) => setPicker({ kind: 'singleton', ci, fi })}
-                />
-              ))}
-            </Section>
-          </div>
-        )}
+              <Section
+                title="Tekil"
+                hint="Tek kayıt (site ayarları, profil…)"
+                onAdd={() => update(newSingleton)}
+              >
+                {draft.singletons.map((s, ci) => (
+                  <ContainerCard
+                    // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
+                    key={ci}
+                    container={s}
+                    kind="singleton"
+                    collectionNames={collectionNames}
+                    onChange={(fn) => update((d) => fn(d.singletons[ci] as Container))}
+                    onRemove={() => update((d) => d.singletons.splice(ci, 1))}
+                    onMove={(dir) => update((d) => move(d.singletons, ci, dir))}
+                    onAddField={() => setPicker({ kind: 'singleton', ci, fi: null })}
+                    onChangeType={(fi) => setPicker({ kind: 'singleton', ci, fi })}
+                  />
+                ))}
+              </Section>
+            </div>
+          )}
+        </div>
       </div>
 
       <TypePicker open={picker !== null} onPick={applyType} onClose={() => setPicker(null)} />
