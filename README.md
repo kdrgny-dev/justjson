@@ -7,7 +7,7 @@
 No database · no account · no lock-in.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-4f46e5.svg)](LICENSE)
-&nbsp;·&nbsp; `npx justjson`
+&nbsp;·&nbsp; `npx @kdrgny/justjson`
 
 </div>
 
@@ -21,8 +21,8 @@ It runs entirely on your machine. Nothing is uploaded anywhere; your content is 
 
 ```bash
 cd my-project/
-npx justjson init      # start from a template (blog, cv) — or scratch
-npx justjson           # opens the editor in your browser
+npx @kdrgny/justjson init      # start from a template (blog, cv) — or scratch
+npx @kdrgny/justjson           # opens the editor in your browser
 ```
 
 Design your schema, enter content, upload images. Everything is written to `content/*.json` in your folder. Commit it, deploy it, import it in your build — your flow.
@@ -44,10 +44,10 @@ Field types: `text` · `richtext` · `number` · `boolean` · `date` · `select`
 
 | Command | What it does |
 |---|---|
-| `npx justjson` (or `serve`) | Starts the local editor and opens it in your browser |
-| `npx justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`) |
-| `npx justjson types` | Generates `types.ts` from your schema |
-| `npx justjson export` | Exports a ZIP snapshot (schema + content + types) |
+| `npx @kdrgny/justjson` (or `serve`) | Starts the local editor and opens it in your browser |
+| `npx @kdrgny/justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`) |
+| `npx @kdrgny/justjson types` | Generates `types.ts` from your schema |
+| `npx @kdrgny/justjson export` | Exports a ZIP snapshot (schema + content + types) |
 
 ## How it works
 

@@ -1,9 +1,12 @@
 {
-  "name": "justjson",
+  "name": "@kdrgny/justjson",
   "version": "1.0.0",
   "description": "A tiny local-first CMS — build your schema in a visual UI, edit content, keep everything as plain JSON on disk.",
   "type": "module",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Kadir Günay",
   "homepage": "https://github.com/kdrgny-dev/justjson",
   "repository": {

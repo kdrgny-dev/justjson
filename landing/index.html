@@ -659,7 +659,7 @@
           edit content in a clean editor — everything stays on disk as plain JSON.
         </p>
         <div class="cmd rise" data-d="4">
-          <span><span class="prompt">$</span> npx justjson<span class="caret"></span></span>
+          <span><span class="prompt">$</span> npx @kdrgny/justjson<span class="caret"></span></span>
           <button id="copy" aria-label="Copy command">Copy</button>
         </div>
         <div class="cta-row rise" data-d="5">
@@ -774,14 +774,14 @@
           <span class="num">1</span>
           <div>
             <h3>Start</h3>
-            <p><code>npx justjson init</code> — begin from a template (blog, cv) or from scratch.</p>
+            <p><code>npx @kdrgny/justjson init</code> — begin from a template (blog, cv) or from scratch.</p>
           </div>
         </div>
         <div class="step">
           <span class="num">2</span>
           <div>
             <h3>Design &amp; fill</h3>
-            <p><code>npx justjson</code> opens the editor in your browser. Design the schema, enter content, upload images.</p>
+            <p><code>npx @kdrgny/justjson</code> opens the editor in your browser. Design the schema, enter content, upload images.</p>
           </div>
         </div>
         <div class="step">
@@ -798,7 +798,7 @@
       <h2>Take your content back.</h2>
       <div class="cta-row" style="justify-content: center">
         <a class="btn btn-primary" href="https://github.com/kdrgny-dev/justjson">Explore on GitHub →</a>
-        <span class="cmd" style="font-size: 14px"><span class="prompt">$</span> npx justjson</span>
+        <span class="cmd" style="font-size: 14px"><span class="prompt">$</span> npx @kdrgny/justjson</span>
       </div>
     </section>
 
@@ -823,7 +823,7 @@
         });
         var c = document.getElementById("copy");
         c.addEventListener("click", function () {
-          if (navigator.clipboard) navigator.clipboard.writeText("npx justjson");
+          if (navigator.clipboard) navigator.clipboard.writeText("npx @kdrgny/justjson");
           var o = c.textContent;
           c.textContent = "Copied";
           setTimeout(function () {
