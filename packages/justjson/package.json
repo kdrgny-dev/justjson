@@ -10,7 +10,7 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup src/cli.ts --format esm --clean",
+    "build": "tsup src/cli.ts --format esm --clean && node scripts/bundle-editor.mjs",
     "dev": "tsup src/cli.ts --format esm --watch",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
@@ -23,6 +23,7 @@
     "fflate": "^0.8.2"
   },
   "devDependencies": {
+    "@justjson/editor": "workspace:*",
     "@types/node": "^22.10.2",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
