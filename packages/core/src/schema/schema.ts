@@ -61,6 +61,9 @@ const zSchema = z
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: `tekrar eden ad: ${c.name}` })
       }
       names.add(c.name)
+      if (c.path.includes('..') || c.path.startsWith('/') || c.path.includes('\\')) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `güvensiz path: ${c.path}` })
+      }
       if (paths.has(c.path)) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: `tekrar eden path: ${c.path}` })
       }

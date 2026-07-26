@@ -62,4 +62,49 @@ describe('createServer', () => {
     const res = await app.request('/api/posts/..%2F..%2F..%2F..%2Fetc%2Fpasswd')
     expect(res.status).not.toBe(200)
   })
+
+  it('PUT /api/_schema şemayı kaydeder ve GET yansıtır', async () => {
+    const app = await createServer(root)
+    const next = {
+      version: 1,
+      collections: [{ name: 'urunler', path: 'urunler', fields: [{ key: 'ad', type: 'text' }] }],
+      singletons: [],
+    }
+    const put = await app.request('/api/_schema', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(next),
+    })
+    expect(put.status).toBe(200)
+    const got = (await (await app.request('/api/_schema')).json()) as {
+      collections: Array<{ name: string }>
+    }
+    expect(got.collections[0]?.name).toBe('urunler')
+  })
+
+  it('PUT /api/_schema geçersiz şemayı 400 ile reddeder', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_schema', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ version: 1, collections: [{ name: 'x' }], singletons: [] }),
+    })
+    expect(res.status).toBe(400)
+  })
+})
+
+describe('createServer boş klasörde', () => {
+  it('şema olmadan başlar, boş şema döner', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'justjson-empty-'))
+    try {
+      const app = await createServer(dir)
+      const res = await app.request('/api/_schema')
+      expect(res.status).toBe(200)
+      const schema = (await res.json()) as { collections: unknown[]; singletons: unknown[] }
+      expect(schema.collections).toEqual([])
+      expect(schema.singletons).toEqual([])
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
 })

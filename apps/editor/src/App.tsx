@@ -1,9 +1,11 @@
 import { slugify, validateEntry } from '@justjson/core'
 import type { Collection, Field, Schema, Singleton } from '@justjson/core'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { SchemaBuilder } from './SchemaBuilder'
 import * as api from './api'
 
 type Selection =
+  | { kind: 'schema' }
   | { kind: 'collection'; name: string }
   | { kind: 'entry'; collection: string; slug: string }
   | { kind: 'newEntry'; collection: string }
@@ -14,10 +16,21 @@ export function App() {
   const [error, setError] = useState<string | null>(null)
   const [selection, setSelection] = useState<Selection | null>(null)
 
+  const reload = useCallback(async () => {
+    const s = await api.getSchema()
+    setSchema(s)
+    return s
+  }, [])
+
   useEffect(() => {
     api
       .getSchema()
-      .then(setSchema)
+      .then((s) => {
+        setSchema(s)
+        if (s.collections.length === 0 && s.singletons.length === 0) {
+          setSelection({ kind: 'schema' })
+        }
+      })
       .catch(() => setError('Şema yüklenemedi. `justjson serve` çalışıyor mu?'))
   }, [])
 
@@ -27,7 +40,7 @@ export function App() {
   return (
     <div className="editor">
       <Sidebar schema={schema} selection={selection} onSelect={setSelection} />
-      <MainArea schema={schema} selection={selection} onSelect={setSelection} />
+      <MainArea schema={schema} selection={selection} onSelect={setSelection} onReload={reload} />
     </div>
   )
 }
@@ -54,6 +67,13 @@ function Sidebar({
       <div className="brand">
         Just<span>JSON</span>
       </div>
+      <button
+        type="button"
+        className={`nav-item ${selection?.kind === 'schema' ? 'active' : ''}`}
+        onClick={() => onSelect({ kind: 'schema' })}
+      >
+        ⚙ Şema
+      </button>
       {schema.collections.length > 0 && <p className="nav-label">Koleksiyonlar</p>}
       {schema.collections.map((c) => (
         <button
@@ -84,12 +104,25 @@ function MainArea({
   schema,
   selection,
   onSelect,
+  onReload,
 }: {
   schema: Schema
   selection: Selection | null
   onSelect: (s: Selection) => void
+  onReload: () => Promise<Schema>
 }) {
   if (!selection) return <main className="main center muted">Soldan bir koleksiyon seç.</main>
+
+  if (selection.kind === 'schema') {
+    return (
+      <SchemaBuilder
+        schema={schema}
+        onSaved={() => {
+          void onReload()
+        }}
+      />
+    )
+  }
 
   if (selection.kind === 'collection') {
     const col = schema.collections.find((c) => c.name === selection.name)

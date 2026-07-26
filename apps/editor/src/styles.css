@@ -274,6 +274,130 @@ textarea {
   margin: 0 0 14px;
 }
 
+/* schema builder */
+.schema {
+  max-width: 900px;
+}
+.schema section {
+  margin-bottom: 28px;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-head h2 {
+  font-size: 14px;
+  margin: 0;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+button.ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+button.ghost:hover {
+  border-color: var(--accent-2);
+}
+button.ghost.small {
+  font-size: 12px;
+  padding: 5px 10px;
+  margin-top: 4px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.title-input {
+  flex: 2;
+  font-weight: 600;
+}
+.name-input {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--accent-2);
+}
+.card-actions {
+  display: flex;
+  gap: 4px;
+}
+button.icon {
+  background: #0b0f16;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+button.icon:hover {
+  color: var(--text);
+}
+button.icon.danger:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+.key-input {
+  flex: 1;
+  min-width: 90px;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.flabel-input {
+  flex: 1;
+  min-width: 90px;
+}
+.field-row select {
+  width: auto;
+  flex: 0 0 auto;
+}
+.req {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.req input {
+  width: auto;
+}
+.opts-input {
+  flex-basis: 100%;
+}
+
 .issues {
   display: flex;
   flex-direction: column;
