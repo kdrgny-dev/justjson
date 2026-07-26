@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JustJSON — içeriğin senin, düz dosya olarak</title>
+    <meta
+      name="description"
+      content="Lokalde çalışan, JSON üreten mini CMS. Şemanı arayüzden kur, içeriğini gir — her şey diskte düz JSON olarak kalır. Veritabanı yok, hesap yok, kilit yok."
+    />
+    <style>
+      :root {
+        --ground: #fbfcfd;
+        --raised: #ffffff;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --faint: #94a3b8;
+        --line: #e6eaf0;
+        --accent: #4f46e5;
+        --accent-ink: #4338ca;
+        --soft: #eef2ff;
+        --code-bg: #0f172a;
+        --code-ink: #e2e8f0;
+        --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        --maxw: 1080px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --ground: #0b0e14;
+          --raised: #111725;
+          --ink: #e8ecf3;
+          --muted: #94a3b8;
+          --faint: #64748b;
+          --line: #1e293b;
+          --accent: #818cf8;
+          --accent-ink: #a5b4fc;
+          --soft: #1a2035;
+          --code-bg: #060910;
+          --code-ink: #cbd5e1;
+        }
+      }
+      :root[data-theme="dark"] {
+        --ground: #0b0e14;
+        --raised: #111725;
+        --ink: #e8ecf3;
+        --muted: #94a3b8;
+        --faint: #64748b;
+        --line: #1e293b;
+        --accent: #818cf8;
+        --accent-ink: #a5b4fc;
+        --soft: #1a2035;
+        --code-bg: #060910;
+        --code-ink: #cbd5e1;
+      }
+      :root[data-theme="light"] {
+        --ground: #fbfcfd;
+        --raised: #ffffff;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --faint: #94a3b8;
+        --line: #e6eaf0;
+        --accent: #4f46e5;
+        --accent-ink: #4338ca;
+        --soft: #eef2ff;
+        --code-bg: #0f172a;
+        --code-ink: #e2e8f0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        * {
+          transition: none !important;
+        }
+      }
+      body {
+        margin: 0;
+        background: var(--ground);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: inherit;
+      }
+      .wrap {
+        max-width: var(--maxw);
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .mono {
+        font-family: var(--mono);
+      }
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent-ink);
+      }
+
+      /* nav */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: color-mix(in srgb, var(--ground) 86%, transparent);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+      }
+      .nav-in {
+        max-width: var(--maxw);
+        margin: 0 auto;
+        padding: 14px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 17px;
+        letter-spacing: -0.02em;
+      }
+      .brand b {
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .nav-r {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn {
+        font-family: var(--sans);
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 9px;
+        padding: 9px 16px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.15s;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--accent-ink);
+      }
+      .btn-ghost {
+        border-color: var(--line);
+        color: var(--ink);
+        background: var(--raised);
+      }
+      .btn-ghost:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .icon-btn {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        justify-content: center;
+        border: 1px solid var(--line);
+        background: var(--raised);
+        border-radius: 9px;
+        color: var(--muted);
+      }
+      .icon-btn:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+
+      /* hero */
+      .hero {
+        padding: 84px 0 64px;
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 56px;
+        align-items: center;
+      }
+      h1 {
+        font-size: clamp(2.4rem, 5.4vw, 3.5rem);
+        line-height: 1.05;
+        letter-spacing: -0.035em;
+        font-weight: 800;
+        margin: 18px 0 0;
+        text-wrap: balance;
+      }
+      h1 .u {
+        color: var(--accent);
+      }
+      .lead {
+        color: var(--muted);
+        font-size: 1.08rem;
+        max-width: 34ch;
+        margin: 20px 0 28px;
+      }
+      .cmd {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        font-family: var(--mono);
+        font-size: 15px;
+        background: var(--code-bg);
+        color: var(--code-ink);
+        border-radius: 11px;
+        padding: 13px 16px;
+        border: 1px solid color-mix(in srgb, var(--code-ink) 14%, transparent);
+      }
+      .cmd .prompt {
+        color: var(--accent);
+      }
+      .cmd button {
+        margin-left: 4px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        background: color-mix(in srgb, var(--code-ink) 12%, transparent);
+        color: var(--code-ink);
+        border: none;
+        border-radius: 6px;
+        padding: 5px 9px;
+        cursor: pointer;
+      }
+      .cmd button:hover {
+        background: var(--accent);
+        color: #fff;
+      }
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        margin-top: 26px;
+      }
+      .cta-note {
+        font-size: 13px;
+        color: var(--faint);
+      }
+
+      /* hero visual: same content, two views */
+      .duo {
+        display: grid;
+        gap: 14px;
+      }
+      .panel {
+        background: var(--raised);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 12px 40px -24px rgba(15, 23, 42, 0.35);
+        overflow: hidden;
+      }
+      .panel-top {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--faint);
+      }
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--line);
+      }
+      .panel-top .tag {
+        margin-left: auto;
+        color: var(--accent);
+      }
+      .row-field {
+        padding: 12px 16px;
+        display: grid;
+        gap: 3px;
+      }
+      .row-field + .row-field {
+        border-top: 1px solid var(--line);
+      }
+      .row-field .k {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--faint);
+      }
+      .row-field .v {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .chip {
+        display: inline-block;
+        font-size: 12px;
+        font-family: var(--mono);
+        color: var(--accent);
+        background: var(--soft);
+        border-radius: 999px;
+        padding: 2px 10px;
+      }
+      pre.json {
+        margin: 0;
+        padding: 16px;
+        font-family: var(--mono);
+        font-size: 12.5px;
+        line-height: 1.7;
+        color: var(--code-ink);
+        background: var(--code-bg);
+        overflow-x: auto;
+      }
+      .json .key {
+        color: #7dd3fc;
+      }
+      .json .str {
+        color: #a7f3d0;
+      }
+      .arrow {
+        text-align: center;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--faint);
+        letter-spacing: 0.1em;
+      }
+
+      /* thesis */
+      .band {
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: var(--raised);
+      }
+      .thesis {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 40px;
+        padding: 48px 0;
+      }
+      .thesis h3 {
+        font-size: 1.02rem;
+        margin: 0 0 6px;
+        letter-spacing: -0.01em;
+      }
+      .thesis p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.94rem;
+      }
+      .thesis .m {
+        font-family: var(--mono);
+        color: var(--accent);
+        font-size: 13px;
+      }
+
+      section.block {
+        padding: 76px 0;
+      }
+      .head {
+        max-width: 46ch;
+        margin-bottom: 40px;
+      }
+      .head h2 {
+        font-size: clamp(1.7rem, 3.4vw, 2.2rem);
+        letter-spacing: -0.03em;
+        margin: 12px 0 0;
+        text-wrap: balance;
+      }
+      .head p {
+        color: var(--muted);
+        margin: 12px 0 0;
+      }
+
+      /* features */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .card {
+        background: var(--raised);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 22px;
+        transition: border-color 0.15s;
+      }
+      .card:hover {
+        border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+      }
+      .card .lbl {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .card h3 {
+        font-size: 1.06rem;
+        margin: 14px 0 6px;
+        letter-spacing: -0.01em;
+      }
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+
+      /* steps */
+      .steps {
+        display: grid;
+        gap: 14px;
+      }
+      .step {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 20px;
+        align-items: start;
+        background: var(--raised);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 20px 22px;
+      }
+      .step .num {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: #fff;
+        background: var(--accent);
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .step code {
+        font-family: var(--mono);
+        font-size: 13px;
+        background: var(--soft);
+        color: var(--accent-ink);
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+      .step h3 {
+        margin: 2px 0 5px;
+        font-size: 1.02rem;
+      }
+      .step p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+
+      /* closing */
+      .closing {
+        text-align: center;
+        padding: 90px 0;
+        border-top: 1px solid var(--line);
+      }
+      .closing h2 {
+        font-size: clamp(1.8rem, 4vw, 2.6rem);
+        letter-spacing: -0.03em;
+        margin: 0 0 24px;
+        text-wrap: balance;
+      }
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 28px 0;
+        color: var(--faint);
+        font-size: 13px;
+      }
+      .foot-in {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      footer a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+      footer a:hover {
+        color: var(--accent);
+      }
+      a:focus-visible,
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: 8px;
+      }
+
+      @media (max-width: 860px) {
+        .hero,
+        .thesis,
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .hero {
+          padding: 56px 0 40px;
+          gap: 40px;
+        }
+        .thesis {
+          gap: 28px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-in">
+        <span class="brand">Just<b>JSON</b></span>
+        <div class="nav-r">
+          <button class="icon-btn" id="theme" aria-label="Temayı değiştir" title="Tema">◐</button>
+          <a class="btn btn-ghost" href="https://github.com/kdrgny-dev/justjson">GitHub</a>
+        </div>
+      </div>
+    </nav>
+
+    <header class="wrap hero">
+      <div>
+        <span class="eyebrow">Yerel · Dosya tabanlı · Açık kaynak</span>
+        <h1>İçeriğin senin.<br /><span class="u">Kilidin yok.</span></h1>
+        <p class="lead">
+          JustJSON, kendi klasöründe çalışan bir mini CMS. Şemanı arayüzden kurar, içeriğini temiz
+          bir editörden girersin — her şey diskte düz JSON dosyası olarak kalır.
+        </p>
+        <div class="cmd">
+          <span><span class="prompt">$</span> npx justjson</span>
+          <button id="copy" aria-label="Komutu kopyala">Kopyala</button>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://github.com/kdrgny-dev/justjson">GitHub'da incele →</a>
+          <span class="cta-note">Veritabanı yok · hesap yok · MIT</span>
+        </div>
+      </div>
+
+      <div class="duo" aria-hidden="true">
+        <div class="panel">
+          <div class="panel-top">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span>editör</span><span class="tag">/ yazılar / ilk-yazi</span>
+          </div>
+          <div class="row-field">
+            <span class="k">başlık</span><span class="v">İlk yazı</span>
+          </div>
+          <div class="row-field">
+            <span class="k">durum</span><span class="v"><span class="chip">taslak</span></span>
+          </div>
+          <div class="row-field">
+            <span class="k">etiketler</span
+            ><span class="v"><span class="chip">next</span> <span class="chip">vercel</span></span>
+          </div>
+        </div>
+        <div class="arrow">↓ &nbsp;content/posts/ilk-yazi.json&nbsp; ↓</div>
+        <div class="panel">
+          <div class="panel-top">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span>disk</span><span class="tag">senin repo'nda</span>
+          </div>
+          <pre class="json">{
+  <span class="key">"title"</span>: <span class="str">"İlk yazı"</span>,
+  <span class="key">"slug"</span>:  <span class="str">"ilk-yazi"</span>,
+  <span class="key">"status"</span>: <span class="str">"taslak"</span>,
+  <span class="key">"tags"</span>:  [<span class="str">"next"</span>, <span class="str">"vercel"</span>]
+}</pre>
+        </div>
+      </div>
+    </header>
+
+    <div class="band">
+      <div class="wrap thesis">
+        <div>
+          <div class="m">// senin</div>
+          <h3>Rehin değil, senin</h3>
+          <p>İçerik bizim sunucumuzda durmaz. Dosyalar zaten senin repo'nda; JustJSON sadece onları düzenler.</p>
+        </div>
+        <div>
+          <div class="m">// sıfır altyapı</div>
+          <h3>Sunucu, hesap, token yok</h3>
+          <p>Araç makinende çalışır, hiçbir yere veri göndermez. Kur, çalıştır, kapat.</p>
+        </div>
+        <div>
+          <div class="m">// taşınabilir</div>
+          <h3>Git'le dost, her yere gider</h3>
+          <p>Düz JSON diff'lenir, versiyonlanır. Build'inde import et, istediğin yere deploy et.</p>
+        </div>
+      </div>
+    </div>
+
+    <section class="block wrap">
+      <div class="head">
+        <span class="eyebrow">Ne yapar</span>
+        <h2>Gerçek bir CMS deneyimi — arkasında düz dosyalar</h2>
+        <p>Şemadan içerik yönetimine, kod yazmadan.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="lbl">Şema</div>
+          <h3>Görsel şema kurucu</h3>
+          <p>Koleksiyon ve alanları arayüzden tanımla. Alan tipini ikonlu kartlardan seç — metin, sayı, ilişki, görsel…</p>
+        </div>
+        <div class="card">
+          <div class="lbl">İçerik</div>
+          <h3>Aranabilir içerik tablosu</h3>
+          <p>Kayıtlar başlık, slug ve tarihle listelenir; anında ara ve düzenle. Slug yığını değil, içerik.</p>
+        </div>
+        <div class="card">
+          <div class="lbl">Yazım</div>
+          <h3>Zengin metin editörü</h3>
+          <p>Başlık, kalın, liste, alıntı — WYSIWYG. Ama diske temiz markdown olarak yazılır, diff'lenebilir kalır.</p>
+        </div>
+        <div class="card">
+          <div class="lbl">Medya</div>
+          <h3>Görsel yükleme</h3>
+          <p>Görseli sürükle; tarayıcıda WebP'ye küçültülüp <span class="mono">content/media/</span> altına yazılır.</p>
+        </div>
+        <div class="card">
+          <div class="lbl">Tipler</div>
+          <h3>Tip güvenli çıktı</h3>
+          <p>Şemandan <span class="mono">types.ts</span> üretir. İçeriğini kendi projende tam tiplenmiş kullan.</p>
+        </div>
+        <div class="card">
+          <div class="lbl">Çıktı</div>
+          <h3>Endpoint senin</h3>
+          <p>JSON'u nereye koyarsan orası API'n olur — repo raw, jsDelivr, kendi build'in. ZIP olarak da dışa aktar.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block wrap">
+      <div class="head">
+        <span class="eyebrow">Nasıl çalışır</span>
+        <h2>Üç adımda kendi backend'in</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="num">1</span>
+          <div>
+            <h3>Başlat</h3>
+            <p><code>npx justjson init</code> — hazır şablonla (blog, cv) ya da sıfırdan başla.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="num">2</span>
+          <div>
+            <h3>Kur ve gir</h3>
+            <p><code>npx justjson</code> tarayıcıda editörü açar. Şemanı tasarla, içeriğini gir, görselini yükle.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="num">3</span>
+          <div>
+            <h3>Kullan</h3>
+            <p><code>content/*.json</code> diskte hazır. Commit'le, deploy et, build'inde import et — senin akışın.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing wrap">
+      <h2>İçeriğini geri al.</h2>
+      <div class="cta-row" style="justify-content: center">
+        <a class="btn btn-primary" href="https://github.com/kdrgny-dev/justjson">GitHub'da incele →</a>
+        <span class="cmd" style="font-size: 14px"><span class="prompt">$</span> npx justjson</span>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap foot-in">
+        <span class="brand" style="font-size: 15px">Just<b>JSON</b></span>
+        <span>
+          <a href="https://github.com/kdrgny-dev/justjson">GitHub</a> &nbsp;·&nbsp;
+          <a href="https://github.com/kdrgny-dev/justjson/blob/main/LICENSE">MIT</a> &nbsp;·&nbsp;
+          Kadir Günay
+        </span>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        var t = document.getElementById("theme");
+        t.addEventListener("click", function () {
+          var cur = document.documentElement.getAttribute("data-theme");
+          var isDark =
+            cur === "dark" ||
+            (!cur && matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.setAttribute("data-theme", isDark ? "light" : "dark");
+        });
+        var c = document.getElementById("copy");
+        c.addEventListener("click", function () {
+          navigator.clipboard && navigator.clipboard.writeText("npx justjson");
+          var o = c.textContent;
+          c.textContent = "Kopyalandı";
+          setTimeout(function () {
+            c.textContent = o;
+          }, 1400);
+        });
+      })();
+    </script>
+  </body>
+</html>
