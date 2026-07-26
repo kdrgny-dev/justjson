@@ -1,20 +1,12 @@
 import { slugify } from '@justjson/core'
 import type { Collection, Field, FieldType, Schema, Singleton } from '@justjson/core'
+import { ArrowDown, ArrowUp, Check, Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import * as api from './api'
-
-const TYPES: FieldType[] = [
-  'text',
-  'richtext',
-  'number',
-  'boolean',
-  'date',
-  'select',
-  'relation',
-  'image',
-]
+import { FIELD_META, FIELD_TYPES } from './field-types'
 
 type Container = Collection | Singleton
+type PickerTarget = { kind: 'collection' | 'singleton'; ci: number; fi: number | null }
 
 function clone(s: Schema): Schema {
   return JSON.parse(JSON.stringify(s)) as Schema
@@ -22,12 +14,8 @@ function clone(s: Schema): Schema {
 
 function uniqueName(base: string, taken: string[]): string {
   let n = 1
-  let name = `${base}${n}`
-  while (taken.includes(name)) {
-    n += 1
-    name = `${base}${n}`
-  }
-  return name
+  while (taken.includes(`${base}${n}`)) n += 1
+  return `${base}${n}`
 }
 
 function move<T>(arr: T[], idx: number, dir: -1 | 1): void {
@@ -41,6 +29,7 @@ export function SchemaBuilder({ schema, onSaved }: { schema: Schema; onSaved: ()
   const [draft, setDraft] = useState<Schema>(() => clone(schema))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [picker, setPicker] = useState<PickerTarget | null>(null)
 
   const collectionNames = draft.collections.map((c) => c.name)
   const update = (fn: (d: Schema) => void) =>
@@ -49,6 +38,29 @@ export function SchemaBuilder({ schema, onSaved }: { schema: Schema; onSaved: ()
       fn(d)
       return d
     })
+
+  const applyType = (type: FieldType) => {
+    if (!picker) return
+    update((d) => {
+      const list = picker.kind === 'collection' ? d.collections : d.singletons
+      const container = list[picker.ci]
+      if (!container) return
+      if (picker.fi === null) {
+        const key = uniqueName(
+          'alan',
+          container.fields.map((f) => f.key),
+        )
+        container.fields.push({ key, label: '', type })
+      } else {
+        const f = container.fields[picker.fi]
+        if (!f) return
+        f.type = type
+        if (type !== 'select') f.options = undefined
+        if (type !== 'relation') f.to = undefined
+      }
+    })
+    setPicker(null)
+  }
 
   const save = async () => {
     setError(null)
@@ -64,22 +76,35 @@ export function SchemaBuilder({ schema, onSaved }: { schema: Schema; onSaved: ()
   }
 
   return (
-    <main className="main schema">
-      <div className="head">
-        <h1>Şema</h1>
-        <button type="button" className="primary" onClick={save} disabled={saving}>
+    <div className="flex h-full flex-col">
+      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-4">
+        <div>
+          <h1 className="text-lg font-semibold text-slate-900">Şema</h1>
+          <p className="text-sm text-slate-500">Koleksiyonlarını ve alanlarını tasarla.</p>
+        </div>
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-50"
+        >
+          <Check className="h-4 w-4" />
           {saving ? 'Kaydediliyor…' : 'Şemayı kaydet'}
         </button>
-      </div>
-      {error && <p className="save-error">{error}</p>}
+      </header>
 
-      <section>
-        <div className="section-head">
-          <h2>Koleksiyonlar</h2>
-          <button
-            type="button"
-            className="ghost"
-            onClick={() =>
+      <div className="flex-1 overflow-y-auto px-8 py-6">
+        {error && (
+          <p className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
+        )}
+
+        <div className="mx-auto max-w-3xl space-y-10">
+          <Section
+            title="Koleksiyonlar"
+            hint="Çok kayıtlı içerik (yazılar, ürünler…)"
+            onAdd={() =>
               update((d) => {
                 const name = uniqueName(
                   'koleksiyon',
@@ -89,30 +114,26 @@ export function SchemaBuilder({ schema, onSaved }: { schema: Schema; onSaved: ()
               })
             }
           >
-            + Koleksiyon
-          </button>
-        </div>
-        {draft.collections.map((col, i) => (
-          <ContainerCard
-            // biome-ignore lint/suspicious/noArrayIndexKey: kart kontrollü; ad düzenlenebilir olduğu için stabil index gerekli (focus korunur)
-            key={i}
-            container={col}
-            kind="collection"
-            collectionNames={collectionNames}
-            onChange={(fn) => update((d) => fn(d.collections[i] as Container))}
-            onRemove={() => update((d) => d.collections.splice(i, 1))}
-            onMove={(dir) => update((d) => move(d.collections, i, dir))}
-          />
-        ))}
-      </section>
+            {draft.collections.map((col, ci) => (
+              <ContainerCard
+                // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
+                key={ci}
+                container={col}
+                kind="collection"
+                collectionNames={collectionNames}
+                onChange={(fn) => update((d) => fn(d.collections[ci] as Container))}
+                onRemove={() => update((d) => d.collections.splice(ci, 1))}
+                onMove={(dir) => update((d) => move(d.collections, ci, dir))}
+                onAddField={() => setPicker({ kind: 'collection', ci, fi: null })}
+                onChangeType={(fi) => setPicker({ kind: 'collection', ci, fi })}
+              />
+            ))}
+          </Section>
 
-      <section>
-        <div className="section-head">
-          <h2>Tekil</h2>
-          <button
-            type="button"
-            className="ghost"
-            onClick={() =>
+          <Section
+            title="Tekil"
+            hint="Tek kayıt (site ayarları, profil…)"
+            onAdd={() =>
               update((d) => {
                 const name = uniqueName(
                   'tekil',
@@ -122,23 +143,57 @@ export function SchemaBuilder({ schema, onSaved }: { schema: Schema; onSaved: ()
               })
             }
           >
-            + Tekil
-          </button>
+            {draft.singletons.map((s, ci) => (
+              <ContainerCard
+                // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
+                key={ci}
+                container={s}
+                kind="singleton"
+                collectionNames={collectionNames}
+                onChange={(fn) => update((d) => fn(d.singletons[ci] as Container))}
+                onRemove={() => update((d) => d.singletons.splice(ci, 1))}
+                onMove={(dir) => update((d) => move(d.singletons, ci, dir))}
+                onAddField={() => setPicker({ kind: 'singleton', ci, fi: null })}
+                onChangeType={(fi) => setPicker({ kind: 'singleton', ci, fi })}
+              />
+            ))}
+          </Section>
         </div>
-        {draft.singletons.map((s, i) => (
-          <ContainerCard
-            // biome-ignore lint/suspicious/noArrayIndexKey: kart kontrollü; ad düzenlenebilir olduğu için stabil index gerekli (focus korunur)
-            key={i}
-            container={s}
-            kind="singleton"
-            collectionNames={collectionNames}
-            onChange={(fn) => update((d) => fn(d.singletons[i] as Container))}
-            onRemove={() => update((d) => d.singletons.splice(i, 1))}
-            onMove={(dir) => update((d) => move(d.singletons, i, dir))}
-          />
-        ))}
-      </section>
-    </main>
+      </div>
+
+      {picker && <TypePicker onPick={applyType} onClose={() => setPicker(null)} />}
+    </div>
+  )
+}
+
+function Section({
+  title,
+  hint,
+  onAdd,
+  children,
+}: {
+  title: string
+  hint: string
+  onAdd: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <section>
+      <div className="mb-3 flex items-end justify-between">
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{title}</h2>
+          <p className="text-xs text-slate-400">{hint}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onAdd}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600"
+        >
+          <Plus className="h-4 w-4" /> Ekle
+        </button>
+      </div>
+      <div className="space-y-3">{children}</div>
+    </section>
   )
 }
 
@@ -149,6 +204,8 @@ function ContainerCard({
   onChange,
   onRemove,
   onMove,
+  onAddField,
+  onChangeType,
 }: {
   container: Container
   kind: 'collection' | 'singleton'
@@ -156,6 +213,8 @@ function ContainerCard({
   onChange: (fn: (c: Container) => void) => void
   onRemove: () => void
   onMove: (dir: -1 | 1) => void
+  onAddField: () => void
+  onChangeType: (fi: number) => void
 }) {
   const setName = (value: string) => {
     const name = slugify(value)
@@ -166,12 +225,12 @@ function ContainerCard({
   }
 
   return (
-    <div className="card">
-      <div className="card-head">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3">
         <input
-          className="title-input"
+          className="flex-1 rounded-md bg-transparent px-1 py-0.5 text-base font-semibold text-slate-900 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100"
           value={container.label ?? ''}
-          placeholder="Etiket"
+          placeholder="Koleksiyon adı"
           onChange={(e) =>
             onChange((c) => {
               c.label = e.target.value
@@ -179,50 +238,46 @@ function ContainerCard({
           }
         />
         <input
-          className="name-input"
+          className="w-40 rounded-md border border-transparent px-2 py-1 font-mono text-xs text-indigo-600 outline-none hover:border-slate-200 focus:border-indigo-300 focus:bg-white"
           value={container.name}
-          placeholder="ad"
+          placeholder="api-adi"
           onChange={(e) => setName(e.target.value)}
         />
-        <div className="card-actions">
-          <button type="button" className="icon" onClick={() => onMove(-1)}>
-            ↑
-          </button>
-          <button type="button" className="icon" onClick={() => onMove(1)}>
-            ↓
-          </button>
-          <button type="button" className="icon danger" onClick={onRemove}>
-            ✕
-          </button>
-        </div>
+        <IconButton title="Yukarı" onClick={() => onMove(-1)}>
+          <ArrowUp className="h-4 w-4" />
+        </IconButton>
+        <IconButton title="Aşağı" onClick={() => onMove(1)}>
+          <ArrowDown className="h-4 w-4" />
+        </IconButton>
+        <IconButton title="Sil" danger onClick={onRemove}>
+          <Trash2 className="h-4 w-4" />
+        </IconButton>
       </div>
 
-      {container.fields.map((field, i) => (
-        <FieldRow
-          // biome-ignore lint/suspicious/noArrayIndexKey: satır kontrollü; anahtar düzenlenebilir olduğu için stabil index gerekli (focus korunur)
-          key={i}
-          field={field}
-          collectionNames={collectionNames}
-          onChange={(fn) => onChange((c) => fn(c.fields[i] as Field))}
-          onRemove={() => onChange((c) => c.fields.splice(i, 1))}
-          onMove={(dir) => onChange((c) => move(c.fields, i, dir))}
-        />
-      ))}
+      <div className="divide-y divide-slate-100">
+        {container.fields.length === 0 && (
+          <p className="px-4 py-6 text-center text-sm text-slate-400">Henüz alan yok.</p>
+        )}
+        {container.fields.map((field, fi) => (
+          <FieldRow
+            // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü satır; anahtar düzenlenebilir, stabil index gerekli
+            key={fi}
+            field={field}
+            collectionNames={collectionNames}
+            onChange={(fn) => onChange((c) => fn(c.fields[fi] as Field))}
+            onRemove={() => onChange((c) => c.fields.splice(fi, 1))}
+            onMove={(dir) => onChange((c) => move(c.fields, fi, dir))}
+            onChangeType={() => onChangeType(fi)}
+          />
+        ))}
+      </div>
 
       <button
         type="button"
-        className="ghost small"
-        onClick={() =>
-          onChange((c) => {
-            const key = uniqueName(
-              'alan',
-              c.fields.map((f) => f.key),
-            )
-            c.fields.push({ key, label: '', type: 'text' })
-          })
-        }
+        onClick={onAddField}
+        className="flex w-full items-center justify-center gap-1.5 border-t border-slate-100 px-4 py-2.5 text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
       >
-        + Alan
+        <Plus className="h-4 w-4" /> Alan ekle
       </button>
     </div>
   )
@@ -234,80 +289,82 @@ function FieldRow({
   onChange,
   onRemove,
   onMove,
+  onChangeType,
 }: {
   field: Field
   collectionNames: string[]
   onChange: (fn: (f: Field) => void) => void
   onRemove: () => void
   onMove: (dir: -1 | 1) => void
+  onChangeType: () => void
 }) {
+  const meta = FIELD_META[field.type]
+  const Icon = meta.icon
+
   return (
-    <div className="field-row">
-      <input
-        className="key-input"
-        value={field.key}
-        placeholder="anahtar"
-        onChange={(e) =>
-          onChange((f) => {
-            f.key = slugify(e.target.value)
-          })
-        }
-      />
-      <input
-        className="flabel-input"
-        value={field.label ?? ''}
-        placeholder="etiket"
-        onChange={(e) =>
-          onChange((f) => {
-            f.label = e.target.value
-          })
-        }
-      />
-      <select
-        value={field.type}
-        onChange={(e) =>
-          onChange((f) => {
-            f.type = e.target.value as FieldType
-            if (f.type !== 'select') f.options = undefined
-            if (f.type !== 'relation') f.to = undefined
-          })
-        }
-      >
-        {TYPES.map((t) => (
-          <option key={t} value={t}>
-            {t}
-          </option>
-        ))}
-      </select>
-      <label className="req">
+    <div className="group px-4 py-3">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onChangeType}
+          title="Tipi değiştir"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition hover:bg-indigo-100"
+        >
+          <Icon className="h-4 w-4" />
+        </button>
         <input
-          type="checkbox"
-          checked={Boolean(field.required)}
+          className="flex-1 rounded-md px-1 py-0.5 text-sm font-medium text-slate-800 outline-none focus:bg-slate-50 focus:ring-2 focus:ring-indigo-100"
+          value={field.label ?? ''}
+          placeholder="Alan adı"
           onChange={(e) =>
             onChange((f) => {
-              f.required = e.target.checked
+              f.label = e.target.value
             })
           }
         />
-        zorunlu
-      </label>
-      <div className="card-actions">
-        <button type="button" className="icon" onClick={() => onMove(-1)}>
-          ↑
+        <input
+          className="w-32 rounded-md border border-transparent px-2 py-1 font-mono text-xs text-slate-400 outline-none hover:border-slate-200 focus:border-indigo-300 focus:text-slate-700"
+          value={field.key}
+          placeholder="anahtar"
+          onChange={(e) =>
+            onChange((f) => {
+              f.key = slugify(e.target.value)
+            })
+          }
+        />
+        <button
+          type="button"
+          onClick={() =>
+            onChange((f) => {
+              f.required = !f.required
+            })
+          }
+          className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
+            field.required
+              ? 'bg-amber-100 text-amber-700'
+              : 'bg-slate-100 text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          zorunlu
         </button>
-        <button type="button" className="icon" onClick={() => onMove(1)}>
-          ↓
-        </button>
-        <button type="button" className="icon danger" onClick={onRemove}>
-          ✕
-        </button>
+        <div className="flex items-center gap-0.5 opacity-0 transition group-hover:opacity-100">
+          <IconButton title="Yukarı" onClick={() => onMove(-1)}>
+            <ArrowUp className="h-4 w-4" />
+          </IconButton>
+          <IconButton title="Aşağı" onClick={() => onMove(1)}>
+            <ArrowDown className="h-4 w-4" />
+          </IconButton>
+          <IconButton title="Sil" danger onClick={onRemove}>
+            <X className="h-4 w-4" />
+          </IconButton>
+        </div>
       </div>
 
       {field.type === 'select' && (
         <input
-          className="opts-input"
+          className="mt-2 ml-12 block w-[calc(100%-3rem)] rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
           value={(field.options ?? []).join(', ')}
-          placeholder="seçenekler (virgülle)"
+          placeholder="seçenekler (virgülle ayır)"
           onChange={(e) =>
             onChange((f) => {
               f.options = e.target.value
@@ -320,7 +377,7 @@ function FieldRow({
       )}
       {field.type === 'relation' && (
         <select
-          className="opts-input"
+          className="mt-2 ml-12 block w-[calc(100%-3rem)] rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
           value={field.to ?? ''}
           onChange={(e) =>
             onChange((f) => {
@@ -328,7 +385,7 @@ function FieldRow({
             })
           }
         >
-          <option value="">hedef koleksiyon…</option>
+          <option value="">hedef koleksiyon seç…</option>
           {collectionNames.map((n) => (
             <option key={n} value={n}>
               {n}
@@ -337,5 +394,77 @@ function FieldRow({
         </select>
       )}
     </div>
+  )
+}
+
+function TypePicker({ onPick, onClose }: { onPick: (t: FieldType) => void; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
+      onClick={onClose}
+      onKeyDown={(e) => e.key === 'Escape' && onClose()}
+      role="presentation"
+    >
+      <div
+        className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="presentation"
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-900">Alan tipi seç</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-2.5">
+          {FIELD_TYPES.map(({ type, label, desc, icon: Icon }) => (
+            <button
+              type="button"
+              key={type}
+              onClick={() => onPick(type)}
+              className="flex items-start gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-indigo-400 hover:bg-indigo-50"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <Icon className="h-4 w-4" />
+              </span>
+              <span>
+                <span className="block text-sm font-medium text-slate-800">{label}</span>
+                <span className="block text-xs text-slate-400">{desc}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function IconButton({
+  children,
+  title,
+  danger,
+  onClick,
+}: {
+  children: React.ReactNode
+  title: string
+  danger?: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      className={`flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 ${
+        danger ? 'hover:text-red-600' : 'hover:text-slate-700'
+      }`}
+    >
+      {children}
+    </button>
   )
 }

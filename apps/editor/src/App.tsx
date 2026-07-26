@@ -1,8 +1,10 @@
 import { slugify, validateEntry } from '@justjson/core'
 import type { Collection, Field, Schema, Singleton } from '@justjson/core'
+import { FileCog, Plus, Settings2, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SchemaBuilder } from './SchemaBuilder'
 import * as api from './api'
+import { FIELD_META } from './field-types'
 
 type Selection =
   | { kind: 'schema' }
@@ -34,14 +36,22 @@ export function App() {
       .catch(() => setError('Şema yüklenemedi. `justjson serve` çalışıyor mu?'))
   }, [])
 
-  if (error) return <div className="app center">{error}</div>
-  if (!schema) return <div className="app center">Yükleniyor…</div>
+  if (error) return <Centered>{error}</Centered>
+  if (!schema) return <Centered>Yükleniyor…</Centered>
 
   return (
-    <div className="editor">
+    <div className="flex h-full">
       <Sidebar schema={schema} selection={selection} onSelect={setSelection} />
-      <MainArea schema={schema} selection={selection} onSelect={setSelection} onReload={reload} />
+      <main className="flex-1 overflow-hidden bg-slate-50">
+        <MainArea schema={schema} selection={selection} onSelect={setSelection} onReload={reload} />
+      </main>
     </div>
+  )
+}
+
+function Centered({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-full items-center justify-center text-sm text-slate-500">{children}</div>
   )
 }
 
@@ -63,40 +73,76 @@ function Sidebar({
   }
 
   return (
-    <aside className="sidebar">
-      <div className="brand">
-        Just<span>JSON</span>
+    <aside className="flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
+      <div className="px-5 py-4 text-lg font-bold tracking-tight text-slate-900">
+        Just<span className="text-indigo-600">JSON</span>
       </div>
-      <button
-        type="button"
-        className={`nav-item ${selection?.kind === 'schema' ? 'active' : ''}`}
-        onClick={() => onSelect({ kind: 'schema' })}
-      >
-        ⚙ Şema
-      </button>
-      {schema.collections.length > 0 && <p className="nav-label">Koleksiyonlar</p>}
-      {schema.collections.map((c) => (
-        <button
-          type="button"
-          key={c.name}
-          className={`nav-item ${collectionActive(c.name) ? 'active' : ''}`}
-          onClick={() => onSelect({ kind: 'collection', name: c.name })}
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
+        <NavItem
+          icon={<Settings2 className="h-4 w-4" />}
+          active={selection?.kind === 'schema'}
+          onClick={() => onSelect({ kind: 'schema' })}
         >
-          {c.label ?? c.name}
-        </button>
-      ))}
-      {schema.singletons.length > 0 && <p className="nav-label">Tekil</p>}
-      {schema.singletons.map((s) => (
-        <button
-          type="button"
-          key={s.name}
-          className={`nav-item ${selection?.kind === 'singleton' && selection.name === s.name ? 'active' : ''}`}
-          onClick={() => onSelect({ kind: 'singleton', name: s.name })}
-        >
-          {s.label ?? s.name}
-        </button>
-      ))}
+          Şema
+        </NavItem>
+
+        {schema.collections.length > 0 && <NavLabel>Koleksiyonlar</NavLabel>}
+        {schema.collections.map((c) => (
+          <NavItem
+            key={c.name}
+            active={collectionActive(c.name)}
+            onClick={() => onSelect({ kind: 'collection', name: c.name })}
+          >
+            {c.label ?? c.name}
+          </NavItem>
+        ))}
+
+        {schema.singletons.length > 0 && <NavLabel>Tekil</NavLabel>}
+        {schema.singletons.map((s) => (
+          <NavItem
+            key={s.name}
+            icon={<FileCog className="h-4 w-4" />}
+            active={selection?.kind === 'singleton' && selection.name === s.name}
+            onClick={() => onSelect({ kind: 'singleton', name: s.name })}
+          >
+            {s.label ?? s.name}
+          </NavItem>
+        ))}
+      </nav>
     </aside>
+  )
+}
+
+function NavLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+      {children}
+    </p>
+  )
+}
+
+function NavItem({
+  children,
+  icon,
+  active,
+  onClick,
+}: {
+  children: React.ReactNode
+  icon?: React.ReactNode
+  active?: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${
+        active ? 'bg-indigo-50 font-medium text-indigo-700' : 'text-slate-600 hover:bg-slate-100'
+      }`}
+    >
+      {icon}
+      <span className="truncate">{children}</span>
+    </button>
   )
 }
 
@@ -111,22 +157,15 @@ function MainArea({
   onSelect: (s: Selection) => void
   onReload: () => Promise<Schema>
 }) {
-  if (!selection) return <main className="main center muted">Soldan bir koleksiyon seç.</main>
+  if (!selection) return <Centered>Soldan bir koleksiyon seç.</Centered>
 
   if (selection.kind === 'schema') {
-    return (
-      <SchemaBuilder
-        schema={schema}
-        onSaved={() => {
-          void onReload()
-        }}
-      />
-    )
+    return <SchemaBuilder schema={schema} onSaved={() => void onReload()} />
   }
 
   if (selection.kind === 'collection') {
     const col = schema.collections.find((c) => c.name === selection.name)
-    if (!col) return <main className="main center">Koleksiyon yok.</main>
+    if (!col) return <Centered>Koleksiyon yok.</Centered>
     return (
       <CollectionView
         collection={col}
@@ -138,12 +177,11 @@ function MainArea({
 
   if (selection.kind === 'entry' || selection.kind === 'newEntry') {
     const col = schema.collections.find((c) => c.name === selection.collection)
-    if (!col) return <main className="main center">Koleksiyon yok.</main>
+    if (!col) return <Centered>Koleksiyon yok.</Centered>
     const slug = selection.kind === 'entry' ? selection.slug : null
     return (
       <EntryEditor
         key={`${col.name}/${slug ?? 'new'}`}
-        schema={schema}
         collection={col}
         slug={slug}
         onSaved={(s) => onSelect({ kind: 'entry', collection: col.name, slug: s })}
@@ -153,8 +191,49 @@ function MainArea({
   }
 
   const s = schema.singletons.find((x) => x.name === selection.name)
-  if (!s) return <main className="main center">Tekil yok.</main>
-  return <SingletonEditor key={s.name} schema={schema} singleton={s} />
+  if (!s) return <Centered>Tekil yok.</Centered>
+  return <SingletonEditor key={s.name} singleton={s} />
+}
+
+function Page({ children }: { children: React.ReactNode }) {
+  return <div className="mx-auto h-full max-w-3xl overflow-y-auto px-8 py-6">{children}</div>
+}
+
+function PageHead({
+  title,
+  crumb,
+  actions,
+}: { title: string; crumb?: string; actions?: React.ReactNode }) {
+  return (
+    <div className="mb-6 flex items-center justify-between">
+      <h1 className="text-xl font-semibold text-slate-900">
+        {title}
+        {crumb && <span className="ml-2 font-normal text-slate-400">/ {crumb}</span>}
+      </h1>
+      {actions && <div className="flex items-center gap-2">{actions}</div>}
+    </div>
+  )
+}
+
+function PrimaryButton({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode
+  onClick: () => void
+  disabled?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-50"
+    >
+      {children}
+    </button>
+  )
 }
 
 function CollectionView({
@@ -167,43 +246,51 @@ function CollectionView({
   onNew: () => void
 }) {
   const [slugs, setSlugs] = useState<string[] | null>(null)
-
   useEffect(() => {
     api.listEntries(collection.name).then(setSlugs)
   }, [collection.name])
 
   return (
-    <main className="main">
-      <div className="head">
-        <h1>{collection.label ?? collection.name}</h1>
-        <button type="button" className="primary" onClick={onNew}>
-          + Yeni kayıt
-        </button>
-      </div>
-      {slugs === null && <p className="muted">Yükleniyor…</p>}
-      {slugs?.length === 0 && <p className="muted">Henüz kayıt yok.</p>}
-      <ul className="entry-list">
+    <Page>
+      <PageHead
+        title={collection.label ?? collection.name}
+        actions={
+          <PrimaryButton onClick={onNew}>
+            <Plus className="h-4 w-4" /> Yeni kayıt
+          </PrimaryButton>
+        }
+      />
+      {slugs === null && <p className="text-sm text-slate-400">Yükleniyor…</p>}
+      {slugs?.length === 0 && (
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-sm text-slate-400">
+          Henüz kayıt yok. “Yeni kayıt” ile başla.
+        </div>
+      )}
+      <div className="space-y-2">
         {slugs?.map((slug) => (
-          <li key={slug}>
-            <button type="button" onClick={() => onOpen(slug)}>
-              {slug}
-            </button>
-          </li>
+          <button
+            type="button"
+            key={slug}
+            onClick={() => onOpen(slug)}
+            className="block w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-left font-mono text-sm text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700"
+          >
+            {slug}
+          </button>
         ))}
-      </ul>
-    </main>
+      </div>
+    </Page>
   )
 }
 
-function useEntryData(load: () => Promise<api.Entry | null>, initial: api.Entry) {
-  const [data, setData] = useState<api.Entry>(initial)
+function useEntryData(load: () => Promise<api.Entry | null>) {
+  const [data, setData] = useState<api.Entry>({})
   const [loading, setLoading] = useState(true)
   // biome-ignore lint/correctness/useExhaustiveDependencies: sadece mount'ta yükle; yeniden bağlanma key prop'u ile kontrol ediliyor
   useEffect(() => {
     let alive = true
     load().then((d) => {
       if (alive) {
-        setData(d ?? initial)
+        setData(d ?? {})
         setLoading(false)
       }
     })
@@ -215,13 +302,11 @@ function useEntryData(load: () => Promise<api.Entry | null>, initial: api.Entry)
 }
 
 function EntryEditor({
-  schema,
   collection,
   slug,
   onSaved,
   onDeleted,
 }: {
-  schema: Schema
   collection: Collection
   slug: string | null
   onSaved: (slug: string) => void
@@ -232,7 +317,7 @@ function EntryEditor({
     () => (isNew ? Promise.resolve<api.Entry>({}) : api.getEntry(collection.name, slug as string)),
     [collection.name, slug, isNew],
   )
-  const { data, setData, loading } = useEntryData(load, {})
+  const { data, setData, loading } = useEntryData(load)
   const [newSlug, setNewSlug] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -258,8 +343,7 @@ function EntryEditor({
         setSaveError(`"${effectiveSlug}" zaten var — farklı bir slug seç.`)
         return
       }
-      const saved = await api.putEntry(collection.name, effectiveSlug, data)
-      onSaved(saved)
+      onSaved(await api.putEntry(collection.name, effectiveSlug, data))
     } finally {
       setSaving(false)
     }
@@ -271,51 +355,53 @@ function EntryEditor({
     onDeleted()
   }
 
-  if (loading) return <main className="main center muted">Yükleniyor…</main>
+  if (loading) return <Centered>Yükleniyor…</Centered>
 
   return (
-    <main className="main">
-      <div className="head">
-        <h1>
-          {collection.label ?? collection.name}
-          <span className="crumb">/ {isNew ? 'yeni' : slug}</span>
-        </h1>
-        <div className="actions">
-          {!isNew && (
-            <button type="button" className="danger" onClick={remove}>
-              Sil
-            </button>
-          )}
-          <button type="button" className="primary" onClick={save} disabled={saving || !result.ok}>
-            {saving ? 'Kaydediliyor…' : 'Kaydet'}
-          </button>
-        </div>
-      </div>
-
-      {saveError && <p className="save-error">{saveError}</p>}
-
-      {isNew && (
-        <label className="row">
-          <span className="label">
-            dosya adı (slug)<code>→ {effectiveSlug}</code>
-          </span>
-          <input
-            value={newSlug}
-            onChange={(e) => setNewSlug(e.target.value)}
-            placeholder="otomatik"
-          />
-        </label>
+    <Page>
+      <PageHead
+        title={collection.label ?? collection.name}
+        crumb={isNew ? 'yeni' : (slug as string)}
+        actions={
+          <>
+            {!isNew && (
+              <button
+                type="button"
+                onClick={remove}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4" /> Sil
+              </button>
+            )}
+            <PrimaryButton onClick={save} disabled={saving || !result.ok}>
+              {saving ? 'Kaydediliyor…' : 'Kaydet'}
+            </PrimaryButton>
+          </>
+        }
+      />
+      {saveError && (
+        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {saveError}
+        </p>
       )}
-
-      <FormFields schema={schema} fields={collection.fields} data={data} setField={setField} />
+      {isNew && (
+        <FieldShell label="dosya adı (slug)" hint={effectiveSlug}>
+          <TextInput value={newSlug} onChange={(v) => setNewSlug(v)} placeholder="otomatik" />
+        </FieldShell>
+      )}
+      <div className="space-y-5">
+        {collection.fields.map((field) => (
+          <FieldEditor key={field.key} field={field} value={data[field.key]} onChange={setField} />
+        ))}
+      </div>
       <Issues result={result} />
-    </main>
+    </Page>
   )
 }
 
-function SingletonEditor({ schema, singleton }: { schema: Schema; singleton: Singleton }) {
+function SingletonEditor({ singleton }: { singleton: Singleton }) {
   const load = useCallback(() => api.getSingleton(singleton.name), [singleton.name])
-  const { data, setData, loading } = useEntryData(load, {})
+  const { data, setData, loading } = useEntryData(load)
   const [saving, setSaving] = useState(false)
 
   const setField = (key: string, value: unknown) =>
@@ -337,72 +423,125 @@ function SingletonEditor({ schema, singleton }: { schema: Schema; singleton: Sin
     }
   }
 
-  if (loading) return <main className="main center muted">Yükleniyor…</main>
+  if (loading) return <Centered>Yükleniyor…</Centered>
 
   return (
-    <main className="main">
-      <div className="head">
-        <h1>{singleton.label ?? singleton.name}</h1>
-        <button type="button" className="primary" onClick={save} disabled={saving || !result.ok}>
-          {saving ? 'Kaydediliyor…' : 'Kaydet'}
-        </button>
+    <Page>
+      <PageHead
+        title={singleton.label ?? singleton.name}
+        actions={
+          <PrimaryButton onClick={save} disabled={saving || !result.ok}>
+            {saving ? 'Kaydediliyor…' : 'Kaydet'}
+          </PrimaryButton>
+        }
+      />
+      <div className="space-y-5">
+        {singleton.fields.map((field) => (
+          <FieldEditor key={field.key} field={field} value={data[field.key]} onChange={setField} />
+        ))}
       </div>
-      <FormFields schema={schema} fields={singleton.fields} data={data} setField={setField} />
       <Issues result={result} />
-    </main>
+    </Page>
   )
 }
 
 function Issues({ result }: { result: ReturnType<typeof validateEntry> }) {
   if (result.issues.length === 0) return null
   return (
-    <div className="issues">
+    <div className="mt-6 space-y-2">
       {result.issues.map((i) => (
-        <div key={`${i.key}-${i.message}`} className={`issue ${i.level}`}>
-          <span className="k">{i.key}</span>
-          <span className="lvl">{i.level === 'error' ? 'hata' : 'uyarı'}</span>
-          <span className="msg">{i.message}</span>
+        <div
+          key={`${i.key}-${i.message}`}
+          className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+        >
+          <span className="font-mono text-slate-700">{i.key}</span>
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+              i.level === 'error' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
+            }`}
+          >
+            {i.level === 'error' ? 'hata' : 'uyarı'}
+          </span>
+          <span className="text-slate-500">{i.message}</span>
         </div>
       ))}
     </div>
   )
 }
 
-function FormFields({
-  schema,
-  fields,
-  data,
-  setField,
+function FieldShell({
+  label,
+  required,
+  type,
+  hint,
+  children,
 }: {
-  schema: Schema
-  fields: Field[]
-  data: api.Entry
-  setField: (key: string, value: unknown) => void
+  label: string
+  required?: boolean
+  type?: string
+  hint?: string
+  children: React.ReactNode
 }) {
+  const Icon = type ? FIELD_META[type as keyof typeof FIELD_META]?.icon : null
   return (
-    <form>
-      {fields.map((field) => (
-        // biome-ignore lint/a11y/noLabelWithoutControl: kontrol FieldInput içinde render ediliyor
-        <label className="row" key={field.key}>
-          <span className="label">
-            {field.label ?? field.key}
-            {field.required && <i>*</i>}
-            <code>{field.type}</code>
-          </span>
-          <FieldInput schema={schema} field={field} value={data[field.key]} onChange={setField} />
-        </label>
-      ))}
-    </form>
+    <div>
+      <div className="mb-1.5 flex items-center gap-2 text-sm">
+        {Icon && <Icon className="h-3.5 w-3.5 text-slate-400" />}
+        <span className="font-medium text-slate-700">{label}</span>
+        {required && <span className="text-red-500">*</span>}
+        {hint && <span className="ml-auto font-mono text-xs text-indigo-500">{hint}</span>}
+      </div>
+      {children}
+    </div>
   )
 }
 
-function FieldInput({
-  schema,
+function FieldEditor({
   field,
   value,
   onChange,
 }: {
-  schema: Schema
+  field: Field
+  value: unknown
+  onChange: (key: string, value: unknown) => void
+}) {
+  return (
+    <FieldShell label={field.label ?? field.key} required={field.required} type={field.type}>
+      <FieldInput field={field} value={value} onChange={onChange} />
+    </FieldShell>
+  )
+}
+
+const inputClass =
+  'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100'
+
+function TextInput({
+  value,
+  onChange,
+  placeholder,
+  type = 'text',
+}: {
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  type?: string
+}) {
+  return (
+    <input
+      type={type}
+      className={inputClass}
+      value={value}
+      placeholder={placeholder}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  )
+}
+
+function FieldInput({
+  field,
+  value,
+  onChange,
+}: {
   field: Field
   value: unknown
   onChange: (key: string, value: unknown) => void
@@ -413,41 +552,49 @@ function FieldInput({
       return (
         <textarea
           rows={5}
+          className={`${inputClass} font-mono`}
           value={(value as string) ?? ''}
-          onChange={(e) => onChange(k, e.target.value)}
           placeholder="markdown…"
+          onChange={(e) => onChange(k, e.target.value)}
         />
       )
     case 'number':
       return (
         <input
           type="number"
+          className={inputClass}
           value={value === undefined ? '' : String(value)}
           onChange={(e) => onChange(k, e.target.value === '' ? '' : Number(e.target.value))}
         />
       )
     case 'boolean':
       return (
-        <span className="switch">
-          <input
-            type="checkbox"
-            checked={Boolean(value)}
-            onChange={(e) => onChange(k, e.target.checked)}
+        <button
+          type="button"
+          onClick={() => onChange(k, !value)}
+          className={`relative h-6 w-11 rounded-full transition ${value ? 'bg-indigo-600' : 'bg-slate-300'}`}
+        >
+          <span
+            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${value ? 'left-[22px]' : 'left-0.5'}`}
           />
-          <em>{value ? 'true' : 'false'}</em>
-        </span>
+        </button>
       )
     case 'date':
       return (
         <input
           type="date"
+          className={inputClass}
           value={(value as string) ?? ''}
           onChange={(e) => onChange(k, e.target.value)}
         />
       )
     case 'select':
       return (
-        <select value={(value as string) ?? ''} onChange={(e) => onChange(k, e.target.value)}>
+        <select
+          className={inputClass}
+          value={(value as string) ?? ''}
+          onChange={(e) => onChange(k, e.target.value)}
+        >
           <option value="">—</option>
           {(field.options ?? []).map((o) => (
             <option key={o} value={o}>
@@ -457,24 +604,18 @@ function FieldInput({
         </select>
       )
     case 'relation':
-      return <RelationInput schema={schema} field={field} value={value} onChange={onChange} />
+      return <RelationInput field={field} value={value} onChange={onChange} />
     case 'image':
       return (
-        <input
+        <TextInput
           type="url"
           value={(value as string) ?? ''}
-          onChange={(e) => onChange(k, e.target.value)}
           placeholder="content/media/…"
+          onChange={(v) => onChange(k, v)}
         />
       )
     default:
-      return (
-        <input
-          type="text"
-          value={(value as string) ?? ''}
-          onChange={(e) => onChange(k, e.target.value)}
-        />
-      )
+      return <TextInput value={(value as string) ?? ''} onChange={(v) => onChange(k, v)} />
   }
 }
 
@@ -483,7 +624,6 @@ function RelationInput({
   value,
   onChange,
 }: {
-  schema: Schema
   field: Field
   value: unknown
   onChange: (key: string, value: unknown) => void
@@ -504,19 +644,28 @@ function RelationInput({
     onChange(field.key, next.length ? next : '')
   }
 
+  if (options.length === 0)
+    return <p className="text-sm text-slate-400">“{field.to}” içinde kayıt yok.</p>
+
   return (
-    <div className="relation">
-      {options.length === 0 && <span className="muted small">"{field.to}" içinde kayıt yok</span>}
-      {options.map((slug) => (
-        <button
-          type="button"
-          key={slug}
-          className={`chip ${selected.includes(slug) ? 'on' : ''}`}
-          onClick={() => toggle(slug)}
-        >
-          {slug}
-        </button>
-      ))}
+    <div className="flex flex-wrap gap-2">
+      {options.map((slug) => {
+        const on = selected.includes(slug)
+        return (
+          <button
+            type="button"
+            key={slug}
+            onClick={() => toggle(slug)}
+            className={`rounded-full px-3 py-1 font-mono text-xs transition ${
+              on
+                ? 'bg-indigo-600 text-white'
+                : 'border border-slate-200 bg-white text-slate-500 hover:border-indigo-300'
+            }`}
+          >
+            {slug}
+          </button>
+        )
+      })}
     </div>
   )
 }
