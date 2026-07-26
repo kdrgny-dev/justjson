@@ -2,6 +2,7 @@ import { slugify, validateEntry } from '@justjson/core'
 import type { Collection, Field, Schema, Singleton } from '@justjson/core'
 import { FileCog, Plus, Search, Settings2, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
 import * as api from './api'
 import { FIELD_META } from './field-types'
@@ -604,15 +605,7 @@ function FieldInput({
   const k = field.key
   switch (field.type) {
     case 'richtext':
-      return (
-        <textarea
-          rows={5}
-          className={`${inputClass} font-mono`}
-          value={(value as string) ?? ''}
-          placeholder="markdown…"
-          onChange={(e) => onChange(k, e.target.value)}
-        />
-      )
+      return <RichText value={(value as string) ?? ''} onChange={(md) => onChange(k, md)} />
     case 'number':
       return (
         <input
