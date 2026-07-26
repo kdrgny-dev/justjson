@@ -22,9 +22,10 @@ It runs entirely on your machine. Nothing is uploaded anywhere; your content is 
 
 ```bash
 cd my-project/
-npx @kdrgny/justjson init      # start from a template (blog, cv) — or scratch
 npx @kdrgny/justjson           # opens the editor in your browser
 ```
+
+On an empty folder the editor greets you with a picker: start from a **template**, from **scratch**, or **import your own JSON** — an existing `_schema.json`, or plain content (say, an export from another tool) whose structure JustJSON figures out for you.
 
 Design your schema, enter content, upload images. Everything is written to `content/*.json` in your folder. Commit it, deploy it, import it in your build — your flow.
 
@@ -32,12 +33,15 @@ Design your schema, enter content, upload images. Everything is written to `cont
 
 | | |
 |---|---|
+| **Start from a template** | Blog, CV, portfolio, docs or changelog — each card previews the collections and fields it creates. |
+| **Bring your own JSON** | Paste any content JSON and JustJSON infers the structure: lists become collections, objects become singletons, HTML becomes rich text. |
 | **Visual schema builder** | Define collections and fields in the UI. Pick a field type from icon cards — no config file to hand-write. |
 | **Searchable content table** | Entries listed by title, slug and date. Search and edit instantly — content, not a pile of slugs. |
 | **Rich-text editor** | Headings, bold, lists, quotes — WYSIWYG, saved to disk as clean, diffable Markdown. |
 | **Image uploads** | Drop an image; it's resized to WebP in the browser and written under `content/media/`. |
 | **Type-safe output** | Generates `types.ts` from your schema, so your content is fully typed in your project. |
-| **The endpoint is yours** | Wherever you put the JSON becomes your API — repo raw, jsDelivr, your build. Or export a ZIP. |
+| **Export any time** | One click downloads schema + content + types as a ZIP. Nothing is ever locked in. |
+| **The endpoint is yours** | Wherever you put the JSON becomes your API — repo raw, jsDelivr, your build. |
 
 Field types: `text` · `richtext` · `number` · `boolean` · `date` · `select` · `relation` (multi) · `image`.
 
@@ -46,7 +50,7 @@ Field types: `text` · `richtext` · `number` · `boolean` · `date` · `select`
 | Command | What it does |
 |---|---|
 | `npx @kdrgny/justjson` (or `serve`) | Starts the local editor and opens it in your browser |
-| `npx @kdrgny/justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`) |
+| `npx @kdrgny/justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`, `portfolio`, `docs`, `changelog`) |
 | `npx @kdrgny/justjson types` | Generates `types.ts` from your schema |
 | `npx @kdrgny/justjson export` | Exports a ZIP snapshot (schema + content + types) |
 
