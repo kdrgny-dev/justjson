@@ -1,9 +1,19 @@
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -33,12 +43,16 @@ import type { Collection, Field, Schema, Singleton } from '@justjson/core'
 import {
   Boxes,
   ChevronRight,
+  ChevronsUpDown,
+  Download,
   FileCog,
   FolderGit2,
   Image as ImageIcon,
+  LayoutGrid,
   Link2,
   PencilRuler,
   Plus,
+  RotateCcw,
   Search,
   Trash2,
   Upload,
@@ -135,6 +149,19 @@ function AppShell() {
 
   const schemaEmpty = schema.collections.length === 0 && schema.singletons.length === 0
 
+  const exportProject = () => {
+    api.downloadExport()
+    toast.success('Dışa aktarma indiriliyor')
+  }
+
+  const resetSchema = async () => {
+    await api.putSchema({ version: 1, collections: [], singletons: [] })
+    await reload()
+    setSelection(null)
+    setGallery(true)
+    toast.success('Şema sıfırlandı')
+  }
+
   return (
     <div className="flex h-full bg-background">
       <Sidebar
@@ -143,6 +170,9 @@ function AppShell() {
         selection={selection}
         onSelect={setSelection}
         onOpenSchema={openSchema}
+        onExport={exportProject}
+        onBrowseGallery={() => setGallery(true)}
+        onReset={resetSchema}
       />
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-muted/30">
         <ContextBar project={project} crumbs={crumbsFor(schema, selection, setSelection)} />
@@ -239,12 +269,18 @@ function Sidebar({
   selection,
   onSelect,
   onOpenSchema,
+  onExport,
+  onBrowseGallery,
+  onReset,
 }: {
   project: api.ProjectInfo | null
   schema: Schema
   selection: Selection | null
   onSelect: (s: Selection) => void
   onOpenSchema: (add?: 'collection' | 'singleton') => void
+  onExport: () => void
+  onBrowseGallery: () => void
+  onReset: () => Promise<void>
 }) {
   const collectionActive = (name: string): boolean => {
     if (!selection) return false
@@ -261,13 +297,12 @@ function Sidebar({
           Just<span className="text-primary">JSON</span>
         </div>
         {project && (
-          <div
-            title={project.path}
-            className="mt-1.5 flex max-w-full items-center gap-1.5 rounded-md border bg-muted/50 px-2 py-1 text-xs font-medium text-muted-foreground"
-          >
-            <FolderGit2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
-            <span className="truncate">{project.name}</span>
-          </div>
+          <ProjectMenu
+            project={project}
+            onExport={onExport}
+            onBrowseGallery={onBrowseGallery}
+            onReset={onReset}
+          />
         )}
       </div>
 
@@ -309,6 +344,85 @@ function Sidebar({
         </NavSection>
       </nav>
     </aside>
+  )
+}
+
+function ProjectMenu({
+  project,
+  onExport,
+  onBrowseGallery,
+  onReset,
+}: {
+  project: api.ProjectInfo
+  onExport: () => void
+  onBrowseGallery: () => void
+  onReset: () => Promise<void>
+}) {
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [resetting, setResetting] = useState(false)
+
+  const confirmReset = async () => {
+    setResetting(true)
+    try {
+      await onReset()
+      setConfirmOpen(false)
+    } finally {
+      setResetting(false)
+    }
+  }
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            title={project.path}
+            className="mt-1.5 flex w-full max-w-full items-center gap-1.5 rounded-md border bg-muted/50 px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <FolderGit2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+            <span className="truncate">{project.name}</span>
+            <ChevronsUpDown className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuLabel className="truncate">{project.name}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={onExport}>
+            <Download />
+            Dışa aktar (.zip)
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={onBrowseGallery}>
+            <LayoutGrid />
+            Şablon galerisine dön
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onSelect={() => setConfirmOpen(true)}>
+            <RotateCcw />
+            Sıfırla
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Şemayı sıfırla?</DialogTitle>
+            <DialogDescription>
+              İçerik dosyaların diskte kalır ama şema temizlenir, baştan şablon/JSON seçebilirsin.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Vazgeç</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={confirmReset} disabled={resetting}>
+              {resetting ? 'Sıfırlanıyor…' : 'Sıfırla'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
@@ -851,11 +965,15 @@ function FieldShell({
 }) {
   const Icon = type ? FIELD_META[type as keyof typeof FIELD_META]?.icon : null
   return (
-    <div>
-      <div className="mb-2 flex items-center gap-2">
-        {Icon && <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
-        <Label className="text-foreground">{label}</Label>
-        {required && <span className="text-destructive">*</span>}
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5">
+        {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />}
+        <Label className="text-sm font-medium text-muted-foreground">{label}</Label>
+        {required && (
+          <span className="text-destructive" aria-hidden>
+            *
+          </span>
+        )}
         {hint && <span className="ml-auto font-mono text-xs text-primary">{hint}</span>}
       </div>
       {children}
@@ -873,7 +991,7 @@ function FieldEditor({
   onChange: (key: string, value: unknown) => void
 }) {
   return (
-    <FieldShell label={field.label ?? field.key} required={field.required} type={field.type}>
+    <FieldShell label={field.label || field.key} required={field.required} type={field.type}>
       <FieldInput field={field} value={value} onChange={onChange} />
     </FieldShell>
   )
@@ -917,7 +1035,7 @@ function FieldInput({
       return (
         <Input
           type="date"
-          className="w-fit"
+          className="w-[240px]"
           value={(value as string) ?? ''}
           onChange={(e) => onChange(k, e.target.value)}
         />

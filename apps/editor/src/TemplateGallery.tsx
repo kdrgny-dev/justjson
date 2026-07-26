@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -9,9 +9,22 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
+import {
   AlertCircle,
   BookOpen,
   Braces,
+  FileJson,
   FileStack,
   FileText,
   History,
@@ -20,6 +33,7 @@ import {
   Newspaper,
   PenLine,
   Rows3,
+  Upload,
   User,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -61,6 +75,166 @@ function SkeletonCard() {
         <div className="h-9 w-full animate-pulse rounded-lg bg-muted" />
       </CardFooter>
     </Card>
+  )
+}
+
+function ImportCard({ onApplied, disabled }: { onApplied: () => void; disabled: boolean }) {
+  const [open, setOpen] = useState(false)
+  const [raw, setRaw] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [importing, setImporting] = useState(false)
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setError(null)
+    try {
+      setRaw(await file.text())
+    } catch {
+      setError('Dosya okunamadı.')
+    }
+  }
+
+  const runImport = async () => {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(raw)
+    } catch {
+      setError('Geçersiz JSON')
+      return
+    }
+    const schema =
+      parsed && typeof parsed === 'object' && 'schema' in parsed
+        ? (parsed as { schema: unknown }).schema
+        : parsed
+    setError(null)
+    setImporting(true)
+    try {
+      await api.importProject(schema)
+      setOpen(false)
+      onApplied()
+    } catch (e) {
+      setError((e as Error).message)
+      setImporting(false)
+    }
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next)
+        if (!next && !importing) {
+          setRaw('')
+          setError(null)
+        }
+      }}
+    >
+      <Card
+        className="h-full border border-dashed border-border bg-transparent ring-0 transition-colors hover:border-foreground/25 data-[busy=true]:opacity-60"
+        data-busy={disabled}
+      >
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <FileJson className="size-5" />
+            </span>
+            <CardTitle className="text-base">İçe aktar — kendi JSON'un</CardTitle>
+          </div>
+          <CardDescription className="mt-2 leading-relaxed">
+            Elindeki şemayı getir; JustJSON aynı yapıyla projeni kurar.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="flex-1">
+          <div className="flex h-full items-center rounded-md border border-dashed border-border/70 px-3 py-4 text-sm text-muted-foreground">
+            Var olan bir{' '}
+            <code className="mx-1 font-mono text-xs text-foreground">_schema.json</code> yeniden
+            kullanılır.
+          </div>
+        </CardContent>
+
+        <CardFooter>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="h-9 w-full" disabled={disabled}>
+              Kendi JSON'unu içe aktar
+            </Button>
+          </DialogTrigger>
+        </CardFooter>
+      </Card>
+
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Kendi JSON'unu içe aktar</DialogTitle>
+          <DialogDescription>
+            Elindeki <code className="font-mono text-xs">_schema.json</code> yapısını yapıştır ya da
+            dosya seç; aynı yapıyla başla.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-medium text-foreground">Şema JSON'u</span>
+            <label
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'sm' }),
+                'cursor-pointer',
+                importing && 'pointer-events-none opacity-50',
+              )}
+            >
+              <Upload />
+              Dosya seç
+              <input
+                type="file"
+                accept=".json,application/json"
+                className="sr-only"
+                disabled={importing}
+                onChange={handleFile}
+              />
+            </label>
+          </div>
+
+          <Textarea
+            value={raw}
+            onChange={(e) => {
+              setRaw(e.target.value)
+              if (error) setError(null)
+            }}
+            disabled={importing}
+            spellCheck={false}
+            rows={10}
+            placeholder='{ "collections": { ... }, "singletons": { ... } }'
+            className="max-h-72 resize-y font-mono text-xs leading-relaxed"
+          />
+
+          {error && (
+            <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" />
+              <span className="break-words">{error}</span>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="ghost" disabled={importing}>
+              Vazgeç
+            </Button>
+          </DialogClose>
+          <Button disabled={importing || !raw.trim()} onClick={runImport}>
+            {importing ? (
+              <>
+                <Loader2 className="animate-spin" />
+                İçe aktarılıyor…
+              </>
+            ) : (
+              'İçe aktar'
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -233,6 +407,8 @@ export function TemplateGallery({
               </Button>
             </CardFooter>
           </Card>
+
+          <ImportCard onApplied={onApplied} disabled={busy} />
         </div>
       </div>
     </div>
