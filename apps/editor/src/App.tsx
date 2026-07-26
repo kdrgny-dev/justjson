@@ -41,6 +41,7 @@ import { cn } from '@/lib/utils'
 import { slugify, validateEntry } from '@justjson/core'
 import type { Collection, Field, Schema, Singleton } from '@justjson/core'
 import {
+  AlertTriangle,
   Boxes,
   ChevronRight,
   ChevronsUpDown,
@@ -53,16 +54,27 @@ import {
   Plus,
   RotateCcw,
   Search,
+  SearchX,
   Trash2,
   Upload,
   X,
 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
 import { TemplateGallery } from './TemplateGallery'
 import * as api from './api'
+import {
+  PageBody,
+  PageHeader,
+  PagePane,
+  PageShell,
+  PathChip,
+  Surface,
+  SurfaceEmpty,
+} from './components/PageShell'
+import { SKELETON_KEYS, Skeleton } from './components/Skeleton'
 import { FIELD_META } from './field-types'
 
 type Selection =
@@ -220,17 +232,17 @@ function crumbsFor(
 
 function ContextBar({ project, crumbs }: { project: api.ProjectInfo | null; crumbs: Crumb[] }) {
   return (
-    <header className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b bg-card px-6 text-sm">
+    <header className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b bg-card px-8 text-xs">
       <span
         title={project?.path}
-        className="inline-flex shrink-0 items-center gap-1.5 font-medium text-muted-foreground"
+        className="inline-flex shrink-0 items-center gap-1.5 text-muted-foreground"
       >
-        <FolderGit2 className="h-4 w-4 text-muted-foreground/70" />
+        <FolderGit2 className="h-3.5 w-3.5 text-muted-foreground/70" />
         {project?.name ?? '…'}
       </span>
       {crumbs.map((c) => (
         <span key={c.label} className="inline-flex shrink-0 items-center gap-1">
-          <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
           {c.onClick ? (
             <button
               type="button"
@@ -240,7 +252,7 @@ function ContextBar({ project, crumbs }: { project: api.ProjectInfo | null; crum
               {c.label}
             </button>
           ) : (
-            <span className="font-medium text-foreground">{c.label}</span>
+            <span className="font-medium text-foreground/80">{c.label}</span>
           )}
           {c.tag && (
             <Badge variant="secondary" className="ml-0.5 font-normal">
@@ -288,14 +300,18 @@ function Sidebar({
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r bg-card">
-      <div className="px-5 pt-4 pb-3">
-        <div className="text-lg font-bold tracking-tight text-foreground">
+      <div className="flex h-12 shrink-0 items-center border-b px-5">
+        <div className="text-[15px] font-bold tracking-tight text-foreground">
           Just<span className="text-primary">JSON</span>
         </div>
-        {project && <ProjectMenu project={project} onExport={onExport} onReset={onReset} />}
       </div>
+      {project && (
+        <div className="px-3 pt-3">
+          <ProjectMenu project={project} onExport={onExport} onReset={onReset} />
+        </div>
+      )}
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pt-3 pb-4">
         <SchemaNavItem active={selection?.kind === 'schema'} onClick={() => onOpenSchema()} />
 
         <NavSection label="Koleksiyonlar" onAdd={() => onOpenSchema('collection')}>
@@ -365,7 +381,7 @@ function ProjectMenu({
           <button
             type="button"
             title={project.path}
-            className="mt-1.5 flex w-full max-w-full items-center gap-1.5 rounded-md border bg-muted/50 px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex w-full max-w-full items-center gap-1.5 rounded-lg border bg-muted/50 px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <FolderGit2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
             <span className="truncate">{project.name}</span>
@@ -612,23 +628,55 @@ function EmptyState({
   )
 }
 
-function Page({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto h-full max-w-3xl overflow-y-auto px-8 py-7">{children}</div>
+function FormCard({ children }: { children: React.ReactNode }) {
+  return <div className="rounded-xl border bg-card p-6 shadow-sm">{children}</div>
 }
 
-function PageHead({
-  title,
-  crumb,
-  actions,
-}: { title: string; crumb?: string; actions?: React.ReactNode }) {
+function EditorLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-6 flex items-center justify-between gap-4">
-      <h1 className="text-xl font-semibold tracking-tight text-foreground">
-        {title}
-        {crumb && <span className="ml-2 font-normal text-muted-foreground">/ {crumb}</span>}
-      </h1>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
-    </div>
+    <PageBody>
+      <div className="mx-auto max-w-3xl space-y-5 px-8 py-6">{children}</div>
+    </PageBody>
+  )
+}
+
+function FormSkeleton() {
+  return (
+    <FormCard>
+      <div className="space-y-6">
+        {SKELETON_KEYS.slice(0, 4).map((id) => (
+          <div key={id} className="space-y-2">
+            <Skeleton className="h-3.5 w-28" />
+            <Skeleton className="h-8 w-full" />
+          </div>
+        ))}
+      </div>
+    </FormCard>
+  )
+}
+
+function LoadFailed({ onRetry, onBack }: { onRetry: () => void; onBack?: () => void }) {
+  return (
+    <FormCard>
+      <div className="flex flex-col items-center py-8 text-center">
+        <div className="mb-3 flex size-12 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+          <AlertTriangle className="size-5" />
+        </div>
+        <p className="font-medium text-foreground">Kayıt yüklenemedi</p>
+        <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+          Dosya okunamadı ya da silinmiş olabilir. Boş bir formla üzerine yazmamak için düzenleme
+          kapatıldı.
+        </p>
+        <div className="mt-4 flex items-center gap-2">
+          <Button onClick={onRetry}>Tekrar dene</Button>
+          {onBack && (
+            <Button variant="outline" onClick={onBack}>
+              Listeye dön
+            </Button>
+          )}
+        </div>
+      </div>
+    </FormCard>
   )
 }
 
@@ -660,104 +708,168 @@ function CollectionView({
   const filtered = rows?.filter(
     (r) => r.title.toLowerCase().includes(query) || r.slug.includes(query),
   )
+  const hasRows = !!rows && rows.length > 0
 
   return (
-    <Page>
-      <PageHead
+    <PageShell>
+      <PageHeader
         title={collection.label ?? collection.name}
+        subtitle={rows ? `${rows.length} kayıt` : 'Kayıtlar yükleniyor…'}
         actions={
           <Button onClick={onNew}>
             <Plus /> Yeni kayıt
           </Button>
         }
+        toolbar={
+          hasRows ? (
+            <div className="flex items-center gap-3">
+              <div className="relative w-full max-w-sm">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  className="pl-9"
+                  placeholder="Başlık veya slug ara…"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                />
+              </div>
+              <span className="ml-auto shrink-0 text-xs tabular-nums text-muted-foreground">
+                {query ? `${filtered?.length ?? 0} sonuç` : null}
+              </span>
+            </div>
+          ) : undefined
+        }
       />
 
-      {rows && rows.length > 0 && (
-        <div className="mb-4 flex items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              className="pl-9"
-              placeholder="Başlık veya slug ara…"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
+      <PagePane>
+        <Surface className="flex h-full flex-col [&>[data-slot=table-container]]:min-h-0 [&>[data-slot=table-container]]:flex-1">
+          {rows === null && <EntryTable rows={null} onOpen={onOpen} />}
+
+          {rows !== null && rows.length === 0 && (
+            <SurfaceEmpty
+              icon={<Boxes className="h-6 w-6" />}
+              title="Henüz kayıt yok"
+              hint="Bu koleksiyona ilk içeriği ekleyerek başla."
+              action={
+                <Button onClick={onNew} variant="outline">
+                  <Plus /> İlk kaydı oluştur
+                </Button>
+              }
             />
-          </div>
-          <span className="shrink-0 text-xs text-muted-foreground">
-            {filtered?.length ?? 0} kayıt
-          </span>
-        </div>
-      )}
+          )}
 
-      {rows === null && <p className="text-sm text-muted-foreground">Yükleniyor…</p>}
-      {rows?.length === 0 && (
-        <div className="flex flex-col items-center rounded-xl border border-dashed bg-card px-6 py-16 text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-            <Boxes className="h-6 w-6" />
-          </div>
-          <p className="text-sm font-medium text-foreground">Henüz kayıt yok</p>
-          <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-            Bu koleksiyona ilk içeriği ekleyerek başla.
-          </p>
-          <Button onClick={onNew} variant="outline" className="mt-4">
-            <Plus /> İlk kaydı oluştur
-          </Button>
-        </div>
-      )}
+          {hasRows && filtered?.length === 0 && (
+            <SurfaceEmpty
+              icon={<SearchX className="h-6 w-6" />}
+              title="Eşleşen kayıt yok"
+              hint={`“${q.trim()}” için sonuç bulunamadı. Aramayı değiştir ya da temizle.`}
+              action={
+                <Button variant="outline" onClick={() => setQ('')}>
+                  Aramayı temizle
+                </Button>
+              }
+            />
+          )}
 
-      {filtered && rows && rows.length > 0 && (
-        <div className="overflow-hidden rounded-xl border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead>Başlık</TableHead>
-                <TableHead>Slug</TableHead>
-                <TableHead className="text-right">Güncellendi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((row) => (
-                <TableRow
-                  key={row.slug}
-                  tabIndex={0}
-                  onClick={() => onOpen(row.slug)}
-                  onKeyDown={(e) => e.key === 'Enter' && onOpen(row.slug)}
-                  className="cursor-pointer focus:bg-accent focus:outline-none"
-                >
-                  <TableCell className="font-medium text-foreground">{row.title}</TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground">
-                    {row.slug}
-                  </TableCell>
-                  <TableCell className="text-right text-xs text-muted-foreground">
-                    {formatDate(row.updatedAt)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-    </Page>
+          {hasRows && filtered && filtered.length > 0 && (
+            <EntryTable rows={filtered} onOpen={onOpen} />
+          )}
+        </Surface>
+      </PagePane>
+    </PageShell>
   )
 }
 
-function useEntryData(load: () => Promise<api.Entry | null>) {
+const COL_HEAD =
+  'h-9 bg-muted/50 px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground'
+
+function EntryTable({
+  rows,
+  onOpen,
+}: { rows: api.EntryRow[] | null; onOpen: (slug: string) => void }) {
+  return (
+    <Table>
+      <TableHeader className="sticky top-0 z-10">
+        <TableRow className="hover:bg-transparent">
+          <TableHead className={cn(COL_HEAD, 'w-full')}>Başlık</TableHead>
+          <TableHead className={COL_HEAD}>Dosya</TableHead>
+          <TableHead className={cn(COL_HEAD, 'text-right')}>Güncellendi</TableHead>
+          <TableHead className={cn(COL_HEAD, 'w-10 pl-0')}>
+            <span className="sr-only">Aç</span>
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows === null
+          ? SKELETON_KEYS.map((id) => (
+              <TableRow key={id} className="hover:bg-transparent">
+                <TableCell className="px-4 py-3">
+                  <Skeleton className="h-3.5 w-48" />
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <Skeleton className="h-3 w-24" />
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <Skeleton className="ml-auto h-3 w-20" />
+                </TableCell>
+                <TableCell className="w-10 py-3 pl-0" />
+              </TableRow>
+            ))
+          : rows.map((row) => (
+              <TableRow
+                key={row.slug}
+                tabIndex={0}
+                onClick={() => onOpen(row.slug)}
+                onKeyDown={(e) => e.key === 'Enter' && onOpen(row.slug)}
+                className="group/row cursor-pointer hover:bg-muted/40 focus:bg-accent focus:outline-none"
+              >
+                <TableCell className="px-4 py-3 font-medium text-foreground">{row.title}</TableCell>
+                <TableCell className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                  {row.slug}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-right text-xs tabular-nums text-muted-foreground">
+                  {formatDate(row.updatedAt)}
+                </TableCell>
+                <TableCell className="w-10 py-3 pr-4 pl-0 text-right">
+                  <ChevronRight className="ml-auto h-4 w-4 text-transparent transition-colors group-hover/row:text-muted-foreground/70 group-focus/row:text-muted-foreground/70" />
+                  <span className="sr-only">aç</span>
+                </TableCell>
+              </TableRow>
+            ))}
+      </TableBody>
+    </Table>
+  )
+}
+
+// expected: kayıt diskte var olmalı. Yükleme boş/hatalı dönerse formu boş açmak
+// yerine hata gösteririz — aksi halde Kaydet dosyanın üstüne boş veri yazar.
+function useEntryData(load: () => Promise<api.Entry | null>, expected: boolean) {
   const [data, setData] = useState<api.Entry>({})
   const [loading, setLoading] = useState(true)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: sadece mount'ta yükle; yeniden bağlanma key prop'u ile kontrol ediliyor
+  const [failed, setFailed] = useState(false)
+  const [attempt, setAttempt] = useState(0)
+  const seq = useRef(0)
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: load kimliği her renderda değişebilir; yeniden bağlanma key prop'u ve attempt ile kontrol ediliyor
   useEffect(() => {
-    let alive = true
-    load().then((d) => {
-      if (alive) {
-        setData(d ?? {})
+    const mine = ++seq.current
+    setLoading(true)
+    setFailed(false)
+    load()
+      .then((d) => {
+        if (mine !== seq.current) return // son istek kazanır
+        if (d === null && expected) setFailed(true)
+        else setData(d ?? {})
         setLoading(false)
-      }
-    })
-    return () => {
-      alive = false
-    }
-  }, [])
-  return { data, setData, loading }
+      })
+      .catch(() => {
+        if (mine !== seq.current) return
+        setFailed(true)
+        setLoading(false)
+      })
+  }, [attempt])
+
+  const retry = useCallback(() => setAttempt((n) => n + 1), [])
+  return { data, setData, loading, failed, retry }
 }
 
 function EntryEditor({
@@ -776,7 +888,7 @@ function EntryEditor({
     () => (isNew ? Promise.resolve<api.Entry>({}) : api.getEntry(collection.name, slug as string)),
     [collection.name, slug, isNew],
   )
-  const { data, setData, loading } = useEntryData(load)
+  const { data, setData, loading, failed, retry } = useEntryData(load, !isNew)
   const [newSlug, setNewSlug] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -819,13 +931,43 @@ function EntryEditor({
     onDeleted()
   }
 
-  if (loading) return <Centered>Yükleniyor…</Centered>
+  const title = collection.label ?? collection.name
+
+  if (loading)
+    return (
+      <PageShell>
+        <PageHeader title={title} subtitle={<PathChip>{`${collection.name}/…`}</PathChip>} />
+        <EditorLayout>
+          <FormSkeleton />
+        </EditorLayout>
+      </PageShell>
+    )
+
+  if (failed)
+    return (
+      <PageShell>
+        <PageHeader
+          title={title}
+          subtitle={<PathChip>{`${collection.name}/${slug}.json`}</PathChip>}
+        />
+        <EditorLayout>
+          <LoadFailed onRetry={retry} onBack={onDeleted} />
+        </EditorLayout>
+      </PageShell>
+    )
 
   return (
-    <Page>
-      <PageHead
-        title={collection.label ?? collection.name}
-        crumb={isNew ? 'yeni' : (slug as string)}
+    <PageShell>
+      <PageHeader
+        title={title}
+        badge={
+          isNew ? (
+            <Badge variant="secondary" className="font-normal">
+              yeni
+            </Badge>
+          ) : undefined
+        }
+        subtitle={<PathChip>{`${collection.name}/${effectiveSlug}.json`}</PathChip>}
         actions={
           <>
             {!isNew && (
@@ -839,36 +981,45 @@ function EntryEditor({
           </>
         }
       />
-      {saveError && (
-        <p className="mb-5 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {saveError}
-        </p>
-      )}
-      {isNew && (
-        <div className="mb-5">
-          <FieldShell label="dosya adı (slug)" hint={effectiveSlug}>
-            <Input
-              value={newSlug}
-              onChange={(e) => setNewSlug(e.target.value)}
-              placeholder="otomatik"
-              className="font-mono"
-            />
-          </FieldShell>
-        </div>
-      )}
-      <div className="space-y-6">
-        {collection.fields.map((field) => (
-          <FieldEditor key={field.key} field={field} value={data[field.key]} onChange={setField} />
-        ))}
-      </div>
-      <Issues result={result} />
-    </Page>
+      <EditorLayout>
+        {saveError && <AlertPanel title="Kaydedilemedi">{saveError}</AlertPanel>}
+        <FormCard>
+          {isNew && (
+            <div className="mb-6 rounded-lg border bg-muted/40 p-4">
+              <FieldShell label="Dosya adı" hint={`${effectiveSlug}.json`}>
+                <Input
+                  value={newSlug}
+                  onChange={(e) => setNewSlug(e.target.value)}
+                  placeholder="otomatik"
+                  className="bg-card font-mono"
+                />
+              </FieldShell>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Boş bırakırsan başlıktan üretilir. Kaydettikten sonra değişmez.
+              </p>
+            </div>
+          )}
+          <div className="space-y-6">
+            {collection.fields.map((field) => (
+              <FieldEditor
+                key={field.key}
+                field={field}
+                value={data[field.key]}
+                onChange={setField}
+              />
+            ))}
+          </div>
+        </FormCard>
+        <Issues result={result} />
+      </EditorLayout>
+    </PageShell>
   )
 }
 
 function SingletonEditor({ singleton }: { singleton: Singleton }) {
   const load = useCallback(() => api.getSingleton(singleton.name), [singleton.name])
-  const { data, setData, loading } = useEntryData(load)
+  // tekil dosyası henüz yoksa boş form doğrudur; sadece istek hatasında uyarırız
+  const { data, setData, loading, failed, retry } = useEntryData(load, false)
   const [saving, setSaving] = useState(false)
 
   const setField = (key: string, value: unknown) =>
@@ -891,45 +1042,117 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
     }
   }
 
-  if (loading) return <Centered>Yükleniyor…</Centered>
+  const title = singleton.label ?? singleton.name
+  const badge = (
+    <Badge variant="secondary" className="font-normal">
+      tekil
+    </Badge>
+  )
+
+  if (loading)
+    return (
+      <PageShell>
+        <PageHeader title={title} badge={badge} />
+        <EditorLayout>
+          <FormSkeleton />
+        </EditorLayout>
+      </PageShell>
+    )
+
+  if (failed)
+    return (
+      <PageShell>
+        <PageHeader title={title} badge={badge} />
+        <EditorLayout>
+          <LoadFailed onRetry={retry} />
+        </EditorLayout>
+      </PageShell>
+    )
 
   return (
-    <Page>
-      <PageHead
-        title={singleton.label ?? singleton.name}
+    <PageShell>
+      <PageHeader
+        title={title}
+        badge={badge}
+        subtitle={<PathChip>{`${singleton.name}.json`}</PathChip>}
         actions={
           <Button onClick={save} disabled={saving || !result.ok}>
             {saving ? 'Kaydediliyor…' : 'Kaydet'}
           </Button>
         }
       />
-      <div className="space-y-6">
-        {singleton.fields.map((field) => (
-          <FieldEditor key={field.key} field={field} value={data[field.key]} onChange={setField} />
-        ))}
+      <EditorLayout>
+        <FormCard>
+          <div className="space-y-6">
+            {singleton.fields.map((field) => (
+              <FieldEditor
+                key={field.key}
+                field={field}
+                value={data[field.key]}
+                onChange={setField}
+              />
+            ))}
+          </div>
+        </FormCard>
+        <Issues result={result} />
+      </EditorLayout>
+    </PageShell>
+  )
+}
+
+function AlertPanel({
+  title,
+  tone = 'error',
+  children,
+}: { title: string; tone?: 'error' | 'warning'; children: React.ReactNode }) {
+  const isError = tone === 'error'
+  return (
+    <div
+      className={cn(
+        'rounded-xl border p-4',
+        isError ? 'border-destructive/30 bg-destructive/5' : 'border-border bg-muted/40',
+      )}
+    >
+      <div
+        className={cn(
+          'flex items-center gap-2 text-sm font-medium',
+          isError ? 'text-destructive' : 'text-foreground',
+        )}
+      >
+        <AlertTriangle className="h-4 w-4 shrink-0" />
+        {title}
       </div>
-      <Issues result={result} />
-    </Page>
+      <div className="mt-2.5 text-sm text-muted-foreground">{children}</div>
+    </div>
   )
 }
 
 function Issues({ result }: { result: ReturnType<typeof validateEntry> }) {
   if (result.issues.length === 0) return null
+  const hasError = result.issues.some((i) => i.level === 'error')
   return (
-    <div className="mt-6 space-y-2">
-      {result.issues.map((i) => (
-        <div
-          key={`${i.key}-${i.message}`}
-          className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2 text-sm"
-        >
-          <span className="font-mono text-foreground">{i.key}</span>
-          <Badge variant={i.level === 'error' ? 'destructive' : 'secondary'}>
-            {i.level === 'error' ? 'hata' : 'uyarı'}
-          </Badge>
-          <span className="text-muted-foreground">{i.message}</span>
-        </div>
-      ))}
-    </div>
+    <AlertPanel
+      tone={hasError ? 'error' : 'warning'}
+      title={hasError ? 'Kaydetmeden önce düzeltilecekler' : 'Uyarılar'}
+    >
+      <ul className="space-y-2">
+        {result.issues.map((i) => (
+          <li key={`${i.key}-${i.message}`} className="flex items-start gap-2.5">
+            <span
+              aria-hidden
+              className={cn(
+                'mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full',
+                i.level === 'error' ? 'bg-destructive' : 'bg-muted-foreground/50',
+              )}
+            />
+            <span className="rounded bg-background px-1.5 py-0.5 font-mono text-xs text-foreground">
+              {i.key}
+            </span>
+            <span className="min-w-0">{i.message}</span>
+          </li>
+        ))}
+      </ul>
+    </AlertPanel>
   )
 }
 
@@ -950,14 +1173,14 @@ function FieldShell({
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-1.5">
-        {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />}
-        <Label className="text-sm font-medium text-muted-foreground">{label}</Label>
+        {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />}
+        <Label className="text-sm font-medium text-foreground">{label}</Label>
         {required && (
           <span className="text-destructive" aria-hidden>
             *
           </span>
         )}
-        {hint && <span className="ml-auto font-mono text-xs text-primary">{hint}</span>}
+        {hint && <span className="ml-auto truncate font-mono text-xs text-primary">{hint}</span>}
       </div>
       {children}
     </div>
@@ -1006,10 +1229,10 @@ function FieldInput({
         <Button
           type="button"
           variant={value ? 'default' : 'outline'}
-          size="sm"
           role="switch"
           aria-checked={!!value}
           onClick={() => onChange(k, !value)}
+          className="min-w-20"
         >
           {value ? 'Evet' : 'Hayır'}
         </Button>
@@ -1088,7 +1311,11 @@ function RelationInput({
   }
 
   if (options.length === 0)
-    return <p className="text-sm text-muted-foreground">“{field.to}” içinde kayıt yok.</p>
+    return (
+      <p className="rounded-lg border border-dashed bg-muted/30 px-3 py-2.5 text-sm text-muted-foreground">
+        “{field.to}” içinde kayıt yok.
+      </p>
+    )
 
   return (
     <div className="space-y-2.5">
@@ -1111,7 +1338,7 @@ function RelationInput({
       )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button variant="outline">
             <Link2 /> Bağlantı ekle
           </Button>
         </DropdownMenuTrigger>
@@ -1170,16 +1397,21 @@ function ImageInput({ value, onChange }: { value: unknown; onChange: (v: unknown
   }
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted/50">
+    <div className="flex items-center gap-4 rounded-lg border bg-muted/30 p-3">
+      <div
+        className={cn(
+          'flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-card',
+          !src && 'border-dashed',
+        )}
+      >
         {src ? (
           <img src={src} alt="" className="h-full w-full object-cover" />
         ) : (
           <ImageIcon className="h-6 w-6 text-muted-foreground/60" />
         )}
       </div>
-      <div className="space-y-2">
-        <label className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'cursor-pointer')}>
+      <div className="min-w-0 space-y-2">
+        <label className={cn(buttonVariants({ variant: 'outline' }), 'cursor-pointer bg-card')}>
           <Upload />
           {busy ? 'Yükleniyor…' : 'Görsel yükle'}
           <input
@@ -1193,8 +1425,8 @@ function ImageInput({ value, onChange }: { value: unknown; onChange: (v: unknown
           />
         </label>
         {path && (
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-muted-foreground">{path}</span>
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="truncate font-mono text-xs text-muted-foreground">{path}</span>
             <Button
               type="button"
               variant="ghost"

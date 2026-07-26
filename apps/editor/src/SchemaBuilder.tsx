@@ -1,3 +1,4 @@
+import { DragHandle, SortableList } from '@/components/sortable-list'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
@@ -17,18 +18,69 @@ import {
 } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import { arrayMove, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { slugify } from '@justjson/core'
 import type { Collection, Field, FieldType, Schema, Singleton } from '@justjson/core'
-import { ArrowDown, ArrowUp, Boxes, Check, Plus, Trash2, X } from 'lucide-react'
+import {
+  Boxes,
+  Check,
+  ChevronDown,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  GripVertical,
+  Plus,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { useState } from 'react'
 import * as api from './api'
 import { FIELD_META, FIELD_TYPES } from './field-types'
 
 type Container = Collection | Singleton
-type PickerTarget = { kind: 'collection' | 'singleton'; ci: number; fi: number | null }
+type Kind = 'collection' | 'singleton'
+type PickerTarget = { kind: Kind; ci: number; fi: number | null }
+
+/** Ad ve anahtar düzenlenebilir olduğu için kimlikler veriden türetilemez; yapıya paralel tutulur. */
+type ContainerIds = { id: string; fields: string[] }
+type IdModel = { collections: ContainerIds[]; singletons: ContainerIds[] }
+type Model = { schema: Schema; ids: IdModel }
+
+let idSeq = 0
+function uid(prefix: string): string {
+  idSeq += 1
+  return `${prefix}${idSeq}`
+}
 
 function clone(s: Schema): Schema {
   return JSON.parse(JSON.stringify(s)) as Schema
+}
+
+function makeIds(s: Schema): IdModel {
+  const forList = (items: Container[], p: string) =>
+    items.map((item) => ({ id: uid(p), fields: item.fields.map(() => uid('f')) }))
+  return { collections: forList(s.collections, 'c'), singletons: forList(s.singletons, 's') }
+}
+
+function cloneIds(m: IdModel): IdModel {
+  const forList = (l: ContainerIds[]) => l.map((c) => ({ id: c.id, fields: [...c.fields] }))
+  return { collections: forList(m.collections), singletons: forList(m.singletons) }
+}
+
+/** Yapısal mutasyonlardan sonra kimlik listesini şemayla hizalar (eksikse üretir, fazlaysa atar). */
+function reconcile(s: Schema, m: IdModel): IdModel {
+  const forList = (items: Container[], ids: ContainerIds[], p: string) =>
+    items.map((item, i) => {
+      const cur = ids[i]
+      return {
+        id: cur?.id ?? uid(p),
+        fields: item.fields.map((_, fi) => cur?.fields[fi] ?? uid('f')),
+      }
+    })
+  return {
+    collections: forList(s.collections, m.collections, 'c'),
+    singletons: forList(s.singletons, m.singletons, 's'),
+  }
 }
 
 function uniqueName(base: string, taken: string[]): string {
@@ -37,27 +89,22 @@ function uniqueName(base: string, taken: string[]): string {
   return `${base}${n}`
 }
 
-function move<T>(arr: T[], idx: number, dir: -1 | 1): void {
-  const to = idx + dir
-  if (to < 0 || to >= arr.length) return
-  const [item] = arr.splice(idx, 1)
-  arr.splice(to, 0, item as T)
-}
-
-function newCollection(d: Schema): void {
+function newCollection(d: Schema, m: IdModel): void {
   const name = uniqueName(
     'koleksiyon',
     d.collections.map((c) => c.name),
   )
   d.collections.push({ name, label: 'Yeni koleksiyon', path: name, fields: [] })
+  m.collections.push({ id: uid('c'), fields: [] })
 }
 
-function newSingleton(d: Schema): void {
+function newSingleton(d: Schema, m: IdModel): void {
   const name = uniqueName(
     'tekil',
     d.singletons.map((s) => s.name),
   )
   d.singletons.push({ name, label: 'Yeni tekil', path: `${name}.json`, fields: [] })
+  m.singletons.push({ id: uid('s'), fields: [] })
 }
 
 export function SchemaBuilder({
@@ -71,30 +118,60 @@ export function SchemaBuilder({
   onBrowseTemplates?: () => void
   initialAdd?: 'collection' | 'singleton'
 }) {
-  const [draft, setDraft] = useState<Schema>(() => {
-    const d = clone(schema)
-    if (initialAdd === 'collection') newCollection(d)
-    else if (initialAdd === 'singleton') newSingleton(d)
-    return d
+  const [model, setModel] = useState<Model>(() => {
+    const next = clone(schema)
+    const ids = makeIds(next)
+    if (initialAdd === 'collection') newCollection(next, ids)
+    else if (initialAdd === 'singleton') newSingleton(next, ids)
+    return { schema: next, ids }
+  })
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    const all = [...model.ids.collections, ...model.ids.singletons]
+    if (all.length <= 5) return {}
+    return Object.fromEntries(all.map((c) => [c.id, true]))
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [picker, setPicker] = useState<PickerTarget | null>(null)
 
+  const draft = model.schema
+  const ids = model.ids
   const collectionNames = draft.collections.map((c) => c.name)
+
+  /** Yalnızca değer düzenlemeleri: yapı ve kimlikler değişmez. */
   const update = (fn: (d: Schema) => void) =>
-    setDraft((prev) => {
-      const d = clone(prev)
-      fn(d)
-      return d
+    setModel((prev) => {
+      const next = clone(prev.schema)
+      fn(next)
+      return { schema: next, ids: prev.ids }
+    })
+
+  /** Ekleme, silme, sıralama: şema ve kimlikler birlikte taşınır. */
+  const structural = (fn: (d: Schema, m: IdModel) => void) =>
+    setModel((prev) => {
+      const next = clone(prev.schema)
+      const nextIds = cloneIds(prev.ids)
+      fn(next, nextIds)
+      return { schema: next, ids: reconcile(next, nextIds) }
+    })
+
+  const setCollapse = (id: string, value: boolean) =>
+    setCollapsed((prev) => ({ ...prev, [id]: value }))
+
+  const collapseAll = (list: ContainerIds[], value: boolean) =>
+    setCollapsed((prev) => {
+      const next = { ...prev }
+      for (const c of list) next[c.id] = value
+      return next
     })
 
   const isEmpty = draft.collections.length === 0 && draft.singletons.length === 0
 
   const applyType = (type: FieldType) => {
     if (!picker) return
-    update((d) => {
+    structural((d, m) => {
       const list = picker.kind === 'collection' ? d.collections : d.singletons
+      const idList = picker.kind === 'collection' ? m.collections : m.singletons
       const container = list[picker.ci]
       if (!container) return
       if (picker.fi === null) {
@@ -103,6 +180,7 @@ export function SchemaBuilder({
           container.fields.map((f) => f.key),
         )
         container.fields.push({ key, label: '', type })
+        idList[picker.ci]?.fields.push(uid('f'))
       } else {
         const f = container.fields[picker.fi]
         if (!f) return
@@ -127,9 +205,92 @@ export function SchemaBuilder({
     }
   }
 
+  const renderList = (kind: Kind) => {
+    const containers: Container[] = kind === 'collection' ? draft.collections : draft.singletons
+    const idList = kind === 'collection' ? ids.collections : ids.singletons
+
+    return (
+      <SortableList
+        ids={idList.map((c) => c.id)}
+        onReorder={(from, to) =>
+          structural((d, m) => {
+            if (kind === 'collection') {
+              d.collections = arrayMove(d.collections, from, to)
+              m.collections = arrayMove(m.collections, from, to)
+            } else {
+              d.singletons = arrayMove(d.singletons, from, to)
+              m.singletons = arrayMove(m.singletons, from, to)
+            }
+          })
+        }
+        renderOverlay={(id) => {
+          const ci = idList.findIndex((c) => c.id === id)
+          const container = containers[ci]
+          return container ? <ContainerPreview container={container} /> : null
+        }}
+      >
+        {containers.map((container, ci) => {
+          const entry = idList[ci]
+          if (!entry) return null
+          return (
+            <SortableContainerCard
+              key={entry.id}
+              id={entry.id}
+              container={container}
+              kind={kind}
+              collectionNames={collectionNames}
+              fieldIds={entry.fields}
+              collapsed={collapsed[entry.id] ?? false}
+              onToggleCollapse={() => setCollapse(entry.id, !collapsed[entry.id])}
+              onChange={(fn) =>
+                update((d) => {
+                  const list = kind === 'collection' ? d.collections : d.singletons
+                  const c = list[ci]
+                  if (c) fn(c)
+                })
+              }
+              onRemove={() =>
+                structural((d, m) => {
+                  if (kind === 'collection') {
+                    d.collections.splice(ci, 1)
+                    m.collections.splice(ci, 1)
+                  } else {
+                    d.singletons.splice(ci, 1)
+                    m.singletons.splice(ci, 1)
+                  }
+                })
+              }
+              onRemoveField={(fi) =>
+                structural((d, m) => {
+                  const list = kind === 'collection' ? d.collections : d.singletons
+                  const idsFor = kind === 'collection' ? m.collections : m.singletons
+                  list[ci]?.fields.splice(fi, 1)
+                  idsFor[ci]?.fields.splice(fi, 1)
+                })
+              }
+              onReorderFields={(from, to) =>
+                structural((d, m) => {
+                  const list = kind === 'collection' ? d.collections : d.singletons
+                  const idsFor = kind === 'collection' ? m.collections : m.singletons
+                  const c = list[ci]
+                  const e = idsFor[ci]
+                  if (!c || !e) return
+                  c.fields = arrayMove(c.fields, from, to)
+                  e.fields = arrayMove(e.fields, from, to)
+                })
+              }
+              onAddField={() => setPicker({ kind, ci, fi: null })}
+              onChangeType={(fi) => setPicker({ kind, ci, fi })}
+            />
+          )
+        })}
+      </SortableList>
+    )
+  }
+
   return (
     <div className="flex h-full flex-col">
-      <header className="shrink-0 border-b bg-background px-8 py-4">
+      <header className="sticky top-0 z-10 shrink-0 border-b bg-card px-8 py-4">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
           <div>
             <h1 className="font-heading text-lg font-semibold text-foreground">Şema</h1>
@@ -152,8 +313,8 @@ export function SchemaBuilder({
 
           {isEmpty ? (
             <SchemaEmpty
-              onAddCollection={() => update(newCollection)}
-              onAddSingleton={() => update(newSingleton)}
+              onAddCollection={() => structural(newCollection)}
+              onAddSingleton={() => structural(newSingleton)}
               onBrowseTemplates={onBrowseTemplates}
             />
           ) : (
@@ -161,43 +322,33 @@ export function SchemaBuilder({
               <Section
                 title="Koleksiyonlar"
                 hint="Çok kayıtlı içerik (yazılar, ürünler…)"
-                onAdd={() => update(newCollection)}
+                onAdd={() => structural(newCollection)}
+                allCollapsed={
+                  ids.collections.length > 0 && ids.collections.every((c) => collapsed[c.id])
+                }
+                onToggleAll={
+                  ids.collections.length > 1
+                    ? (value) => collapseAll(ids.collections, value)
+                    : undefined
+                }
               >
-                {draft.collections.map((col, ci) => (
-                  <ContainerCard
-                    // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
-                    key={ci}
-                    container={col}
-                    kind="collection"
-                    collectionNames={collectionNames}
-                    onChange={(fn) => update((d) => fn(d.collections[ci] as Container))}
-                    onRemove={() => update((d) => d.collections.splice(ci, 1))}
-                    onMove={(dir) => update((d) => move(d.collections, ci, dir))}
-                    onAddField={() => setPicker({ kind: 'collection', ci, fi: null })}
-                    onChangeType={(fi) => setPicker({ kind: 'collection', ci, fi })}
-                  />
-                ))}
+                {renderList('collection')}
               </Section>
 
               <Section
                 title="Tekil"
                 hint="Tek kayıt (site ayarları, profil…)"
-                onAdd={() => update(newSingleton)}
+                onAdd={() => structural(newSingleton)}
+                allCollapsed={
+                  ids.singletons.length > 0 && ids.singletons.every((c) => collapsed[c.id])
+                }
+                onToggleAll={
+                  ids.singletons.length > 1
+                    ? (value) => collapseAll(ids.singletons, value)
+                    : undefined
+                }
               >
-                {draft.singletons.map((s, ci) => (
-                  <ContainerCard
-                    // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
-                    key={ci}
-                    container={s}
-                    kind="singleton"
-                    collectionNames={collectionNames}
-                    onChange={(fn) => update((d) => fn(d.singletons[ci] as Container))}
-                    onRemove={() => update((d) => d.singletons.splice(ci, 1))}
-                    onMove={(dir) => update((d) => move(d.singletons, ci, dir))}
-                    onAddField={() => setPicker({ kind: 'singleton', ci, fi: null })}
-                    onChangeType={(fi) => setPicker({ kind: 'singleton', ci, fi })}
-                  />
-                ))}
+                {renderList('singleton')}
               </Section>
             </div>
           )}
@@ -213,25 +364,43 @@ function Section({
   title,
   hint,
   onAdd,
+  allCollapsed,
+  onToggleAll,
   children,
 }: {
   title: string
   hint: string
   onAdd: () => void
+  allCollapsed?: boolean
+  onToggleAll?: (value: boolean) => void
   children: React.ReactNode
 }) {
   return (
     <section>
-      <div className="mb-3 flex items-end justify-between">
+      <div className="mb-3 flex items-end justify-between gap-3">
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {title}
           </h2>
           <p className="text-xs text-muted-foreground/70">{hint}</p>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={onAdd}>
-          <Plus /> Ekle
-        </Button>
+        <div className="flex items-center gap-1.5">
+          {onToggleAll && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleAll(!allCollapsed)}
+              className="text-muted-foreground"
+            >
+              {allCollapsed ? <ChevronsUpDown /> : <ChevronsDownUp />}
+              {allCollapsed ? 'Tümünü genişlet' : 'Tümünü daralt'}
+            </Button>
+          )}
+          <Button type="button" variant="outline" size="sm" onClick={onAdd}>
+            <Plus /> Ekle
+          </Button>
+        </div>
       </div>
       <div className="space-y-3">{children}</div>
     </section>
@@ -289,25 +458,68 @@ function SchemaEmpty({
   )
 }
 
+interface ContainerCardProps {
+  container: Container
+  kind: Kind
+  collectionNames: string[]
+  fieldIds: string[]
+  collapsed: boolean
+  onToggleCollapse: () => void
+  onChange: (fn: (c: Container) => void) => void
+  onRemove: () => void
+  onRemoveField: (fi: number) => void
+  onReorderFields: (from: number, to: number) => void
+  onAddField: () => void
+  onChangeType: (fi: number) => void
+}
+
+function SortableContainerCard({ id, ...props }: ContainerCardProps & { id: string }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id })
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
+      className={cn(isDragging && 'opacity-40')}
+    >
+      <ContainerCard
+        {...props}
+        dragHandle={
+          <DragHandle
+            ref={setActivatorNodeRef}
+            label="Sürükleyerek sırala"
+            {...attributes}
+            {...listeners}
+          />
+        }
+      />
+    </div>
+  )
+}
+
 function ContainerCard({
   container,
   kind,
   collectionNames,
+  fieldIds,
+  collapsed,
+  onToggleCollapse,
   onChange,
   onRemove,
-  onMove,
+  onRemoveField,
+  onReorderFields,
   onAddField,
   onChangeType,
-}: {
-  container: Container
-  kind: 'collection' | 'singleton'
-  collectionNames: string[]
-  onChange: (fn: (c: Container) => void) => void
-  onRemove: () => void
-  onMove: (dir: -1 | 1) => void
-  onAddField: () => void
-  onChangeType: (fi: number) => void
-}) {
+  dragHandle,
+}: ContainerCardProps & { dragHandle: React.ReactNode }) {
   const setName = (value: string) => {
     const name = slugify(value)
     onChange((c) => {
@@ -316,11 +528,40 @@ function ContainerCard({
     })
   }
 
+  const count = container.fields.length
+
   return (
-    <Card className="gap-0 overflow-hidden py-0">
-      <CardHeader className="flex flex-row items-center gap-2 bg-muted/40 px-3 py-2.5">
+    <Card className="gap-0 overflow-hidden py-0 shadow-sm">
+      <CardHeader
+        className={cn(
+          'relative grid grid-cols-[1.5rem_1.75rem_minmax(0,1fr)_auto_1.75rem] items-center gap-2 bg-muted/40 px-4 py-3',
+          !collapsed && 'border-b',
+        )}
+      >
+        {/* Başlık boşluğuna tıklamak da daraltır; asıl erişilebilir kontrol chevron düğmesi. */}
+        <button
+          type="button"
+          aria-hidden="true"
+          tabIndex={-1}
+          onClick={onToggleCollapse}
+          className="absolute inset-0 cursor-pointer"
+        />
+        <div className="relative opacity-0 transition group-focus-within/card:opacity-100 group-hover/card:opacity-100 focus-within:opacity-100">
+          {dragHandle}
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={onToggleCollapse}
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? 'Genişlet' : 'Daralt'}
+          className="relative text-muted-foreground"
+        >
+          <ChevronDown className={cn('transition-transform', collapsed && '-rotate-90')} />
+        </Button>
         <Input
-          className="h-8 flex-1 border-transparent bg-transparent font-medium shadow-none focus-visible:border-input focus-visible:bg-background"
+          className="relative h-8 border-transparent bg-transparent font-medium shadow-none focus-visible:border-input focus-visible:bg-background"
           value={container.label ?? ''}
           placeholder={kind === 'collection' ? 'Koleksiyon adı' : 'Tekil ad'}
           onChange={(e) =>
@@ -329,52 +570,124 @@ function ContainerCard({
             })
           }
         />
-        <Input
-          className="h-8 w-40 border-transparent bg-transparent font-mono text-xs text-primary hover:border-input focus-visible:bg-background"
-          value={container.name}
-          placeholder="api-adi"
-          onChange={(e) => setName(e.target.value)}
-        />
-        <IconButton label="Yukarı taşı" onClick={() => onMove(-1)}>
-          <ArrowUp />
-        </IconButton>
-        <IconButton label="Aşağı taşı" onClick={() => onMove(1)}>
-          <ArrowDown />
-        </IconButton>
-        <IconButton label="Sil" danger onClick={onRemove}>
+        <div className="relative flex items-center gap-2">
+          {collapsed && (
+            <span className="whitespace-nowrap rounded-full bg-foreground/5 px-2 py-0.5 text-xs text-muted-foreground">
+              {count} alan
+            </span>
+          )}
+          <Input
+            className="h-8 w-40 border-transparent bg-transparent font-mono text-xs text-primary hover:border-input focus-visible:bg-background"
+            value={container.name}
+            placeholder="api-adi"
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <IconButton label="Sil" danger onClick={onRemove} className="relative">
           <Trash2 />
         </IconButton>
       </CardHeader>
 
-      <CardContent className="border-t px-0">
-        {container.fields.length === 0 && (
-          <p className="px-4 py-6 text-center text-sm text-muted-foreground">Henüz alan yok.</p>
-        )}
-        <div className="divide-y divide-border/60">
-          {container.fields.map((field, fi) => (
-            <FieldRow
-              // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü satır; anahtar düzenlenebilir, stabil index gerekli
-              key={fi}
-              field={field}
-              collectionNames={collectionNames}
-              onChange={(fn) => onChange((c) => fn(c.fields[fi] as Field))}
-              onRemove={() => onChange((c) => c.fields.splice(fi, 1))}
-              onMove={(dir) => onChange((c) => move(c.fields, fi, dir))}
-              onChangeType={() => onChangeType(fi)}
-            />
-          ))}
-        </div>
-      </CardContent>
+      {!collapsed && (
+        <>
+          <CardContent className="px-0">
+            {count === 0 && (
+              <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+                Henüz alan yok. Aşağıdan ilk alanı ekle.
+              </p>
+            )}
+            <SortableList
+              ids={fieldIds}
+              onReorder={onReorderFields}
+              renderOverlay={(id) => {
+                const fi = fieldIds.indexOf(id)
+                const field = container.fields[fi]
+                return field ? <FieldPreview field={field} /> : null
+              }}
+            >
+              <div className="divide-y divide-border/60">
+                {container.fields.map((field, fi) => {
+                  const fieldId = fieldIds[fi]
+                  if (!fieldId) return null
+                  return (
+                    <SortableFieldRow
+                      key={fieldId}
+                      id={fieldId}
+                      field={field}
+                      collectionNames={collectionNames}
+                      onChange={(fn) => onChange((c) => fn(c.fields[fi] as Field))}
+                      onRemove={() => onRemoveField(fi)}
+                      onChangeType={() => onChangeType(fi)}
+                    />
+                  )
+                })}
+              </div>
+            </SortableList>
+          </CardContent>
 
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={onAddField}
-        className="h-10 w-full justify-center gap-1.5 rounded-none border-t text-primary hover:bg-primary/5 hover:text-primary"
-      >
-        <Plus /> Alan ekle
-      </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onAddField}
+            className="h-11 w-full justify-center gap-1.5 rounded-none border-t text-primary hover:bg-primary/5 hover:text-primary"
+          >
+            <Plus /> Alan ekle
+          </Button>
+        </>
+      )}
     </Card>
+  )
+}
+
+function ContainerPreview({ container }: { container: Container }) {
+  return (
+    <div className="flex scale-[1.01] items-center gap-2 rounded-xl bg-card px-4 py-3 shadow-lg ring-2 ring-primary/40">
+      <GripVertical className="size-4 shrink-0 text-muted-foreground" />
+      <span className="truncate text-sm font-medium text-foreground">
+        {container.label || container.name}
+      </span>
+      <span className="truncate font-mono text-xs text-primary">{container.name}</span>
+      <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+        {container.fields.length} alan
+      </span>
+    </div>
+  )
+}
+
+interface FieldRowProps {
+  field: Field
+  collectionNames: string[]
+  onChange: (fn: (f: Field) => void) => void
+  onRemove: () => void
+  onChangeType: () => void
+}
+
+function SortableFieldRow({ id, ...props }: FieldRowProps & { id: string }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id })
+
+  return (
+    <FieldRow
+      {...props}
+      rowRef={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
+      dragging={isDragging}
+      dragHandle={
+        <DragHandle
+          ref={setActivatorNodeRef}
+          label="Sürükleyerek sırala"
+          {...attributes}
+          {...listeners}
+        />
+      }
+    />
   )
 }
 
@@ -383,87 +696,96 @@ function FieldRow({
   collectionNames,
   onChange,
   onRemove,
-  onMove,
   onChangeType,
-}: {
-  field: Field
-  collectionNames: string[]
-  onChange: (fn: (f: Field) => void) => void
-  onRemove: () => void
-  onMove: (dir: -1 | 1) => void
-  onChangeType: () => void
+  rowRef,
+  style,
+  dragging,
+  dragHandle,
+}: FieldRowProps & {
+  rowRef: (el: HTMLElement | null) => void
+  style: React.CSSProperties
+  dragging: boolean
+  dragHandle: React.ReactNode
 }) {
   const meta = FIELD_META[field.type]
   const Icon = meta.icon
+  const reveal =
+    'opacity-0 transition group-focus-within/row:opacity-100 group-hover/row:opacity-100 focus-within:opacity-100'
 
   return (
-    <div className="group px-3 py-2.5">
-      <div className="flex items-center gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={onChangeType}
-              aria-label="Tipi değiştir"
-              className="shrink-0 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
-            >
-              <Icon />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{meta.label} · tipi değiştir</TooltipContent>
-        </Tooltip>
-        <Input
-          className="h-8 flex-1 border-transparent bg-transparent font-medium shadow-none focus-visible:border-input focus-visible:bg-background"
-          value={field.label ?? ''}
-          placeholder="Alan adı"
-          onChange={(e) =>
-            onChange((f) => {
-              f.label = e.target.value
-            })
-          }
-        />
-        <Input
-          className="h-8 w-32 border-transparent bg-transparent font-mono text-xs text-muted-foreground hover:border-input focus-visible:bg-background focus-visible:text-foreground"
-          value={field.key}
-          placeholder="anahtar"
-          onChange={(e) =>
-            onChange((f) => {
-              f.key = slugify(e.target.value)
-            })
-          }
-        />
-        <Button
-          type="button"
-          size="xs"
-          variant={field.required ? 'default' : 'outline'}
-          aria-pressed={field.required}
-          onClick={() =>
-            onChange((f) => {
-              f.required = !f.required
-            })
-          }
-          className={cn('rounded-full', !field.required && 'text-muted-foreground')}
-        >
-          Zorunlu
-        </Button>
-        <div className="flex items-center gap-0.5 opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100">
-          <IconButton label="Yukarı taşı" onClick={() => onMove(-1)}>
-            <ArrowUp />
-          </IconButton>
-          <IconButton label="Aşağı taşı" onClick={() => onMove(1)}>
-            <ArrowDown />
-          </IconButton>
-          <IconButton label="Sil" danger onClick={onRemove}>
-            <X />
-          </IconButton>
-        </div>
-      </div>
+    <div
+      ref={rowRef}
+      style={style}
+      className={cn(
+        'group/row grid grid-cols-[1.5rem_2rem_minmax(0,1fr)_7rem_4.5rem_1.75rem] items-center gap-2 bg-card px-4 py-2.5 md:grid-cols-[1.5rem_2rem_minmax(0,1fr)_10rem_4.5rem_1.75rem]',
+        dragging && 'opacity-40',
+      )}
+    >
+      <div className={reveal}>{dragHandle}</div>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onChangeType}
+            aria-label="Tipi değiştir"
+            className="bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
+          >
+            <Icon />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{meta.label} · tipi değiştir</TooltipContent>
+      </Tooltip>
+
+      <Input
+        className="h-8 border-transparent bg-transparent font-medium shadow-none focus-visible:border-input focus-visible:bg-background"
+        value={field.label ?? ''}
+        placeholder="Alan adı"
+        onChange={(e) =>
+          onChange((f) => {
+            f.label = e.target.value
+          })
+        }
+      />
+      <Input
+        className="h-8 border-transparent bg-transparent font-mono text-xs text-muted-foreground hover:border-input focus-visible:bg-background focus-visible:text-foreground"
+        value={field.key}
+        placeholder="anahtar"
+        onChange={(e) =>
+          onChange((f) => {
+            f.key = slugify(e.target.value)
+          })
+        }
+      />
+
+      <Button
+        type="button"
+        size="xs"
+        variant={field.required ? 'default' : 'ghost'}
+        aria-pressed={field.required ?? false}
+        title={field.required ? 'Zorunlu alan' : 'Zorunlu yap'}
+        onClick={() =>
+          onChange((f) => {
+            f.required = !f.required
+          })
+        }
+        className={cn(
+          'w-full rounded-full',
+          !field.required && `border-dashed border-border text-muted-foreground ${reveal}`,
+        )}
+      >
+        Zorunlu
+      </Button>
+
+      <IconButton label="Sil" danger onClick={onRemove} className={reveal}>
+        <X />
+      </IconButton>
 
       {field.type === 'select' && (
         <Input
-          className="mt-2 ml-10 w-[calc(100%-2.5rem)]"
+          className="col-start-3 col-end-[-1] row-start-2 mt-1"
           value={(field.options ?? []).join(', ')}
           placeholder="seçenekler (virgülle ayır)"
           onChange={(e) =>
@@ -477,7 +799,7 @@ function FieldRow({
         />
       )}
       {field.type === 'relation' && (
-        <div className="mt-2 ml-10">
+        <div className="col-start-3 col-end-[-1] row-start-2 mt-1">
           <Select
             value={field.to || undefined}
             onValueChange={(v) =>
@@ -499,6 +821,23 @@ function FieldRow({
           </Select>
         </div>
       )}
+    </div>
+  )
+}
+
+function FieldPreview({ field }: { field: Field }) {
+  const meta = FIELD_META[field.type]
+  const Icon = meta.icon
+  return (
+    <div className="flex items-center gap-2 rounded-lg bg-card px-4 py-2.5 shadow-lg ring-2 ring-primary/40">
+      <GripVertical className="size-4 shrink-0 text-muted-foreground" />
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <Icon className="size-4" />
+      </span>
+      <span className="truncate text-sm font-medium text-foreground">
+        {field.label || meta.label}
+      </span>
+      <span className="ml-auto shrink-0 font-mono text-xs text-muted-foreground">{field.key}</span>
     </div>
   )
 }
@@ -552,11 +891,13 @@ function IconButton({
   label,
   danger,
   onClick,
+  className,
 }: {
   children: React.ReactNode
   label: string
   danger?: boolean
   onClick: () => void
+  className?: string
 }) {
   return (
     <Tooltip>
@@ -570,6 +911,7 @@ function IconButton({
           className={cn(
             'text-muted-foreground',
             danger && 'hover:bg-destructive/10 hover:text-destructive',
+            className,
           )}
         >
           {children}
