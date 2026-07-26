@@ -1,6 +1,13 @@
 import { parseSchema, serializeSchema } from '../schema/schema'
 import type { Collection, Schema, Singleton } from '../schema/types'
 import type { StorageAdapter } from '../storage/adapter'
+import { entryTitle } from './title'
+
+export interface EntryRow {
+  slug: string
+  title: string
+  updatedAt: number | null
+}
 
 const SCHEMA_FILE = '_schema.json'
 
@@ -59,6 +66,23 @@ export class ContentStore {
     const col = this.collection(collection)
     const files = await this.adapter.list(`${this.contentDir}/${col.path}`)
     return files.filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -'.json'.length))
+  }
+
+  async listRows(collection: string): Promise<EntryRow[]> {
+    const col = this.collection(collection)
+    const slugs = await this.listEntries(collection)
+    const rows: EntryRow[] = []
+    for (const slug of slugs) {
+      const path = this.entryPath(col, slug)
+      const raw = await this.adapter.read(path)
+      const data = raw ? (JSON.parse(raw) as Record<string, unknown>) : {}
+      rows.push({
+        slug,
+        title: entryTitle(col.fields, data) ?? slug,
+        updatedAt: await this.adapter.mtime(path),
+      })
+    }
+    return rows
   }
 
   async readEntry(collection: string, slug: string): Promise<Record<string, unknown> | null> {

@@ -23,11 +23,12 @@ describe('createServer', () => {
     expect(schema.collections[0]?.name).toBe('posts')
   })
 
-  it('koleksiyon slug listesini verir', async () => {
+  it('koleksiyon satırlarını başlıkla verir', async () => {
     const app = await createServer(root)
     const res = await app.request('/api/posts')
-    const data = (await res.json()) as { slugs: string[] }
-    expect(data.slugs).toContain('ilk-yazi')
+    const data = (await res.json()) as { items: Array<{ slug: string; title: string }> }
+    const row = data.items.find((i) => i.slug === 'ilk-yazi')
+    expect(row?.title).toBe('İlk yazı')
   })
 
   it('tek kaydı verir, olmayanda 404', async () => {
@@ -45,16 +46,16 @@ describe('createServer', () => {
     })
     expect(res.status).toBe(200)
     const listRes = await app.request('/api/posts')
-    const list = (await listRes.json()) as { slugs: string[] }
-    expect(list.slugs).toContain('yeni-yazi')
+    const list = (await listRes.json()) as { items: Array<{ slug: string }> }
+    expect(list.items.map((i) => i.slug)).toContain('yeni-yazi')
   })
 
   it('DELETE siler', async () => {
     const app = await createServer(root)
     await app.request('/api/posts/ilk-yazi', { method: 'DELETE' })
     const listRes = await app.request('/api/posts')
-    const list = (await listRes.json()) as { slugs: string[] }
-    expect(list.slugs).not.toContain('ilk-yazi')
+    const list = (await listRes.json()) as { items: Array<{ slug: string }> }
+    expect(list.items.map((i) => i.slug)).not.toContain('ilk-yazi')
   })
 
   it('GET path traversal ile dosya okuyamaz', async () => {

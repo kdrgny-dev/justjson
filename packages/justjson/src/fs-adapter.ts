@@ -53,4 +53,12 @@ export class FsAdapter implements StorageAdapter {
       return false
     }
   }
+
+  async mtime(path: string): Promise<number | null> {
+    try {
+      return (await stat(this.abs(path))).mtimeMs
+    } catch {
+      return null
+    }
+  }
 }

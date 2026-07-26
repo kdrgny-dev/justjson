@@ -65,8 +65,8 @@ export async function createServer(root: string): Promise<Hono> {
   })
 
   app.get('/api/:collection', async (c) => {
-    const slugs = await store.listEntries(c.req.param('collection'))
-    return c.json({ slugs })
+    const items = await store.listRows(c.req.param('collection'))
+    return c.json({ items })
   })
 
   app.get('/api/:collection/:slug', async (c) => {

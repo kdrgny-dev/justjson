@@ -34,6 +34,10 @@ export class MemoryAdapter implements StorageAdapter {
     return this.files.has(path)
   }
 
+  async mtime(path: string): Promise<number | null> {
+    return this.files.has(path) ? 0 : null
+  }
+
   snapshot(): Record<string, string> {
     return Object.fromEntries(this.files)
   }

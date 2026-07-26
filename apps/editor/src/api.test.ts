@@ -11,8 +11,16 @@ afterEach(() => {
 })
 
 describe('api client', () => {
-  it('listEntries slug listesini çıkarır', async () => {
-    vi.stubGlobal('fetch', mockFetch(200, { slugs: ['a', 'b'] }))
+  it('listEntries item satırlarını slug listesine indirger', async () => {
+    vi.stubGlobal(
+      'fetch',
+      mockFetch(200, {
+        items: [
+          { slug: 'a', title: 'A', updatedAt: null },
+          { slug: 'b', title: 'B', updatedAt: null },
+        ],
+      }),
+    )
     expect(await listEntries('posts')).toEqual(['a', 'b'])
   })
 

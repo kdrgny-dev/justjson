@@ -1,6 +1,6 @@
 import { slugify, validateEntry } from '@justjson/core'
 import type { Collection, Field, Schema, Singleton } from '@justjson/core'
-import { FileCog, Plus, Settings2, Trash2 } from 'lucide-react'
+import { FileCog, Plus, Search, Settings2, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SchemaBuilder } from './SchemaBuilder'
 import * as api from './api'
@@ -236,6 +236,15 @@ function PrimaryButton({
   )
 }
 
+function formatDate(ms: number | null): string {
+  if (!ms) return '—'
+  return new Intl.DateTimeFormat('tr-TR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(ms))
+}
+
 function CollectionView({
   collection,
   onOpen,
@@ -245,10 +254,16 @@ function CollectionView({
   onOpen: (slug: string) => void
   onNew: () => void
 }) {
-  const [slugs, setSlugs] = useState<string[] | null>(null)
+  const [rows, setRows] = useState<api.EntryRow[] | null>(null)
+  const [q, setQ] = useState('')
   useEffect(() => {
-    api.listEntries(collection.name).then(setSlugs)
+    api.listRows(collection.name).then(setRows)
   }, [collection.name])
+
+  const query = q.trim().toLowerCase()
+  const filtered = rows?.filter(
+    (r) => r.title.toLowerCase().includes(query) || r.slug.includes(query),
+  )
 
   return (
     <Page>
@@ -260,24 +275,64 @@ function CollectionView({
           </PrimaryButton>
         }
       />
-      {slugs === null && <p className="text-sm text-slate-400">Yükleniyor…</p>}
-      {slugs?.length === 0 && (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-sm text-slate-400">
-          Henüz kayıt yok. “Yeni kayıt” ile başla.
+
+      {rows && rows.length > 0 && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
+          <Search className="h-4 w-4 text-slate-400" />
+          <input
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+            placeholder="Ara…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+          <span className="text-xs text-slate-400">{filtered?.length ?? 0} kayıt</span>
         </div>
       )}
-      <div className="space-y-2">
-        {slugs?.map((slug) => (
+
+      {rows === null && <p className="text-sm text-slate-400">Yükleniyor…</p>}
+      {rows?.length === 0 && (
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
+          <p className="text-sm text-slate-500">Henüz kayıt yok.</p>
           <button
             type="button"
-            key={slug}
-            onClick={() => onOpen(slug)}
-            className="block w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-left font-mono text-sm text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700"
+            onClick={onNew}
+            className="mt-3 text-sm font-medium text-indigo-600 hover:underline"
           >
-            {slug}
+            İlk kaydı oluştur →
           </button>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {filtered && rows && rows.length > 0 && (
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+                <th className="px-4 py-2.5 font-medium">Başlık</th>
+                <th className="px-4 py-2.5 font-medium">Slug</th>
+                <th className="px-4 py-2.5 text-right font-medium">Güncellendi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {filtered.map((row) => (
+                <tr
+                  key={row.slug}
+                  tabIndex={0}
+                  onClick={() => onOpen(row.slug)}
+                  onKeyDown={(e) => e.key === 'Enter' && onOpen(row.slug)}
+                  className="cursor-pointer transition hover:bg-indigo-50/40 focus:bg-indigo-50 focus:outline-none"
+                >
+                  <td className="px-4 py-3 font-medium text-slate-800">{row.title}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-slate-400">{row.slug}</td>
+                  <td className="px-4 py-3 text-right text-xs text-slate-400">
+                    {formatDate(row.updatedAt)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </Page>
   )
 }
