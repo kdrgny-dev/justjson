@@ -15,18 +15,30 @@ npx justjson
 - **Endpoint senin** — JSON'u nereye deploy edersen o senin API'n olur (repo raw, jsDelivr, kendi siten).
 - **Tip güvenli** — şemadan `types.ts` üretir.
 
-## Durum
+## Hızlı başlangıç
 
-Erken geliştirme. Tasarım dokümanı: [`docs/design.md`](docs/design.md).
+```bash
+cd projem/
+npx justjson init blog   # şema + örnek içerik oluşturur
+npx justjson             # editörü tarayıcıda açar (localhost)
+```
 
-## Komutlar (planlanan)
+Editörde koleksiyon/tekil kayıtlarını düzenlersin; her kayıt `content/` altına JSON olarak yazılır. Bitince `git commit` senin.
+
+## Komutlar
 
 | Komut | İş |
 |---|---|
-| `npx justjson` | Proje klasöründe lokal editörü açar |
-| `npx justjson init` | Hazır template ile başlatır (CV, blog, portfolyo…) |
+| `npx justjson` (veya `serve`) | Lokal editörü başlatır ve tarayıcıda açar |
+| `npx justjson init [template]` | Template ile başlatır (`blog`, `cv`) |
 | `npx justjson types` | Şemadan `types.ts` üretir |
-| `npx justjson export` | ZIP snapshot (şema + içerik + medya + types) |
+| `npx justjson export` | ZIP snapshot (şema + içerik + types) |
+
+## Durum
+
+v1 çalışır durumda: şema kurma, koleksiyon/tekil CRUD, tüm alan tipleri (text, richtext, number, boolean, date, select, relation, image), çoklu relation, canlı doğrulama, tip üretimi ve ZIP export. Tasarım: [`docs/design.md`](docs/design.md).
+
+Mimari: `@justjson/core` (saf mantık) · `justjson` (CLI + lokal Hono sunucu) · `@justjson/editor` (React SPA, sunucudan servis edilir).
 
 ## Geliştirme
 
