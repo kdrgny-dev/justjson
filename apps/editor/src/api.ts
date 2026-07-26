@@ -12,6 +12,18 @@ export async function getSchema(): Promise<Schema> {
   return res.json() as Promise<Schema>
 }
 
+export async function putSchema(schema: Schema): Promise<void> {
+  const res = await fetch('/api/_schema', {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(schema),
+  })
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string }
+    throw new Error(err.error ?? `Şema kaydedilemedi: ${res.status}`)
+  }
+}
+
 export async function listEntries(collection: string): Promise<string[]> {
   const res = await ok(await fetch(`/api/${encodeURIComponent(collection)}`))
   const data = (await res.json()) as { slugs: string[] }
