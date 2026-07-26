@@ -9,6 +9,7 @@
   --accent-2: #38bdf8;
   --error: #f87171;
   --warn: #fbbf24;
+  --danger: #ef4444;
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
   --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -19,98 +20,163 @@
 
 body {
   margin: 0;
-  background: radial-gradient(1200px 600px at 70% -10%, #16202e 0%, var(--bg) 55%);
+  background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
 }
 
-.app {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 40px 24px 64px;
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
 }
-
-header {
-  margin-bottom: 28px;
-}
-
-.brand {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-.brand span {
-  color: var(--accent);
-}
-
-header p {
+.muted {
   color: var(--muted);
-  margin: 8px 0 0;
-  font-size: 14px;
 }
-header code,
-.label code {
-  font-family: var(--mono);
+.small {
   font-size: 12px;
-  color: var(--accent-2);
-  background: #0f1720;
-  padding: 1px 6px;
-  border-radius: 6px;
 }
 
-main {
+/* layout */
+.editor {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
 }
-@media (max-width: 860px) {
-  main {
+@media (max-width: 720px) {
+  .editor {
     grid-template-columns: 1fr;
   }
 }
 
-.panel {
-  background: linear-gradient(180deg, var(--panel), var(--panel-2));
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 18px;
-  min-height: 0;
+.sidebar {
+  border-right: 1px solid var(--line);
+  padding: 20px 14px;
+  background: var(--panel-2);
+}
+.brand {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  padding: 0 8px 16px;
+}
+.brand span {
+  color: var(--accent);
+}
+.nav-label {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 14px 8px 6px;
+}
+.nav-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.nav-item:hover {
+  background: #161b25;
+}
+.nav-item.active {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
 }
 
-.panel-head {
+/* main */
+.main {
+  padding: 28px 32px;
+  max-width: 760px;
+}
+.head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 22px;
+  gap: 16px;
 }
-.panel-head h2 {
-  font-size: 15px;
+.head h1 {
+  font-size: 20px;
   margin: 0;
   font-weight: 600;
 }
+.crumb {
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 8px;
+  font-size: 15px;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+}
 
-.badge {
-  font-size: 12px;
+button.primary,
+button.danger {
+  border: none;
+  font: inherit;
+  font-size: 14px;
   font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 999px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  cursor: pointer;
 }
-.badge.ok {
-  color: var(--accent);
-  background: rgba(110, 231, 183, 0.12);
+button.primary {
+  background: var(--accent);
+  color: var(--bg);
 }
-.badge.bad {
-  color: var(--error);
-  background: rgba(248, 113, 113, 0.12);
+button.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+button.danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
 }
 
+.entry-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.entry-list button {
+  width: 100%;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-family: var(--mono);
+}
+.entry-list button:hover {
+  border-color: var(--accent-2);
+}
+
+/* form */
 form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
-
 .row {
   display: flex;
   flex-direction: column;
@@ -129,6 +195,12 @@ form {
 }
 .label code {
   margin-left: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent-2);
+  background: #0f1720;
+  padding: 1px 6px;
+  border-radius: 6px;
 }
 
 input,
@@ -155,7 +227,6 @@ textarea {
   font-family: var(--mono);
   font-size: 13px;
 }
-
 .switch {
   display: flex;
   align-items: center;
@@ -171,60 +242,33 @@ textarea {
   color: var(--muted);
 }
 
-.tabs {
+.relation {
   display: flex;
-  gap: 4px;
-  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
-.tabs button {
-  background: transparent;
-  border: none;
+.chip {
+  background: #0b0f16;
+  border: 1px solid var(--line);
   color: var(--muted);
   font: inherit;
   font-size: 13px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.tabs button:hover {
-  color: var(--text);
-}
-.tabs button.active {
-  color: var(--bg);
-  background: var(--accent);
-  font-weight: 600;
-}
-.tabs em {
-  font-style: normal;
-  font-size: 11px;
-  background: rgba(255, 255, 255, 0.15);
+  padding: 5px 11px;
   border-radius: 999px;
-  padding: 0 6px;
-}
-
-.code {
-  margin: 0;
+  cursor: pointer;
   font-family: var(--mono);
-  font-size: 12.5px;
-  line-height: 1.6;
-  color: #cbd5e1;
-  background: #0b0f16;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 14px;
-  overflow-x: auto;
-  white-space: pre;
-  min-height: 320px;
+}
+.chip.on {
+  background: rgba(110, 231, 183, 0.14);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .issues {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-top: 18px;
 }
 .issue {
   display: grid;
@@ -239,7 +283,6 @@ textarea {
 }
 .issue .k {
   font-family: var(--mono);
-  color: var(--text);
 }
 .issue .lvl {
   font-size: 11px;
@@ -257,13 +300,4 @@ textarea {
 }
 .issue .msg {
   color: var(--muted);
-}
-.empty {
-  color: var(--accent);
-  font-size: 14px;
-}
-.hint {
-  color: var(--muted);
-  font-size: 12px;
-  margin: 4px 2px 0;
 }

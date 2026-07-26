@@ -1,8 +1,25 @@
+import { exec } from 'node:child_process'
+import { readFile } from 'node:fs/promises'
+import { extname, join, normalize } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { serve } from '@hono/node-server'
 import { ContentStore, loadSchema, slugify } from '@justjson/core'
 import { Hono } from 'hono'
 import { resolveContentDir } from './config'
 import { FsAdapter } from './fs-adapter'
+
+const editorDir = fileURLToPath(new URL('./editor', import.meta.url))
+
+const MIME: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.svg': 'image/svg+xml',
+  '.json': 'application/json',
+  '.ico': 'image/x-icon',
+  '.png': 'image/png',
+  '.woff2': 'font/woff2',
+}
 
 export async function createServer(root: string): Promise<Hono> {
   const adapter = new FsAdapter(root)
@@ -14,6 +31,17 @@ export async function createServer(root: string): Promise<Hono> {
   const app = new Hono()
 
   app.get('/api/_schema', (c) => c.json(schema))
+
+  app.get('/api/_singleton/:name', async (c) => {
+    const data = await store.readSingleton(c.req.param('name'))
+    return c.json(data ?? {})
+  })
+
+  app.put('/api/_singleton/:name', async (c) => {
+    const body = (await c.req.json()) as Record<string, unknown>
+    await store.writeSingleton(c.req.param('name'), body)
+    return c.json({ ok: true })
+  })
 
   app.get('/api/:collection', async (c) => {
     const slugs = await store.listEntries(c.req.param('collection'))
@@ -37,11 +65,37 @@ export async function createServer(root: string): Promise<Hono> {
     return c.json({ ok: true })
   })
 
+  app.get('/*', async (c) => {
+    const urlPath = c.req.path === '/' ? '/index.html' : c.req.path
+    const rel = normalize(urlPath).replace(/^(\.\.[/\\])+/, '')
+    const file = join(editorDir, rel)
+    if (!file.startsWith(editorDir)) return c.text('forbidden', 403)
+    const type = MIME[extname(file)] ?? 'application/octet-stream'
+    try {
+      return new Response(await readFile(file), { headers: { 'content-type': type } })
+    } catch {
+      try {
+        const html = await readFile(join(editorDir, 'index.html'))
+        return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
+      } catch {
+        return c.text('Editör arayüzü bulunamadı (justjson build gerekli).', 404)
+      }
+    }
+  })
+
   return app
+}
+
+function openBrowser(url: string): void {
+  const cmd =
+    process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open'
+  exec(`${cmd} ${url}`, () => {})
 }
 
 export async function startServer(root: string, port: number): Promise<void> {
   const app = await createServer(root)
   serve({ fetch: app.fetch, port })
-  console.log(`JustJSON çalışıyor: http://localhost:${port}`)
+  const url = `http://localhost:${port}`
+  console.log(`JustJSON çalışıyor: ${url}`)
+  openBrowser(url)
 }
