@@ -62,6 +62,18 @@ export async function deleteEntry(collection: string, slug: string): Promise<voi
   )
 }
 
+export async function uploadMedia(dataBase64: string, filename: string): Promise<string> {
+  const res = await ok(
+    await fetch('/api/_media', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ dataBase64, filename }),
+    }),
+  )
+  const out = (await res.json()) as { path: string }
+  return out.path
+}
+
 export async function getSingleton(name: string): Promise<Entry> {
   const res = await ok(await fetch(`/api/_singleton/${encodeURIComponent(name)}`))
   return res.json() as Promise<Entry>

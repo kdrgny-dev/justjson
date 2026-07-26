@@ -1,6 +1,6 @@
 import { slugify, validateEntry } from '@justjson/core'
 import type { Collection, Field, Schema, Singleton } from '@justjson/core'
-import { FileCog, Plus, Search, Settings2, Trash2 } from 'lucide-react'
+import { FileCog, Image as ImageIcon, Plus, Search, Settings2, Trash2, Upload } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
@@ -654,14 +654,7 @@ function FieldInput({
     case 'relation':
       return <RelationInput field={field} value={value} onChange={onChange} />
     case 'image':
-      return (
-        <TextInput
-          type="url"
-          value={(value as string) ?? ''}
-          placeholder="content/media/…"
-          onChange={(v) => onChange(k, v)}
-        />
-      )
+      return <ImageInput value={value} onChange={(v) => onChange(k, v)} />
     default:
       return <TextInput value={(value as string) ?? ''} onChange={(v) => onChange(k, v)} />
   }
@@ -714,6 +707,79 @@ function RelationInput({
           </button>
         )
       })}
+    </div>
+  )
+}
+
+async function fileToWebpBase64(file: File, maxW = 1600): Promise<string> {
+  const bitmap = await createImageBitmap(file)
+  const scale = Math.min(1, maxW / bitmap.width)
+  const w = Math.round(bitmap.width * scale)
+  const h = Math.round(bitmap.height * scale)
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('canvas yok')
+  ctx.drawImage(bitmap, 0, 0, w, h)
+  const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/webp', 0.85))
+  if (!blob) throw new Error('dönüştürülemedi')
+  const bytes = new Uint8Array(await blob.arrayBuffer())
+  let binary = ''
+  for (const b of bytes) binary += String.fromCharCode(b)
+  return btoa(binary)
+}
+
+function ImageInput({ value, onChange }: { value: unknown; onChange: (v: unknown) => void }) {
+  const [busy, setBusy] = useState(false)
+  const path = typeof value === 'string' ? value : ''
+  const src = path ? `/media/${path.split('/').pop()}` : null
+
+  const upload = async (file: File) => {
+    setBusy(true)
+    try {
+      onChange(await api.uploadMedia(await fileToWebpBase64(file), file.name))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+        {src ? (
+          <img src={src} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <ImageIcon className="h-6 w-6 text-slate-300" />
+        )}
+      </div>
+      <div className="space-y-1.5">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-indigo-300">
+          <Upload className="h-4 w-4" />
+          {busy ? 'Yükleniyor…' : 'Görsel yükle'}
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void upload(f)
+            }}
+          />
+        </label>
+        {path && (
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs text-slate-400">{path}</span>
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="text-xs text-slate-400 hover:text-red-600"
+            >
+              kaldır
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
