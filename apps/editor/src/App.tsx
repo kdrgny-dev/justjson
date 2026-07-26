@@ -1,3 +1,33 @@
+import { Badge } from '@/components/ui/badge'
+import { Button, buttonVariants } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Toaster } from '@/components/ui/sonner'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 import { slugify, validateEntry } from '@justjson/core'
 import type { Collection, Field, Schema, Singleton } from '@justjson/core'
 import {
@@ -6,13 +36,16 @@ import {
   FileCog,
   FolderGit2,
   Image as ImageIcon,
+  Link2,
   PencilRuler,
   Plus,
   Search,
   Trash2,
   Upload,
+  X,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
 import { TemplateGallery } from './TemplateGallery'
@@ -27,6 +60,15 @@ type Selection =
   | { kind: 'singleton'; name: string }
 
 export function App() {
+  return (
+    <TooltipProvider delayDuration={300}>
+      <AppShell />
+      <Toaster position="bottom-right" />
+    </TooltipProvider>
+  )
+}
+
+function AppShell() {
   const [schema, setSchema] = useState<Schema | null>(null)
   const [project, setProject] = useState<api.ProjectInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -94,7 +136,7 @@ export function App() {
   const schemaEmpty = schema.collections.length === 0 && schema.singletons.length === 0
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full bg-background">
       <Sidebar
         project={project}
         schema={schema}
@@ -102,7 +144,7 @@ export function App() {
         onSelect={setSelection}
         onOpenSchema={openSchema}
       />
-      <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-slate-50">
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-muted/30">
         <ContextBar project={project} crumbs={crumbsFor(schema, selection, setSelection)} />
         <div className="min-h-0 flex-1 overflow-hidden">
           <MainArea
@@ -150,42 +192,44 @@ function crumbsFor(
 
 function ContextBar({ project, crumbs }: { project: api.ProjectInfo | null; crumbs: Crumb[] }) {
   return (
-    <div className="flex h-11 shrink-0 items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white px-6 text-sm">
+    <header className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b bg-card px-6 text-sm">
       <span
         title={project?.path}
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 font-medium text-slate-600"
+        className="inline-flex shrink-0 items-center gap-1.5 font-medium text-muted-foreground"
       >
-        <FolderGit2 className="h-3.5 w-3.5 text-slate-400" />
+        <FolderGit2 className="h-4 w-4 text-muted-foreground/70" />
         {project?.name ?? '…'}
       </span>
       {crumbs.map((c) => (
-        <span key={c.label} className="inline-flex shrink-0 items-center gap-1.5">
-          <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
+        <span key={c.label} className="inline-flex shrink-0 items-center gap-1">
+          <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
           {c.onClick ? (
             <button
               type="button"
               onClick={c.onClick}
-              className="rounded text-slate-500 transition hover:text-indigo-600"
+              className="rounded text-muted-foreground transition-colors hover:text-primary"
             >
               {c.label}
             </button>
           ) : (
-            <span className="font-medium text-slate-800">{c.label}</span>
+            <span className="font-medium text-foreground">{c.label}</span>
           )}
           {c.tag && (
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-400">
+            <Badge variant="secondary" className="ml-0.5 font-normal">
               {c.tag}
-            </span>
+            </Badge>
           )}
         </span>
       ))}
-    </div>
+    </header>
   )
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-full items-center justify-center text-sm text-slate-500">{children}</div>
+    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+      {children}
+    </div>
   )
 }
 
@@ -211,17 +255,17 @@ function Sidebar({
   }
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
+    <aside className="flex w-60 shrink-0 flex-col border-r bg-card">
       <div className="px-5 pt-4 pb-3">
-        <div className="text-lg font-bold tracking-tight text-slate-900">
-          Just<span className="text-indigo-600">JSON</span>
+        <div className="text-lg font-bold tracking-tight text-foreground">
+          Just<span className="text-primary">JSON</span>
         </div>
         {project && (
           <div
             title={project.path}
-            className="mt-1.5 flex max-w-full items-center gap-1.5 rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-500 ring-1 ring-slate-200/70"
+            className="mt-1.5 flex max-w-full items-center gap-1.5 rounded-md border bg-muted/50 px-2 py-1 text-xs font-medium text-muted-foreground"
           >
-            <FolderGit2 className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+            <FolderGit2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
             <span className="truncate">{project.name}</span>
           </div>
         )}
@@ -237,6 +281,7 @@ function Sidebar({
             schema.collections.map((c) => (
               <NavItem
                 key={c.name}
+                icon={<Boxes className="h-4 w-4" />}
                 active={collectionActive(c.name)}
                 onClick={() => onSelect({ kind: 'collection', name: c.name })}
               >
@@ -272,17 +317,19 @@ function SchemaNavItem({ active, onClick }: { active: boolean; onClick: () => vo
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition ${
-        active
-          ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100'
-          : 'text-slate-600 hover:bg-slate-100'
-      }`}
+      className={cn(
+        'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors',
+        active ? 'bg-accent text-primary' : 'text-muted-foreground hover:bg-accent/60',
+      )}
     >
       <PencilRuler className="h-4 w-4 shrink-0" />
       <span className="min-w-0">
         <span className="block text-sm font-medium leading-tight">Şema</span>
         <span
-          className={`block text-xs leading-tight ${active ? 'text-indigo-400' : 'text-slate-400'}`}
+          className={cn(
+            'block text-xs leading-tight',
+            active ? 'text-primary/70' : 'text-muted-foreground/70',
+          )}
         >
           İçerik yapısı
         </span>
@@ -301,17 +348,25 @@ function NavSection({
   children: React.ReactNode
 }) {
   return (
-    <div className="pt-3">
+    <div className="pt-4">
       <div className="flex items-center justify-between px-3 pb-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-        <button
-          type="button"
-          onClick={onAdd}
-          title={`${label} ekle`}
-          className="flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-indigo-50 hover:text-indigo-600"
-        >
-          <Plus className="h-3.5 w-3.5" />
-        </button>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">
+          {label}
+        </p>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={onAdd}
+              className="text-muted-foreground hover:text-primary"
+            >
+              <Plus />
+              <span className="sr-only">{label} ekle</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{label} ekle</TooltipContent>
+        </Tooltip>
       </div>
       <div className="space-y-0.5">{children}</div>
     </div>
@@ -323,7 +378,7 @@ function EmptyNavHint({ onClick, children }: { onClick: () => void; children: Re
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-400 transition hover:bg-slate-50 hover:text-indigo-600"
+      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground/70 transition-colors hover:bg-accent/60 hover:text-primary"
     >
       <Plus className="h-4 w-4" /> {children}
     </button>
@@ -345,11 +400,14 @@ function NavItem({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${
-        active ? 'bg-indigo-50 font-medium text-indigo-700' : 'text-slate-600 hover:bg-slate-100'
-      }`}
+      className={cn(
+        'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+        active
+          ? 'bg-accent font-medium text-primary'
+          : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
+      )}
     >
-      {icon}
+      {icon && <span className={active ? 'text-primary' : 'text-muted-foreground/70'}>{icon}</span>}
       <span className="truncate">{children}</span>
     </button>
   )
@@ -381,9 +439,9 @@ function MainArea({
         title="Soldan başla"
         hint="Bir koleksiyon ya da tekil kayıt seçerek düzenlemeye başla. Yapıyı değiştirmek istersen Şema'ya git."
         action={
-          <PrimaryButton onClick={() => onOpenSchema()}>
-            <PencilRuler className="h-4 w-4" /> Şemayı aç
-          </PrimaryButton>
+          <Button onClick={() => onOpenSchema()}>
+            <PencilRuler /> Şemayı aç
+          </Button>
         }
       />
     )
@@ -446,19 +504,19 @@ function EmptyState({
   return (
     <div className="flex h-full flex-col items-center justify-center px-6 text-center">
       {icon && (
-        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border bg-card text-muted-foreground shadow-sm">
           {icon}
         </div>
       )}
-      <p className="text-sm font-medium text-slate-600">{title}</p>
-      {hint && <p className="mt-1 max-w-xs text-sm text-slate-400">{hint}</p>}
-      {action && <div className="mt-4">{action}</div>}
+      <p className="text-base font-semibold text-foreground">{title}</p>
+      {hint && <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{hint}</p>}
+      {action && <div className="mt-5">{action}</div>}
     </div>
   )
 }
 
 function Page({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto h-full max-w-3xl overflow-y-auto px-8 py-6">{children}</div>
+  return <div className="mx-auto h-full max-w-3xl overflow-y-auto px-8 py-7">{children}</div>
 }
 
 function PageHead({
@@ -467,34 +525,13 @@ function PageHead({
   actions,
 }: { title: string; crumb?: string; actions?: React.ReactNode }) {
   return (
-    <div className="mb-6 flex items-center justify-between">
-      <h1 className="text-xl font-semibold text-slate-900">
+    <div className="mb-6 flex items-center justify-between gap-4">
+      <h1 className="text-xl font-semibold tracking-tight text-foreground">
         {title}
-        {crumb && <span className="ml-2 font-normal text-slate-400">/ {crumb}</span>}
+        {crumb && <span className="ml-2 font-normal text-muted-foreground">/ {crumb}</span>}
       </h1>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
-  )
-}
-
-function PrimaryButton({
-  children,
-  onClick,
-  disabled,
-}: {
-  children: React.ReactNode
-  onClick: () => void
-  disabled?: boolean
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-50"
-    >
-      {children}
-    </button>
   )
 }
 
@@ -532,67 +569,75 @@ function CollectionView({
       <PageHead
         title={collection.label ?? collection.name}
         actions={
-          <PrimaryButton onClick={onNew}>
-            <Plus className="h-4 w-4" /> Yeni kayıt
-          </PrimaryButton>
+          <Button onClick={onNew}>
+            <Plus /> Yeni kayıt
+          </Button>
         }
       />
 
       {rows && rows.length > 0 && (
-        <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
-          <Search className="h-4 w-4 text-slate-400" />
-          <input
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
-            placeholder="Ara…"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-          <span className="text-xs text-slate-400">{filtered?.length ?? 0} kayıt</span>
+        <div className="mb-4 flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="pl-9"
+              placeholder="Başlık veya slug ara…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </div>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {filtered?.length ?? 0} kayıt
+          </span>
         </div>
       )}
 
-      {rows === null && <p className="text-sm text-slate-400">Yükleniyor…</p>}
+      {rows === null && <p className="text-sm text-muted-foreground">Yükleniyor…</p>}
       {rows?.length === 0 && (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
-          <p className="text-sm text-slate-500">Henüz kayıt yok.</p>
-          <button
-            type="button"
-            onClick={onNew}
-            className="mt-3 text-sm font-medium text-indigo-600 hover:underline"
-          >
-            İlk kaydı oluştur →
-          </button>
+        <div className="flex flex-col items-center rounded-xl border border-dashed bg-card px-6 py-16 text-center">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+            <Boxes className="h-6 w-6" />
+          </div>
+          <p className="text-sm font-medium text-foreground">Henüz kayıt yok</p>
+          <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+            Bu koleksiyona ilk içeriği ekleyerek başla.
+          </p>
+          <Button onClick={onNew} variant="outline" className="mt-4">
+            <Plus /> İlk kaydı oluştur
+          </Button>
         </div>
       )}
 
       {filtered && rows && rows.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
-                <th className="px-4 py-2.5 font-medium">Başlık</th>
-                <th className="px-4 py-2.5 font-medium">Slug</th>
-                <th className="px-4 py-2.5 text-right font-medium">Güncellendi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
+        <div className="overflow-hidden rounded-xl border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>Başlık</TableHead>
+                <TableHead>Slug</TableHead>
+                <TableHead className="text-right">Güncellendi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {filtered.map((row) => (
-                <tr
+                <TableRow
                   key={row.slug}
                   tabIndex={0}
                   onClick={() => onOpen(row.slug)}
                   onKeyDown={(e) => e.key === 'Enter' && onOpen(row.slug)}
-                  className="cursor-pointer transition hover:bg-indigo-50/40 focus:bg-indigo-50 focus:outline-none"
+                  className="cursor-pointer focus:bg-accent focus:outline-none"
                 >
-                  <td className="px-4 py-3 font-medium text-slate-800">{row.title}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-400">{row.slug}</td>
-                  <td className="px-4 py-3 text-right text-xs text-slate-400">
+                  <TableCell className="font-medium text-foreground">{row.title}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">
+                    {row.slug}
+                  </TableCell>
+                  <TableCell className="text-right text-xs text-muted-foreground">
                     {formatDate(row.updatedAt)}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </Page>
@@ -657,10 +702,14 @@ function EntryEditor({
     setSaving(true)
     try {
       if (isNew && (await api.getEntry(collection.name, effectiveSlug))) {
-        setSaveError(`"${effectiveSlug}" zaten var — farklı bir slug seç.`)
+        const msg = `"${effectiveSlug}" zaten var — farklı bir slug seç.`
+        setSaveError(msg)
+        toast.error(msg)
         return
       }
-      onSaved(await api.putEntry(collection.name, effectiveSlug, data))
+      const saved = await api.putEntry(collection.name, effectiveSlug, data)
+      toast.success(`"${saved}" kaydedildi`)
+      onSaved(saved)
     } finally {
       setSaving(false)
     }
@@ -669,6 +718,7 @@ function EntryEditor({
   const remove = async () => {
     if (isNew) return
     await api.deleteEntry(collection.name, slug as string)
+    toast.success(`"${slug}" silindi`)
     onDeleted()
   }
 
@@ -682,31 +732,34 @@ function EntryEditor({
         actions={
           <>
             {!isNew && (
-              <button
-                type="button"
-                onClick={remove}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
-              >
-                <Trash2 className="h-4 w-4" /> Sil
-              </button>
+              <Button variant="destructive" onClick={remove}>
+                <Trash2 /> Sil
+              </Button>
             )}
-            <PrimaryButton onClick={save} disabled={saving || !result.ok}>
+            <Button onClick={save} disabled={saving || !result.ok}>
               {saving ? 'Kaydediliyor…' : 'Kaydet'}
-            </PrimaryButton>
+            </Button>
           </>
         }
       />
       {saveError && (
-        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p className="mb-5 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {saveError}
         </p>
       )}
       {isNew && (
-        <FieldShell label="dosya adı (slug)" hint={effectiveSlug}>
-          <TextInput value={newSlug} onChange={(v) => setNewSlug(v)} placeholder="otomatik" />
-        </FieldShell>
+        <div className="mb-5">
+          <FieldShell label="dosya adı (slug)" hint={effectiveSlug}>
+            <Input
+              value={newSlug}
+              onChange={(e) => setNewSlug(e.target.value)}
+              placeholder="otomatik"
+              className="font-mono"
+            />
+          </FieldShell>
+        </div>
       )}
-      <div className="space-y-5">
+      <div className="space-y-6">
         {collection.fields.map((field) => (
           <FieldEditor key={field.key} field={field} value={data[field.key]} onChange={setField} />
         ))}
@@ -735,6 +788,7 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
     setSaving(true)
     try {
       await api.putSingleton(singleton.name, data)
+      toast.success(`${singleton.label ?? singleton.name} kaydedildi`)
     } finally {
       setSaving(false)
     }
@@ -747,12 +801,12 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
       <PageHead
         title={singleton.label ?? singleton.name}
         actions={
-          <PrimaryButton onClick={save} disabled={saving || !result.ok}>
+          <Button onClick={save} disabled={saving || !result.ok}>
             {saving ? 'Kaydediliyor…' : 'Kaydet'}
-          </PrimaryButton>
+          </Button>
         }
       />
-      <div className="space-y-5">
+      <div className="space-y-6">
         {singleton.fields.map((field) => (
           <FieldEditor key={field.key} field={field} value={data[field.key]} onChange={setField} />
         ))}
@@ -769,17 +823,13 @@ function Issues({ result }: { result: ReturnType<typeof validateEntry> }) {
       {result.issues.map((i) => (
         <div
           key={`${i.key}-${i.message}`}
-          className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+          className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2 text-sm"
         >
-          <span className="font-mono text-slate-700">{i.key}</span>
-          <span
-            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-              i.level === 'error' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
-            }`}
-          >
+          <span className="font-mono text-foreground">{i.key}</span>
+          <Badge variant={i.level === 'error' ? 'destructive' : 'secondary'}>
             {i.level === 'error' ? 'hata' : 'uyarı'}
-          </span>
-          <span className="text-slate-500">{i.message}</span>
+          </Badge>
+          <span className="text-muted-foreground">{i.message}</span>
         </div>
       ))}
     </div>
@@ -802,11 +852,11 @@ function FieldShell({
   const Icon = type ? FIELD_META[type as keyof typeof FIELD_META]?.icon : null
   return (
     <div>
-      <div className="mb-1.5 flex items-center gap-2 text-sm">
-        {Icon && <Icon className="h-3.5 w-3.5 text-slate-400" />}
-        <span className="font-medium text-slate-700">{label}</span>
-        {required && <span className="text-red-500">*</span>}
-        {hint && <span className="ml-auto font-mono text-xs text-indigo-500">{hint}</span>}
+      <div className="mb-2 flex items-center gap-2">
+        {Icon && <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
+        <Label className="text-foreground">{label}</Label>
+        {required && <span className="text-destructive">*</span>}
+        {hint && <span className="ml-auto font-mono text-xs text-primary">{hint}</span>}
       </div>
       {children}
     </div>
@@ -829,31 +879,6 @@ function FieldEditor({
   )
 }
 
-const inputClass =
-  'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100'
-
-function TextInput({
-  value,
-  onChange,
-  placeholder,
-  type = 'text',
-}: {
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-  type?: string
-}) {
-  return (
-    <input
-      type={type}
-      className={inputClass}
-      value={value}
-      placeholder={placeholder}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  )
-}
-
 function FieldInput({
   field,
   value,
@@ -869,55 +894,69 @@ function FieldInput({
       return <RichText value={(value as string) ?? ''} onChange={(md) => onChange(k, md)} />
     case 'number':
       return (
-        <input
+        <Input
           type="number"
-          className={inputClass}
           value={value === undefined ? '' : String(value)}
           onChange={(e) => onChange(k, e.target.value === '' ? '' : Number(e.target.value))}
         />
       )
     case 'boolean':
       return (
-        <button
+        <Button
           type="button"
+          variant={value ? 'default' : 'outline'}
+          size="sm"
+          role="switch"
+          aria-checked={!!value}
           onClick={() => onChange(k, !value)}
-          className={`relative h-6 w-11 rounded-full transition ${value ? 'bg-indigo-600' : 'bg-slate-300'}`}
         >
-          <span
-            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${value ? 'left-[22px]' : 'left-0.5'}`}
-          />
-        </button>
+          {value ? 'Evet' : 'Hayır'}
+        </Button>
       )
     case 'date':
       return (
-        <input
+        <Input
           type="date"
-          className={inputClass}
+          className="w-fit"
           value={(value as string) ?? ''}
           onChange={(e) => onChange(k, e.target.value)}
         />
       )
     case 'select':
       return (
-        <select
-          className={inputClass}
-          value={(value as string) ?? ''}
-          onChange={(e) => onChange(k, e.target.value)}
-        >
-          <option value="">—</option>
-          {(field.options ?? []).map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <Select value={(value as string) || undefined} onValueChange={(v) => onChange(k, v)}>
+            <SelectTrigger className="w-[240px]">
+              <SelectValue placeholder="Seç…" />
+            </SelectTrigger>
+            <SelectContent>
+              {(field.options ?? []).map((o) => (
+                <SelectItem key={o} value={o}>
+                  {o}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {value ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => onChange(k, '')}
+              className="text-muted-foreground"
+            >
+              <X />
+              <span className="sr-only">Temizle</span>
+            </Button>
+          ) : null}
+        </div>
       )
     case 'relation':
       return <RelationInput field={field} value={value} onChange={onChange} />
     case 'image':
       return <ImageInput value={value} onChange={(v) => onChange(k, v)} />
     default:
-      return <TextInput value={(value as string) ?? ''} onChange={(v) => onChange(k, v)} />
+      return <Input value={(value as string) ?? ''} onChange={(e) => onChange(k, e.target.value)} />
   }
 }
 
@@ -941,33 +980,56 @@ function RelationInput({
         .catch(() => setOptions([]))
   }, [field.to])
 
+  const setSelected = (next: string[]) => onChange(field.key, next.length ? next : '')
+
   const toggle = (slug: string) => {
-    const next = selected.includes(slug) ? selected.filter((s) => s !== slug) : [...selected, slug]
-    onChange(field.key, next.length ? next : '')
+    setSelected(selected.includes(slug) ? selected.filter((s) => s !== slug) : [...selected, slug])
   }
 
   if (options.length === 0)
-    return <p className="text-sm text-slate-400">“{field.to}” içinde kayıt yok.</p>
+    return <p className="text-sm text-muted-foreground">“{field.to}” içinde kayıt yok.</p>
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((slug) => {
-        const on = selected.includes(slug)
-        return (
-          <button
-            type="button"
-            key={slug}
-            onClick={() => toggle(slug)}
-            className={`rounded-full px-3 py-1 font-mono text-xs transition ${
-              on
-                ? 'bg-indigo-600 text-white'
-                : 'border border-slate-200 bg-white text-slate-500 hover:border-indigo-300'
-            }`}
-          >
-            {slug}
-          </button>
-        )
-      })}
+    <div className="space-y-2.5">
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {selected.map((slug) => (
+            <Badge key={slug} variant="secondary" className="gap-1 pr-1 font-mono">
+              {slug}
+              <button
+                type="button"
+                onClick={() => toggle(slug)}
+                className="rounded-full text-muted-foreground transition-colors hover:text-destructive"
+                aria-label={`${slug} bağlantısını kaldır`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm">
+            <Link2 /> Bağlantı ekle
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="max-h-72 w-56 overflow-y-auto">
+          <DropdownMenuLabel>“{field.to}” kayıtları</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {options.map((slug) => (
+            <DropdownMenuCheckboxItem
+              key={slug}
+              checked={selected.includes(slug)}
+              onCheckedChange={() => toggle(slug)}
+              onSelect={(e) => e.preventDefault()}
+              className="font-mono text-xs"
+            >
+              {slug}
+            </DropdownMenuCheckboxItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   )
 }
@@ -1000,6 +1062,7 @@ function ImageInput({ value, onChange }: { value: unknown; onChange: (v: unknown
     setBusy(true)
     try {
       onChange(await api.uploadMedia(await fileToWebpBase64(file), file.name))
+      toast.success('Görsel yüklendi')
     } finally {
       setBusy(false)
     }
@@ -1007,16 +1070,16 @@ function ImageInput({ value, onChange }: { value: unknown; onChange: (v: unknown
 
   return (
     <div className="flex items-center gap-4">
-      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted/50">
         {src ? (
           <img src={src} alt="" className="h-full w-full object-cover" />
         ) : (
-          <ImageIcon className="h-6 w-6 text-slate-300" />
+          <ImageIcon className="h-6 w-6 text-muted-foreground/60" />
         )}
       </div>
-      <div className="space-y-1.5">
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-indigo-300">
-          <Upload className="h-4 w-4" />
+      <div className="space-y-2">
+        <label className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'cursor-pointer')}>
+          <Upload />
           {busy ? 'Yükleniyor…' : 'Görsel yükle'}
           <input
             type="file"
@@ -1030,14 +1093,16 @@ function ImageInput({ value, onChange }: { value: unknown; onChange: (v: unknown
         </label>
         {path && (
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-slate-400">{path}</span>
-            <button
+            <span className="font-mono text-xs text-muted-foreground">{path}</span>
+            <Button
               type="button"
+              variant="ghost"
+              size="xs"
               onClick={() => onChange('')}
-              className="text-xs text-slate-400 hover:text-red-600"
+              className="text-muted-foreground hover:text-destructive"
             >
               kaldır
-            </button>
+            </Button>
           </div>
         )}
       </div>

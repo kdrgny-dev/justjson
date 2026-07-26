@@ -1,4 +1,27 @@
-import { BookOpen, FileStack, History, LayoutGrid, Newspaper, PenLine, User } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  AlertCircle,
+  BookOpen,
+  Braces,
+  FileStack,
+  FileText,
+  History,
+  LayoutGrid,
+  Loader2,
+  Newspaper,
+  PenLine,
+  Rows3,
+  User,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import * as api from './api'
@@ -10,6 +33,35 @@ const ICONS: Record<string, LucideIcon> = {
   portfolio: LayoutGrid,
   docs: BookOpen,
   changelog: History,
+}
+
+function structureSummary(t: TemplateMeta) {
+  const parts: string[] = []
+  if (t.collections.length) parts.push(`${t.collections.length} koleksiyon`)
+  if (t.singletons.length) parts.push(`${t.singletons.length} tekil`)
+  return parts.join(' · ')
+}
+
+function SkeletonCard() {
+  return (
+    <Card className="h-full">
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="size-10 shrink-0 animate-pulse rounded-lg bg-muted" />
+          <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="mt-2 h-3 w-full animate-pulse rounded bg-muted" />
+        <div className="mt-1.5 h-3 w-2/3 animate-pulse rounded bg-muted" />
+      </CardHeader>
+      <CardContent className="flex-1 space-y-1.5">
+        <div className="h-8 animate-pulse rounded-md bg-muted" />
+        <div className="h-8 animate-pulse rounded-md bg-muted" />
+      </CardContent>
+      <CardFooter>
+        <div className="h-9 w-full animate-pulse rounded-lg bg-muted" />
+      </CardFooter>
+    </Card>
+  )
 }
 
 export function TemplateGallery({
@@ -27,7 +79,7 @@ export function TemplateGallery({
     api
       .listTemplates()
       .then(setTemplates)
-      .catch(() => setError('Template listesi yüklenemedi.'))
+      .catch(() => setError('Şablon listesi yüklenemedi.'))
   }, [])
 
   const apply = async (id: string) => {
@@ -42,78 +94,146 @@ export function TemplateGallery({
     }
   }
 
+  const busy = applying !== null
+
   return (
-    <div className="h-full overflow-y-auto bg-slate-50">
-      <div className="mx-auto max-w-4xl px-8 py-12">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Bir template seç</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Hazır bir şemayla hızlı başla — dilediğin gibi düzenlersin. Ya da sıfırdan kur.
+    <div className="h-full overflow-y-auto bg-muted/30">
+      <div className="mx-auto max-w-5xl px-6 py-12 sm:px-8">
+        <header className="mb-9 max-w-2xl">
+          <div className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <span className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <Braces className="size-3.5" />
+            </span>
+            JustJSON
+          </div>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            Bir şablon seç
+          </h1>
+          <p className="mt-2 text-base leading-relaxed text-muted-foreground">
+            İçeriğini görsel olarak düzenle; her şey klasöründe düz JSON olarak kalır — sunucu yok,
+            hesap yok.
           </p>
-        </div>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Seçtiğin şablon, içerik dosyalarını ve şemanı senin için oluşturur — hepsini sonra
+            değiştirebilirsin.
+          </p>
+        </header>
 
         {error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
+          <div className="mb-6 flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <AlertCircle className="mt-0.5 size-4 shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {templates === null && !error && [0, 1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
+
           {templates?.map((t) => {
             const Icon = ICONS[t.id] ?? FileStack
-            const busy = applying === t.id
+            const active = applying === t.id
             return (
-              <button
+              <Card
                 key={t.id}
-                type="button"
-                disabled={applying !== null}
-                onClick={() => apply(t.id)}
-                className="group flex flex-col rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md disabled:opacity-60"
+                className="h-full transition-shadow hover:shadow-md data-[busy=true]:opacity-60"
+                data-busy={busy && !active}
               >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-100">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="text-base font-semibold text-slate-900">{t.title}</span>
-                </div>
-                <p className="mt-3 text-sm leading-relaxed text-slate-500">{t.description}</p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {t.collections.map((c) => (
-                    <span
-                      key={c.label}
-                      className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600"
-                    >
-                      {c.label} · {c.fields} alan
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                      <Icon className="size-5" />
                     </span>
-                  ))}
-                  {t.singletons.map((s) => (
-                    <span
-                      key={s.label}
-                      className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600"
-                    >
-                      {s.label}
+                    <CardTitle className="text-base">{t.title}</CardTitle>
+                  </div>
+                  <CardDescription className="mt-2 leading-relaxed">
+                    {t.description}
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="flex-1">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Oluşturulacak yapı
                     </span>
-                  ))}
-                </div>
-                <span className="mt-4 text-sm font-medium text-indigo-600">
-                  {busy ? 'Uygulanıyor…' : 'Bu template’i kullan →'}
-                </span>
-              </button>
+                    <span className="text-xs text-muted-foreground/80">{structureSummary(t)}</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {t.collections.map((c) => (
+                      <div
+                        key={c.label}
+                        className="flex items-center gap-2 rounded-md bg-muted/60 px-2.5 py-1.5"
+                      >
+                        <Rows3 className="size-3.5 shrink-0 text-muted-foreground" />
+                        <span className="truncate text-sm font-medium text-foreground">
+                          {c.label}
+                        </span>
+                        <Badge variant="secondary" className="ml-auto shrink-0 font-normal">
+                          {c.fields} alan
+                        </Badge>
+                      </div>
+                    ))}
+                    {t.singletons.map((s) => (
+                      <div
+                        key={s.label}
+                        className="flex items-center gap-2 rounded-md bg-muted/60 px-2.5 py-1.5"
+                      >
+                        <FileText className="size-3.5 shrink-0 text-muted-foreground" />
+                        <span className="truncate text-sm font-medium text-foreground">
+                          {s.label}
+                        </span>
+                        <Badge variant="outline" className="ml-auto shrink-0 font-normal">
+                          tekil
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+
+                <CardFooter>
+                  <Button className="h-9 w-full" disabled={busy} onClick={() => apply(t.id)}>
+                    {active ? (
+                      <>
+                        <Loader2 className="animate-spin" />
+                        Uygulanıyor…
+                      </>
+                    ) : (
+                      'Bu şablonu kullan'
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
             )
           })}
 
-          {!templates && !error && <p className="text-sm text-slate-400">Yükleniyor…</p>}
-        </div>
+          <Card
+            className="h-full border border-dashed border-border bg-transparent ring-0 transition-colors hover:border-foreground/25 data-[busy=true]:opacity-60"
+            data-busy={busy}
+          >
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <PenLine className="size-5" />
+                </span>
+                <CardTitle className="text-base">Sıfırdan başla</CardTitle>
+              </div>
+              <CardDescription className="mt-2 leading-relaxed">
+                Boş bir şemayla başla, koleksiyonlarını ve alanlarını kendin tanımla.
+              </CardDescription>
+            </CardHeader>
 
-        <button
-          type="button"
-          onClick={onScratch}
-          disabled={applying !== null}
-          className="mt-6 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60"
-        >
-          <PenLine className="h-4 w-4" />
-          Sıfırdan başla
-        </button>
+            <CardContent className="flex-1">
+              <div className="flex h-full items-center rounded-md border border-dashed border-border/70 px-3 py-4 text-sm text-muted-foreground">
+                Henüz içerik yok — yapıyı baştan sen kurarsın.
+              </div>
+            </CardContent>
+
+            <CardFooter>
+              <Button variant="outline" className="h-9 w-full" disabled={busy} onClick={onScratch}>
+                Boş projeyle devam et
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </div>
   )

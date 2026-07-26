@@ -1,3 +1,22 @@
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 import { slugify } from '@justjson/core'
 import type { Collection, Field, FieldType, Schema, Singleton } from '@justjson/core'
 import { ArrowDown, ArrowUp, Boxes, Check, Plus, Trash2, X } from 'lucide-react'
@@ -110,25 +129,20 @@ export function SchemaBuilder({
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-4">
+      <header className="flex items-center justify-between border-b bg-background px-8 py-4">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900">Şema</h1>
-          <p className="text-sm text-slate-500">Koleksiyonlarını ve alanlarını tasarla.</p>
+          <h1 className="font-heading text-lg font-semibold text-foreground">Şema</h1>
+          <p className="text-sm text-muted-foreground">Koleksiyonlarını ve alanlarını tasarla.</p>
         </div>
-        <button
-          type="button"
-          onClick={save}
-          disabled={saving}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-50"
-        >
-          <Check className="h-4 w-4" />
+        <Button type="button" onClick={save} disabled={saving}>
+          <Check />
           {saving ? 'Kaydediliyor…' : 'Şemayı kaydet'}
-        </button>
+        </Button>
       </header>
 
       <div className="flex-1 overflow-y-auto px-8 py-6">
         {error && (
-          <p className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
           </p>
         )}
@@ -186,7 +200,7 @@ export function SchemaBuilder({
         )}
       </div>
 
-      {picker && <TypePicker onPick={applyType} onClose={() => setPicker(null)} />}
+      <TypePicker open={picker !== null} onPick={applyType} onClose={() => setPicker(null)} />
     </div>
   )
 }
@@ -206,16 +220,14 @@ function Section({
     <section>
       <div className="mb-3 flex items-end justify-between">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{title}</h2>
-          <p className="text-xs text-slate-400">{hint}</p>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {title}
+          </h2>
+          <p className="text-xs text-muted-foreground/70">{hint}</p>
         </div>
-        <button
-          type="button"
-          onClick={onAdd}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600"
-        >
-          <Plus className="h-4 w-4" /> Ekle
-        </button>
+        <Button type="button" variant="outline" size="sm" onClick={onAdd}>
+          <Plus /> Ekle
+        </Button>
       </div>
       <div className="space-y-3">{children}</div>
     </section>
@@ -232,44 +244,44 @@ function SchemaEmpty({
   onBrowseTemplates?: () => void
 }) {
   return (
-    <div className="mx-auto flex max-w-md flex-col items-center px-6 py-16 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-        <Boxes className="h-7 w-7" />
-      </div>
-      <h2 className="text-lg font-semibold text-slate-900">Şeman boş</h2>
-      <p className="mt-1.5 text-sm text-slate-500">
-        Koleksiyon, içeriğinin bir tipini tanımlar — yazılar, ürünler, projeler. İlkini ekleyerek
-        başla.
-      </p>
-      <button
-        type="button"
-        onClick={onAddCollection}
-        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700"
-      >
-        <Plus className="h-4 w-4" /> Koleksiyon ekle
-      </button>
-      <div className="mt-3 flex items-center gap-3 text-sm">
-        <button
-          type="button"
-          onClick={onAddSingleton}
-          className="font-medium text-slate-500 transition hover:text-slate-700"
-        >
-          Tekil kayıt ekle
-        </button>
-        {onBrowseTemplates && (
-          <>
-            <span className="text-slate-300">·</span>
-            <button
-              type="button"
-              onClick={onBrowseTemplates}
-              className="font-medium text-indigo-600 transition hover:text-indigo-700"
-            >
-              veya bir template’den başla
-            </button>
-          </>
-        )}
-      </div>
-    </div>
+    <Card className="mx-auto max-w-md">
+      <CardContent className="flex flex-col items-center px-8 py-10 text-center">
+        <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <Boxes className="size-7" />
+        </div>
+        <h2 className="font-heading text-lg font-semibold text-foreground">Şeman boş</h2>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          Koleksiyon, içeriğinin bir tipini tanımlar — yazılar, ürünler, projeler. İlkini ekleyerek
+          başla.
+        </p>
+        <Button type="button" size="lg" onClick={onAddCollection} className="mt-6">
+          <Plus /> Koleksiyon ekle
+        </Button>
+        <div className="mt-3 flex items-center gap-3 text-sm">
+          <Button
+            type="button"
+            variant="link"
+            onClick={onAddSingleton}
+            className="h-auto p-0 text-muted-foreground hover:text-foreground"
+          >
+            Tekil kayıt ekle
+          </Button>
+          {onBrowseTemplates && (
+            <>
+              <span className="text-border">·</span>
+              <Button
+                type="button"
+                variant="link"
+                onClick={onBrowseTemplates}
+                className="h-auto p-0"
+              >
+                veya bir template’den başla
+              </Button>
+            </>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -301,61 +313,64 @@ function ContainerCard({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3">
-        <input
-          className="flex-1 rounded-md bg-transparent px-1 py-0.5 text-base font-semibold text-slate-900 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100"
+    <Card className="gap-0 overflow-hidden py-0">
+      <CardHeader className="flex flex-row items-center gap-2 bg-muted/40 px-3 py-2.5">
+        <Input
+          className="h-8 flex-1 border-transparent bg-transparent font-medium shadow-none focus-visible:border-input focus-visible:bg-background"
           value={container.label ?? ''}
-          placeholder="Koleksiyon adı"
+          placeholder={kind === 'collection' ? 'Koleksiyon adı' : 'Tekil ad'}
           onChange={(e) =>
             onChange((c) => {
               c.label = e.target.value
             })
           }
         />
-        <input
-          className="w-40 rounded-md border border-transparent px-2 py-1 font-mono text-xs text-indigo-600 outline-none hover:border-slate-200 focus:border-indigo-300 focus:bg-white"
+        <Input
+          className="h-8 w-40 border-transparent bg-transparent font-mono text-xs text-primary hover:border-input focus-visible:bg-background"
           value={container.name}
           placeholder="api-adi"
           onChange={(e) => setName(e.target.value)}
         />
-        <IconButton title="Yukarı" onClick={() => onMove(-1)}>
-          <ArrowUp className="h-4 w-4" />
+        <IconButton label="Yukarı taşı" onClick={() => onMove(-1)}>
+          <ArrowUp />
         </IconButton>
-        <IconButton title="Aşağı" onClick={() => onMove(1)}>
-          <ArrowDown className="h-4 w-4" />
+        <IconButton label="Aşağı taşı" onClick={() => onMove(1)}>
+          <ArrowDown />
         </IconButton>
-        <IconButton title="Sil" danger onClick={onRemove}>
-          <Trash2 className="h-4 w-4" />
+        <IconButton label="Sil" danger onClick={onRemove}>
+          <Trash2 />
         </IconButton>
-      </div>
+      </CardHeader>
 
-      <div className="divide-y divide-slate-100">
+      <CardContent className="border-t px-0">
         {container.fields.length === 0 && (
-          <p className="px-4 py-6 text-center text-sm text-slate-400">Henüz alan yok.</p>
+          <p className="px-4 py-6 text-center text-sm text-muted-foreground">Henüz alan yok.</p>
         )}
-        {container.fields.map((field, fi) => (
-          <FieldRow
-            // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü satır; anahtar düzenlenebilir, stabil index gerekli
-            key={fi}
-            field={field}
-            collectionNames={collectionNames}
-            onChange={(fn) => onChange((c) => fn(c.fields[fi] as Field))}
-            onRemove={() => onChange((c) => c.fields.splice(fi, 1))}
-            onMove={(dir) => onChange((c) => move(c.fields, fi, dir))}
-            onChangeType={() => onChangeType(fi)}
-          />
-        ))}
-      </div>
+        <div className="divide-y divide-border/60">
+          {container.fields.map((field, fi) => (
+            <FieldRow
+              // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü satır; anahtar düzenlenebilir, stabil index gerekli
+              key={fi}
+              field={field}
+              collectionNames={collectionNames}
+              onChange={(fn) => onChange((c) => fn(c.fields[fi] as Field))}
+              onRemove={() => onChange((c) => c.fields.splice(fi, 1))}
+              onMove={(dir) => onChange((c) => move(c.fields, fi, dir))}
+              onChangeType={() => onChangeType(fi)}
+            />
+          ))}
+        </div>
+      </CardContent>
 
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={onAddField}
-        className="flex w-full items-center justify-center gap-1.5 border-t border-slate-100 px-4 py-2.5 text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
+        className="h-10 w-full justify-center gap-1.5 rounded-none border-t text-primary hover:bg-primary/5 hover:text-primary"
       >
-        <Plus className="h-4 w-4" /> Alan ekle
-      </button>
-    </div>
+        <Plus /> Alan ekle
+      </Button>
+    </Card>
   )
 }
 
@@ -378,18 +393,25 @@ function FieldRow({
   const Icon = meta.icon
 
   return (
-    <div className="group px-4 py-3">
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={onChangeType}
-          title="Tipi değiştir"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition hover:bg-indigo-100"
-        >
-          <Icon className="h-4 w-4" />
-        </button>
-        <input
-          className="flex-1 rounded-md px-1 py-0.5 text-sm font-medium text-slate-800 outline-none focus:bg-slate-50 focus:ring-2 focus:ring-indigo-100"
+    <div className="group px-3 py-2.5">
+      <div className="flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onChangeType}
+              aria-label="Tipi değiştir"
+              className="shrink-0 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
+            >
+              <Icon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{meta.label} · tipi değiştir</TooltipContent>
+        </Tooltip>
+        <Input
+          className="h-8 flex-1 border-transparent bg-transparent font-medium shadow-none focus-visible:border-input focus-visible:bg-background"
           value={field.label ?? ''}
           placeholder="Alan adı"
           onChange={(e) =>
@@ -398,8 +420,8 @@ function FieldRow({
             })
           }
         />
-        <input
-          className="w-32 rounded-md border border-transparent px-2 py-1 font-mono text-xs text-slate-400 outline-none hover:border-slate-200 focus:border-indigo-300 focus:text-slate-700"
+        <Input
+          className="h-8 w-32 border-transparent bg-transparent font-mono text-xs text-muted-foreground hover:border-input focus-visible:bg-background focus-visible:text-foreground"
           value={field.key}
           placeholder="anahtar"
           onChange={(e) =>
@@ -408,37 +430,36 @@ function FieldRow({
             })
           }
         />
-        <button
+        <Button
           type="button"
+          size="xs"
+          variant={field.required ? 'default' : 'outline'}
+          aria-pressed={field.required}
           onClick={() =>
             onChange((f) => {
               f.required = !f.required
             })
           }
-          className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
-            field.required
-              ? 'bg-amber-100 text-amber-700'
-              : 'bg-slate-100 text-slate-400 hover:text-slate-600'
-          }`}
+          className={cn('rounded-full', !field.required && 'text-muted-foreground')}
         >
-          zorunlu
-        </button>
-        <div className="flex items-center gap-0.5 opacity-0 transition group-hover:opacity-100">
-          <IconButton title="Yukarı" onClick={() => onMove(-1)}>
-            <ArrowUp className="h-4 w-4" />
+          Zorunlu
+        </Button>
+        <div className="flex items-center gap-0.5 opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100">
+          <IconButton label="Yukarı taşı" onClick={() => onMove(-1)}>
+            <ArrowUp />
           </IconButton>
-          <IconButton title="Aşağı" onClick={() => onMove(1)}>
-            <ArrowDown className="h-4 w-4" />
+          <IconButton label="Aşağı taşı" onClick={() => onMove(1)}>
+            <ArrowDown />
           </IconButton>
-          <IconButton title="Sil" danger onClick={onRemove}>
-            <X className="h-4 w-4" />
+          <IconButton label="Sil" danger onClick={onRemove}>
+            <X />
           </IconButton>
         </div>
       </div>
 
       {field.type === 'select' && (
-        <input
-          className="mt-2 ml-12 block w-[calc(100%-3rem)] rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+        <Input
+          className="mt-2 ml-10 w-[calc(100%-2.5rem)]"
           value={(field.options ?? []).join(', ')}
           placeholder="seçenekler (virgülle ayır)"
           onChange={(e) =>
@@ -452,95 +473,105 @@ function FieldRow({
         />
       )}
       {field.type === 'relation' && (
-        <select
-          className="mt-2 ml-12 block w-[calc(100%-3rem)] rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-          value={field.to ?? ''}
-          onChange={(e) =>
-            onChange((f) => {
-              f.to = e.target.value
-            })
-          }
-        >
-          <option value="">hedef koleksiyon seç…</option>
-          {collectionNames.map((n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
-          ))}
-        </select>
+        <div className="mt-2 ml-10">
+          <Select
+            value={field.to || undefined}
+            onValueChange={(v) =>
+              onChange((f) => {
+                f.to = v
+              })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="hedef koleksiyon seç…" />
+            </SelectTrigger>
+            <SelectContent>
+              {collectionNames.map((n) => (
+                <SelectItem key={n} value={n}>
+                  {n}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       )}
     </div>
   )
 }
 
-function TypePicker({ onPick, onClose }: { onPick: (t: FieldType) => void; onClose: () => void }) {
+function TypePicker({
+  open,
+  onPick,
+  onClose,
+}: {
+  open: boolean
+  onPick: (t: FieldType) => void
+  onClose: () => void
+}) {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
-      onClick={onClose}
-      onKeyDown={(e) => e.key === 'Escape' && onClose()}
-      role="presentation"
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose()
+      }}
     >
-      <div
-        className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
-        role="presentation"
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-900">Alan tipi seç</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Alan tipi seç</DialogTitle>
+          <DialogDescription>Bu alanın hangi türde veri tutacağını belirle.</DialogDescription>
+        </DialogHeader>
         <div className="grid grid-cols-2 gap-2.5">
           {FIELD_TYPES.map(({ type, label, desc, icon: Icon }) => (
             <button
               type="button"
               key={type}
               onClick={() => onPick(type)}
-              className="flex items-start gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-indigo-400 hover:bg-indigo-50"
+              className="flex items-start gap-3 rounded-xl border p-3 text-left outline-none transition-colors hover:border-primary hover:bg-primary/5 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-                <Icon className="h-4 w-4" />
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Icon className="size-4" />
               </span>
               <span>
-                <span className="block text-sm font-medium text-slate-800">{label}</span>
-                <span className="block text-xs text-slate-400">{desc}</span>
+                <span className="block text-sm font-medium text-foreground">{label}</span>
+                <span className="block text-xs text-muted-foreground">{desc}</span>
               </span>
             </button>
           ))}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
 function IconButton({
   children,
-  title,
+  label,
   danger,
   onClick,
 }: {
   children: React.ReactNode
-  title: string
+  label: string
   danger?: boolean
   onClick: () => void
 }) {
   return (
-    <button
-      type="button"
-      title={title}
-      onClick={onClick}
-      className={`flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 ${
-        danger ? 'hover:text-red-600' : 'hover:text-slate-700'
-      }`}
-    >
-      {children}
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={onClick}
+          aria-label={label}
+          className={cn(
+            'text-muted-foreground',
+            danger && 'hover:bg-destructive/10 hover:text-destructive',
+          )}
+        >
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   )
 }
