@@ -48,7 +48,6 @@ import {
   FileCog,
   FolderGit2,
   Image as ImageIcon,
-  LayoutGrid,
   Link2,
   PencilRuler,
   Plus,
@@ -171,7 +170,6 @@ function AppShell() {
         onSelect={setSelection}
         onOpenSchema={openSchema}
         onExport={exportProject}
-        onBrowseGallery={() => setGallery(true)}
         onReset={resetSchema}
       />
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-muted/30">
@@ -270,7 +268,6 @@ function Sidebar({
   onSelect,
   onOpenSchema,
   onExport,
-  onBrowseGallery,
   onReset,
 }: {
   project: api.ProjectInfo | null
@@ -279,7 +276,6 @@ function Sidebar({
   onSelect: (s: Selection) => void
   onOpenSchema: (add?: 'collection' | 'singleton') => void
   onExport: () => void
-  onBrowseGallery: () => void
   onReset: () => Promise<void>
 }) {
   const collectionActive = (name: string): boolean => {
@@ -296,14 +292,7 @@ function Sidebar({
         <div className="text-lg font-bold tracking-tight text-foreground">
           Just<span className="text-primary">JSON</span>
         </div>
-        {project && (
-          <ProjectMenu
-            project={project}
-            onExport={onExport}
-            onBrowseGallery={onBrowseGallery}
-            onReset={onReset}
-          />
-        )}
+        {project && <ProjectMenu project={project} onExport={onExport} onReset={onReset} />}
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4">
@@ -350,12 +339,10 @@ function Sidebar({
 function ProjectMenu({
   project,
   onExport,
-  onBrowseGallery,
   onReset,
 }: {
   project: api.ProjectInfo
   onExport: () => void
-  onBrowseGallery: () => void
   onReset: () => Promise<void>
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -392,14 +379,10 @@ function ProjectMenu({
             <Download />
             Dışa aktar (.zip)
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={onBrowseGallery}>
-            <LayoutGrid />
-            Şablon galerisine dön
-          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirmOpen(true)}>
             <RotateCcw />
-            Sıfırla
+            Baştan başla (sıfırla)
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

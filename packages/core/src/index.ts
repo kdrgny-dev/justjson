@@ -24,3 +24,6 @@ export { generateTypes } from './types/generate'
 
 export type { ExportInput } from './export/bundle'
 export { buildExportManifest } from './export/bundle'
+
+export type { InferredProject } from './import/infer'
+export { inferProject } from './import/infer'

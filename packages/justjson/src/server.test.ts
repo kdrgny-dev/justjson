@@ -143,7 +143,7 @@ describe('createServer', () => {
     const res = await app.request('/api/_import', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ schema: { version: 1, collections: [], singletons: [] } }),
+      body: JSON.stringify({ raw: { version: 1, collections: [], singletons: [] } }),
     })
     expect(res.status).toBe(400)
   })
@@ -196,14 +196,14 @@ describe('createServer boş klasörde', () => {
     }
   })
 
-  it('POST /api/_import kendi şemasını uygular, geçersizde 400', async () => {
+  it('POST /api/_import hazır şemayı uygular, çöp veride 400', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'justjson-imp-'))
     try {
       const app = await createServer(dir)
       const bad = await app.request('/api/_import', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ schema: { nope: true } }),
+        body: JSON.stringify({ raw: 42 }),
       })
       expect(bad.status).toBe(400)
 
@@ -217,7 +217,7 @@ describe('createServer boş klasörde', () => {
       const ok = await app.request('/api/_import', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ schema: mySchema, content: { kitaplar: [{ slug: 'x', ad: 'A' }] } }),
+        body: JSON.stringify({ raw: mySchema }),
       })
       expect(ok.status).toBe(200)
 
@@ -225,6 +225,43 @@ describe('createServer boş klasörde', () => {
         collections: Array<{ name: string }>
       }
       expect(schema.collections.map((c) => c.name)).toContain('kitaplar')
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('POST /api/_import ham içerikten şema çıkarır ve veriyi yazar', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'justjson-inf-'))
+    try {
+      const app = await createServer(dir)
+      const raw = {
+        home: { name: 'Kadir', summary: '<div>Merhaba <strong>dünya</strong></div>' },
+        experience: [
+          { title: 'Balina', content: '<ul><li>iş</li></ul>' },
+          { title: 'Acme', content: 'düz' },
+        ],
+      }
+      const res = await app.request('/api/_import', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ raw }),
+      })
+      expect(res.status).toBe(200)
+
+      const schema = (await (await app.request('/api/_schema')).json()) as {
+        collections: Array<{ name: string }>
+        singletons: Array<{ name: string }>
+      }
+      expect(schema.collections.map((c) => c.name)).toContain('experience')
+      expect(schema.singletons.map((s) => s.name)).toContain('home')
+
+      const rows = (await (await app.request('/api/experience')).json()) as {
+        items: Array<{ slug: string }>
+      }
+      expect(rows.items.length).toBe(2)
+
+      const home = (await (await app.request('/api/_singleton/home')).json()) as { name?: string }
+      expect(home.name).toBe('Kadir')
     } finally {
       await rm(dir, { recursive: true, force: true })
     }

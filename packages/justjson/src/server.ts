@@ -3,7 +3,14 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { serve } from '@hono/node-server'
-import { ContentStore, loadSchema, parseSchema, saveSchema, slugify } from '@justjson/core'
+import {
+  ContentStore,
+  inferProject,
+  loadSchema,
+  parseSchema,
+  saveSchema,
+  slugify,
+} from '@justjson/core'
 import type { Schema } from '@justjson/core'
 import { Hono } from 'hono'
 import { collectExportZip } from './commands/export'
@@ -68,22 +75,37 @@ export async function createServer(root: string): Promise<Hono> {
     if (schema.collections.length > 0 || schema.singletons.length > 0) {
       return c.json({ error: 'Bu klasörde zaten bir şema var.' }, 400)
     }
-    const body = (await c.req.json()) as {
-      schema?: unknown
-      content?: Record<string, Record<string, unknown>[]>
-    }
+    const { raw } = (await c.req.json()) as { raw?: unknown }
+
+    let next: Schema
+    let entries: Record<string, Record<string, unknown>[]> = {}
+    let singletonData: Record<string, Record<string, unknown>> = {}
     try {
-      parseSchema(body.schema)
-    } catch (e) {
-      return c.json({ error: `Geçersiz şema: ${(e as Error).message}` }, 400)
+      // Zaten bir JustJSON şeması mı? Öyleyse doğrudan kullan; değilse içerikten çıkar.
+      next = parseSchema(raw)
+    } catch {
+      try {
+        const inferred = inferProject(raw)
+        next = parseSchema(inferred.schema)
+        entries = inferred.entries
+        singletonData = inferred.singletons
+      } catch (e) {
+        return c.json({ error: `İçe aktarılamadı: ${(e as Error).message}` }, 400)
+      }
     }
-    schema = await applyTemplate(adapter, contentDir, {
-      title: '',
-      description: '',
-      schema: body.schema,
-      samples: body.content ?? {},
-    })
+
+    await saveSchema(adapter, next, contentDir)
+    schema = next
     store = new ContentStore(adapter, schema, contentDir)
+    for (const [collection, rows] of Object.entries(entries)) {
+      for (const row of rows) {
+        const slug = slugify(String(row.slug ?? row.title ?? 'icerik')) || 'icerik'
+        await store.writeEntry(collection, slug, row)
+      }
+    }
+    for (const [name, data] of Object.entries(singletonData)) {
+      await store.writeSingleton(name, data)
+    }
     return c.json({ ok: true })
   })
 

@@ -143,15 +143,15 @@ function ImportCard({ onApplied, disabled }: { onApplied: () => void; disabled: 
             <CardTitle className="text-base">İçe aktar — kendi JSON'un</CardTitle>
           </div>
           <CardDescription className="mt-2 leading-relaxed">
-            Elindeki şemayı getir; JustJSON aynı yapıyla projeni kurar.
+            Elindeki JSON'u getir; JustJSON yapıyı çıkarıp projeni kurar.
           </CardDescription>
         </CardHeader>
 
         <CardContent className="flex-1">
           <div className="flex h-full items-center rounded-md border border-dashed border-border/70 px-3 py-4 text-sm text-muted-foreground">
-            Var olan bir{' '}
-            <code className="mx-1 font-mono text-xs text-foreground">_schema.json</code> yeniden
-            kullanılır.
+            İçerik JSON'un ya da hazır bir{' '}
+            <code className="mx-1 font-mono text-xs text-foreground">_schema.json</code> — yapı
+            otomatik çıkarılır.
           </div>
         </CardContent>
 
@@ -168,14 +168,15 @@ function ImportCard({ onApplied, disabled }: { onApplied: () => void; disabled: 
         <DialogHeader>
           <DialogTitle>Kendi JSON'unu içe aktar</DialogTitle>
           <DialogDescription>
-            Elindeki <code className="font-mono text-xs">_schema.json</code> yapısını yapıştır ya da
-            dosya seç; aynı yapıyla başla.
+            İçerik JSON'unu (ör. bir JustFields dışa aktarımı) ya da hazır bir{' '}
+            <code className="font-mono text-xs">_schema.json</code>'u yapıştır/seç — JustJSON
+            koleksiyon ve tekil yapısını otomatik çıkarır.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-medium text-foreground">Şema JSON'u</span>
+            <span className="text-sm font-medium text-foreground">JSON</span>
             <label
               className={cn(
                 buttonVariants({ variant: 'outline', size: 'sm' }),
