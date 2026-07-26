@@ -1,6 +1,6 @@
 import { exec } from 'node:child_process'
-import { readFile } from 'node:fs/promises'
-import { extname, join, normalize } from 'node:path'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { dirname, extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { serve } from '@hono/node-server'
 import { ContentStore, loadSchema, parseSchema, saveSchema, slugify } from '@justjson/core'
@@ -62,6 +62,31 @@ export async function createServer(root: string): Promise<Hono> {
     const body = (await c.req.json()) as Record<string, unknown>
     await store.writeSingleton(c.req.param('name'), body)
     return c.json({ ok: true })
+  })
+
+  app.post('/api/_media', async (c) => {
+    const body = (await c.req.json()) as { filename?: string; dataBase64?: string }
+    if (!body.dataBase64) return c.json({ error: 'veri yok' }, 400)
+    const base = slugify((body.filename ?? 'gorsel').replace(/\.[^.]+$/, '')) || 'gorsel'
+    const name = `${base}-${Date.now().toString(36)}.webp`
+    const rel = `${contentDir}/media/${name}`
+    const abs = join(root, rel)
+    await mkdir(dirname(abs), { recursive: true })
+    await writeFile(abs, Buffer.from(body.dataBase64, 'base64'))
+    return c.json({ path: rel })
+  })
+
+  app.get('/media/:file', async (c) => {
+    const file = c.req.param('file')
+    if (file.includes('/') || file.includes('\\') || file.includes('..')) {
+      return c.text('forbidden', 400)
+    }
+    try {
+      const bytes = await readFile(join(root, contentDir, 'media', file))
+      return new Response(bytes, { headers: { 'content-type': 'image/webp' } })
+    } catch {
+      return c.text('yok', 404)
+    }
   })
 
   app.get('/api/:collection', async (c) => {
