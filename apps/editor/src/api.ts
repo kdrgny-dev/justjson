@@ -8,9 +8,35 @@ async function ok(res: Response): Promise<Response> {
   return res
 }
 
+export interface TemplateMeta {
+  id: string
+  title: string
+  description: string
+  collections: { label: string; fields: number }[]
+  singletons: { label: string }[]
+}
+
 export async function getSchema(): Promise<Schema> {
   const res = await ok(await fetch('/api/_schema'))
   return res.json() as Promise<Schema>
+}
+
+export async function listTemplates(): Promise<TemplateMeta[]> {
+  const res = await ok(await fetch('/api/_templates'))
+  const data = (await res.json()) as { items: TemplateMeta[] }
+  return data.items
+}
+
+export async function applyTemplate(template: string): Promise<void> {
+  const res = await fetch('/api/_init', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ template }),
+  })
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string }
+    throw new Error(err.error ?? `Template uygulanamadı: ${res.status}`)
+  }
 }
 
 export async function putSchema(schema: Schema): Promise<void> {

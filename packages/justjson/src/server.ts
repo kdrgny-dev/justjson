@@ -6,6 +6,7 @@ import { serve } from '@hono/node-server'
 import { ContentStore, loadSchema, parseSchema, saveSchema, slugify } from '@justjson/core'
 import type { Schema } from '@justjson/core'
 import { Hono } from 'hono'
+import { applyTemplate, getTemplate, templateList } from './commands/init'
 import { resolveContentDir } from './config'
 import { FsAdapter } from './fs-adapter'
 
@@ -36,6 +37,20 @@ export async function createServer(root: string): Promise<Hono> {
     if (msg.startsWith('Bilinmeyen')) return c.json({ error: msg }, 404)
     if (msg.startsWith('Güvensiz') || msg.startsWith('Yol')) return c.json({ error: msg }, 400)
     return c.json({ error: 'sunucu hatası' }, 500)
+  })
+
+  app.get('/api/_templates', (c) => c.json({ items: templateList() }))
+
+  app.post('/api/_init', async (c) => {
+    const { template: id } = (await c.req.json()) as { template?: string }
+    const t = id ? getTemplate(id) : undefined
+    if (!t) return c.json({ error: 'Bilinmeyen template' }, 404)
+    if (schema.collections.length > 0 || schema.singletons.length > 0) {
+      return c.json({ error: 'Bu klasörde zaten bir şema var.' }, 400)
+    }
+    schema = await applyTemplate(adapter, contentDir, t)
+    store = new ContentStore(adapter, schema, contentDir)
+    return c.json({ ok: true })
   })
 
   app.get('/api/_schema', (c) => c.json(schema))

@@ -1,0 +1,36 @@
+{
+  "title": "Dokümantasyon",
+  "description": "Sıralanabilir sayfalar ve rich-text içerik; site başlığı için bir Ayarlar.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "pages",
+        "label": "Sayfalar",
+        "path": "pages",
+        "fields": [
+          { "key": "title", "label": "Başlık", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "order", "label": "Sıra", "type": "number" },
+          { "key": "body", "label": "İçerik", "type": "richtext" }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "settings",
+        "label": "Ayarlar",
+        "path": "settings.json",
+        "fields": [
+          { "key": "title", "label": "Site adı", "type": "text" },
+          { "key": "tagline", "label": "Slogan", "type": "text" }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "pages": [
+      { "title": "Başlarken", "slug": "baslarken", "order": 1, "body": "Kuruluma hoş geldin." }
+    ]
+  }
+}

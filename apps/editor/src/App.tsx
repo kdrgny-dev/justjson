@@ -4,6 +4,7 @@ import { FileCog, Image as ImageIcon, Plus, Search, Settings2, Trash2, Upload } 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
+import { TemplateGallery } from './TemplateGallery'
 import * as api from './api'
 import { FIELD_META } from './field-types'
 
@@ -18,6 +19,7 @@ export function App() {
   const [schema, setSchema] = useState<Schema | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [selection, setSelection] = useState<Selection | null>(null)
+  const [gallery, setGallery] = useState(false)
 
   const reload = useCallback(async () => {
     const s = await api.getSchema()
@@ -31,7 +33,7 @@ export function App() {
       .then((s) => {
         setSchema(s)
         if (s.collections.length === 0 && s.singletons.length === 0) {
-          setSelection({ kind: 'schema' })
+          setGallery(true)
         }
       })
       .catch(() => setError('Şema yüklenemedi. `justjson serve` çalışıyor mu?'))
@@ -39,6 +41,26 @@ export function App() {
 
   if (error) return <Centered>{error}</Centered>
   if (!schema) return <Centered>Yükleniyor…</Centered>
+
+  if (gallery) {
+    return (
+      <TemplateGallery
+        onApplied={async () => {
+          const s = await reload()
+          setGallery(false)
+          setSelection(
+            s.collections[0]
+              ? { kind: 'collection', name: s.collections[0].name }
+              : { kind: 'schema' },
+          )
+        }}
+        onScratch={() => {
+          setGallery(false)
+          setSelection({ kind: 'schema' })
+        }}
+      />
+    )
+  }
 
   return (
     <div className="flex h-full">

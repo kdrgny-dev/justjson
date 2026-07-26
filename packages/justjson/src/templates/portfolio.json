@@ -1,0 +1,52 @@
+{
+  "title": "Portfolyo",
+  "description": "Kapak görseli, etiket ve rich-text içerikli projeler; bir de Hakkında sayfası.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "projects",
+        "label": "Projeler",
+        "path": "projects",
+        "fields": [
+          { "key": "title", "label": "Başlık", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "summary", "label": "Özet", "type": "text" },
+          { "key": "cover", "label": "Kapak", "type": "image" },
+          { "key": "url", "label": "Bağlantı", "type": "text" },
+          {
+            "key": "kind",
+            "label": "Tür",
+            "type": "select",
+            "options": ["Web", "Mobil", "Tasarım"]
+          },
+          { "key": "body", "label": "İçerik", "type": "richtext" },
+          { "key": "date", "label": "Tarih", "type": "date" }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "about",
+        "label": "Hakkında",
+        "path": "about.json",
+        "fields": [
+          { "key": "name", "label": "Ad", "type": "text", "required": true },
+          { "key": "avatar", "label": "Avatar", "type": "image" },
+          { "key": "bio", "label": "Biyografi", "type": "richtext" }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "projects": [
+      {
+        "title": "Örnek Proje",
+        "slug": "ornek-proje",
+        "summary": "Kısa bir açıklama.",
+        "kind": "Web",
+        "body": "Proje detayları burada."
+      }
+    ]
+  }
+}

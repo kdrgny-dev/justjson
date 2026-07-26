@@ -1,4 +1,6 @@
 {
+  "title": "CV",
+  "description": "Deneyim koleksiyonu ve kişisel bilgiler için bir Profil.",
   "schema": {
     "version": 1,
     "collections": [

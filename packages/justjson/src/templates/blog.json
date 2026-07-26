@@ -1,4 +1,6 @@
 {
+  "title": "Blog",
+  "description": "Rich-text içerikli yazılar ve site adı için bir Ayarlar.",
   "schema": {
     "version": 1,
     "collections": [

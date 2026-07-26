@@ -1,0 +1,37 @@
+{
+  "title": "Changelog",
+  "description": "Sürüm notları: versiyon, tarih, tür ve rich-text açıklama.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "releases",
+        "label": "Sürümler",
+        "path": "releases",
+        "fields": [
+          { "key": "version", "label": "Versiyon", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "date", "label": "Tarih", "type": "date" },
+          {
+            "key": "type",
+            "label": "Tür",
+            "type": "select",
+            "options": ["Eklendi", "Değişti", "Düzeltildi"]
+          },
+          { "key": "body", "label": "Notlar", "type": "richtext" }
+        ]
+      }
+    ],
+    "singletons": []
+  },
+  "samples": {
+    "releases": [
+      {
+        "version": "1.0.0",
+        "slug": "1-0-0",
+        "type": "Eklendi",
+        "body": "İlk sürüm."
+      }
+    ]
+  }
+}
