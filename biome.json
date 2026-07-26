@@ -6,7 +6,8 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": true
+    "ignoreUnknown": true,
+    "ignore": ["**/components/ui/**", "**/dist/**", "**/node_modules/**"]
   },
   "formatter": {
     "enabled": true,
