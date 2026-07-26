@@ -30,6 +30,13 @@ export async function createServer(root: string): Promise<Hono> {
 
   const app = new Hono()
 
+  app.onError((err, c) => {
+    const msg = err.message
+    if (msg.startsWith('Bilinmeyen')) return c.json({ error: msg }, 404)
+    if (msg.startsWith('Güvensiz') || msg.startsWith('Yol')) return c.json({ error: msg }, 400)
+    return c.json({ error: 'sunucu hatası' }, 500)
+  })
+
   app.get('/api/_schema', (c) => c.json(schema))
 
   app.get('/api/_singleton/:name', async (c) => {

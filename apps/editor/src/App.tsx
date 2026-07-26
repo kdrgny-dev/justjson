@@ -202,6 +202,7 @@ function EntryEditor({
   const { data, setData, loading } = useEntryData(load, {})
   const [newSlug, setNewSlug] = useState('')
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const setField = (key: string, value: unknown) =>
     setData((prev) => {
@@ -217,8 +218,13 @@ function EntryEditor({
     : (slug as string)
 
   const save = async () => {
+    setSaveError(null)
     setSaving(true)
     try {
+      if (isNew && (await api.getEntry(collection.name, effectiveSlug))) {
+        setSaveError(`"${effectiveSlug}" zaten var — farklı bir slug seç.`)
+        return
+      }
       const saved = await api.putEntry(collection.name, effectiveSlug, data)
       onSaved(saved)
     } finally {
@@ -252,6 +258,8 @@ function EntryEditor({
           </button>
         </div>
       </div>
+
+      {saveError && <p className="save-error">{saveError}</p>}
 
       {isNew && (
         <label className="row">

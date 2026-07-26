@@ -264,6 +264,16 @@ textarea {
   color: var(--accent);
 }
 
+.save-error {
+  color: var(--error);
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  padding: 10px 12px;
+  border-radius: 9px;
+  font-size: 13px;
+  margin: 0 0 14px;
+}
+
 .issues {
   display: flex;
   flex-direction: column;
