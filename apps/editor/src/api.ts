@@ -16,6 +16,19 @@ export interface TemplateMeta {
   singletons: { label: string }[]
 }
 
+export interface ProjectInfo {
+  name: string
+  path: string
+  contentDir: string
+  collections: number
+  singletons: number
+}
+
+export async function getProject(): Promise<ProjectInfo> {
+  const res = await ok(await fetch('/api/_project'))
+  return res.json() as Promise<ProjectInfo>
+}
+
 export async function getSchema(): Promise<Schema> {
   const res = await ok(await fetch('/api/_schema'))
   return res.json() as Promise<Schema>

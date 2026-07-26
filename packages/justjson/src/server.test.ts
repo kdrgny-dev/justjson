@@ -92,6 +92,40 @@ describe('createServer', () => {
     })
     expect(res.status).toBe(400)
   })
+
+  it('GET /api/_project proje adını ve sayıları verir', async () => {
+    const app = await createServer(root)
+    const info = (await (await app.request('/api/_project')).json()) as {
+      name: string
+      contentDir: string
+      collections: number
+      singletons: number
+    }
+    expect(info.name).toMatch(/^justjson-/)
+    expect(info.contentDir).toBe('content')
+    expect(info.collections).toBe(1)
+    expect(info.singletons).toBe(1)
+  })
+
+  it('GET /api/_templates hazır template listesini verir', async () => {
+    const app = await createServer(root)
+    const data = (await (await app.request('/api/_templates')).json()) as {
+      items: Array<{ id: string; title: string }>
+    }
+    const ids = data.items.map((t) => t.id)
+    expect(ids).toEqual(expect.arrayContaining(['blog', 'cv', 'portfolio', 'docs', 'changelog']))
+    expect(data.items.every((t) => t.title.length > 0)).toBe(true)
+  })
+
+  it('POST /api/_init dolu şemada 400 döner', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_init', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ template: 'blog' }),
+    })
+    expect(res.status).toBe(400)
+  })
 })
 
 describe('createServer boş klasörde', () => {
@@ -104,6 +138,38 @@ describe('createServer boş klasörde', () => {
       const schema = (await res.json()) as { collections: unknown[]; singletons: unknown[] }
       expect(schema.collections).toEqual([])
       expect(schema.singletons).toEqual([])
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('POST /api/_init template uygular, bilinmeyende 404', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'justjson-init-'))
+    try {
+      const app = await createServer(dir)
+      const bad = await app.request('/api/_init', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ template: 'yok' }),
+      })
+      expect(bad.status).toBe(404)
+
+      const ok = await app.request('/api/_init', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ template: 'portfolio' }),
+      })
+      expect(ok.status).toBe(200)
+
+      const schema = (await (await app.request('/api/_schema')).json()) as {
+        collections: Array<{ name: string }>
+      }
+      expect(schema.collections.map((c) => c.name)).toContain('projects')
+
+      const rows = (await (await app.request('/api/projects')).json()) as {
+        items: Array<{ slug: string }>
+      }
+      expect(rows.items.length).toBeGreaterThan(0)
     } finally {
       await rm(dir, { recursive: true, force: true })
     }

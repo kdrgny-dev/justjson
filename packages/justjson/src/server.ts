@@ -1,6 +1,6 @@
 import { exec } from 'node:child_process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { dirname, extname, join, normalize } from 'node:path'
+import { basename, dirname, extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { serve } from '@hono/node-server'
 import { ContentStore, loadSchema, parseSchema, saveSchema, slugify } from '@justjson/core'
@@ -38,6 +38,16 @@ export async function createServer(root: string): Promise<Hono> {
     if (msg.startsWith('Güvensiz') || msg.startsWith('Yol')) return c.json({ error: msg }, 400)
     return c.json({ error: 'sunucu hatası' }, 500)
   })
+
+  app.get('/api/_project', (c) =>
+    c.json({
+      name: basename(root) || 'proje',
+      path: root,
+      contentDir,
+      collections: schema.collections.length,
+      singletons: schema.singletons.length,
+    }),
+  )
 
   app.get('/api/_templates', (c) => c.json({ items: templateList() }))
 

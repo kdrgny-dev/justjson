@@ -1,6 +1,17 @@
 import { slugify, validateEntry } from '@justjson/core'
 import type { Collection, Field, Schema, Singleton } from '@justjson/core'
-import { FileCog, Image as ImageIcon, Plus, Search, Settings2, Trash2, Upload } from 'lucide-react'
+import {
+  Boxes,
+  ChevronRight,
+  FileCog,
+  FolderGit2,
+  Image as ImageIcon,
+  PencilRuler,
+  Plus,
+  Search,
+  Trash2,
+  Upload,
+} from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
@@ -17,14 +28,25 @@ type Selection =
 
 export function App() {
   const [schema, setSchema] = useState<Schema | null>(null)
+  const [project, setProject] = useState<api.ProjectInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [selection, setSelection] = useState<Selection | null>(null)
   const [gallery, setGallery] = useState(false)
+  const [addSeq, setAddSeq] = useState(0)
+  const [addKind, setAddKind] = useState<'collection' | 'singleton' | null>(null)
 
   const reload = useCallback(async () => {
     const s = await api.getSchema()
     setSchema(s)
     return s
+  }, [])
+
+  const openSchema = useCallback((add?: 'collection' | 'singleton') => {
+    if (add) {
+      setAddKind(add)
+      setAddSeq((n) => n + 1)
+    }
+    setSelection({ kind: 'schema' })
   }, [])
 
   useEffect(() => {
@@ -37,6 +59,13 @@ export function App() {
         }
       })
       .catch(() => setError('Şema yüklenemedi. `justjson serve` çalışıyor mu?'))
+  }, [])
+
+  useEffect(() => {
+    api
+      .getProject()
+      .then(setProject)
+      .catch(() => {})
   }, [])
 
   if (error) return <Centered>{error}</Centered>
@@ -62,12 +91,94 @@ export function App() {
     )
   }
 
+  const schemaEmpty = schema.collections.length === 0 && schema.singletons.length === 0
+
   return (
     <div className="flex h-full">
-      <Sidebar schema={schema} selection={selection} onSelect={setSelection} />
-      <main className="flex-1 overflow-hidden bg-slate-50">
-        <MainArea schema={schema} selection={selection} onSelect={setSelection} onReload={reload} />
+      <Sidebar
+        project={project}
+        schema={schema}
+        selection={selection}
+        onSelect={setSelection}
+        onOpenSchema={openSchema}
+      />
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-slate-50">
+        <ContextBar project={project} crumbs={crumbsFor(schema, selection, setSelection)} />
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <MainArea
+            schema={schema}
+            selection={selection}
+            onSelect={setSelection}
+            onReload={reload}
+            onOpenSchema={openSchema}
+            addSeq={addSeq}
+            addKind={addKind}
+            onBrowseTemplates={schemaEmpty ? () => setGallery(true) : undefined}
+          />
+        </div>
       </main>
+    </div>
+  )
+}
+
+type Crumb = { label: string; tag?: string; onClick?: () => void }
+
+function crumbsFor(
+  schema: Schema,
+  selection: Selection | null,
+  onSelect: (s: Selection) => void,
+): Crumb[] {
+  if (!selection) return []
+  if (selection.kind === 'schema') return [{ label: 'Şema' }]
+  if (selection.kind === 'collection') {
+    const col = schema.collections.find((c) => c.name === selection.name)
+    return [{ label: col?.label ?? selection.name }]
+  }
+  if (selection.kind === 'entry' || selection.kind === 'newEntry') {
+    const col = schema.collections.find((c) => c.name === selection.collection)
+    return [
+      {
+        label: col?.label ?? selection.collection,
+        onClick: () => onSelect({ kind: 'collection', name: selection.collection }),
+      },
+      selection.kind === 'entry' ? { label: selection.slug } : { label: 'Yeni kayıt' },
+    ]
+  }
+  const s = schema.singletons.find((x) => x.name === selection.name)
+  return [{ label: s?.label ?? selection.name, tag: 'tekil' }]
+}
+
+function ContextBar({ project, crumbs }: { project: api.ProjectInfo | null; crumbs: Crumb[] }) {
+  return (
+    <div className="flex h-11 shrink-0 items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white px-6 text-sm">
+      <span
+        title={project?.path}
+        className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 font-medium text-slate-600"
+      >
+        <FolderGit2 className="h-3.5 w-3.5 text-slate-400" />
+        {project?.name ?? '…'}
+      </span>
+      {crumbs.map((c) => (
+        <span key={c.label} className="inline-flex shrink-0 items-center gap-1.5">
+          <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
+          {c.onClick ? (
+            <button
+              type="button"
+              onClick={c.onClick}
+              className="rounded text-slate-500 transition hover:text-indigo-600"
+            >
+              {c.label}
+            </button>
+          ) : (
+            <span className="font-medium text-slate-800">{c.label}</span>
+          )}
+          {c.tag && (
+            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-400">
+              {c.tag}
+            </span>
+          )}
+        </span>
+      ))}
     </div>
   )
 }
@@ -79,13 +190,17 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 function Sidebar({
+  project,
   schema,
   selection,
   onSelect,
+  onOpenSchema,
 }: {
+  project: api.ProjectInfo | null
   schema: Schema
   selection: Selection | null
   onSelect: (s: Selection) => void
+  onOpenSchema: (add?: 'collection' | 'singleton') => void
 }) {
   const collectionActive = (name: string): boolean => {
     if (!selection) return false
@@ -97,50 +212,121 @@ function Sidebar({
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
-      <div className="px-5 py-4 text-lg font-bold tracking-tight text-slate-900">
-        Just<span className="text-indigo-600">JSON</span>
+      <div className="px-5 pt-4 pb-3">
+        <div className="text-lg font-bold tracking-tight text-slate-900">
+          Just<span className="text-indigo-600">JSON</span>
+        </div>
+        {project && (
+          <div
+            title={project.path}
+            className="mt-1.5 flex max-w-full items-center gap-1.5 rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-500 ring-1 ring-slate-200/70"
+          >
+            <FolderGit2 className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+            <span className="truncate">{project.name}</span>
+          </div>
+        )}
       </div>
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
-        <NavItem
-          icon={<Settings2 className="h-4 w-4" />}
-          active={selection?.kind === 'schema'}
-          onClick={() => onSelect({ kind: 'schema' })}
-        >
-          Şema
-        </NavItem>
 
-        {schema.collections.length > 0 && <NavLabel>Koleksiyonlar</NavLabel>}
-        {schema.collections.map((c) => (
-          <NavItem
-            key={c.name}
-            active={collectionActive(c.name)}
-            onClick={() => onSelect({ kind: 'collection', name: c.name })}
-          >
-            {c.label ?? c.name}
-          </NavItem>
-        ))}
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4">
+        <SchemaNavItem active={selection?.kind === 'schema'} onClick={() => onOpenSchema()} />
 
-        {schema.singletons.length > 0 && <NavLabel>Tekil</NavLabel>}
-        {schema.singletons.map((s) => (
-          <NavItem
-            key={s.name}
-            icon={<FileCog className="h-4 w-4" />}
-            active={selection?.kind === 'singleton' && selection.name === s.name}
-            onClick={() => onSelect({ kind: 'singleton', name: s.name })}
-          >
-            {s.label ?? s.name}
-          </NavItem>
-        ))}
+        <NavSection label="Koleksiyonlar" onAdd={() => onOpenSchema('collection')}>
+          {schema.collections.length === 0 ? (
+            <EmptyNavHint onClick={() => onOpenSchema('collection')}>Koleksiyon ekle</EmptyNavHint>
+          ) : (
+            schema.collections.map((c) => (
+              <NavItem
+                key={c.name}
+                active={collectionActive(c.name)}
+                onClick={() => onSelect({ kind: 'collection', name: c.name })}
+              >
+                {c.label ?? c.name}
+              </NavItem>
+            ))
+          )}
+        </NavSection>
+
+        <NavSection label="Tekil" onAdd={() => onOpenSchema('singleton')}>
+          {schema.singletons.length === 0 ? (
+            <EmptyNavHint onClick={() => onOpenSchema('singleton')}>Tekil ekle</EmptyNavHint>
+          ) : (
+            schema.singletons.map((s) => (
+              <NavItem
+                key={s.name}
+                icon={<FileCog className="h-4 w-4" />}
+                active={selection?.kind === 'singleton' && selection.name === s.name}
+                onClick={() => onSelect({ kind: 'singleton', name: s.name })}
+              >
+                {s.label ?? s.name}
+              </NavItem>
+            ))
+          )}
+        </NavSection>
       </nav>
     </aside>
   )
 }
 
-function NavLabel({ children }: { children: React.ReactNode }) {
+function SchemaNavItem({ active, onClick }: { active: boolean; onClick: () => void }) {
   return (
-    <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
-      {children}
-    </p>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition ${
+        active
+          ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100'
+          : 'text-slate-600 hover:bg-slate-100'
+      }`}
+    >
+      <PencilRuler className="h-4 w-4 shrink-0" />
+      <span className="min-w-0">
+        <span className="block text-sm font-medium leading-tight">Şema</span>
+        <span
+          className={`block text-xs leading-tight ${active ? 'text-indigo-400' : 'text-slate-400'}`}
+        >
+          İçerik yapısı
+        </span>
+      </span>
+    </button>
+  )
+}
+
+function NavSection({
+  label,
+  onAdd,
+  children,
+}: {
+  label: string
+  onAdd: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <div className="pt-3">
+      <div className="flex items-center justify-between px-3 pb-1">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+        <button
+          type="button"
+          onClick={onAdd}
+          title={`${label} ekle`}
+          className="flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-indigo-50 hover:text-indigo-600"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <div className="space-y-0.5">{children}</div>
+    </div>
+  )
+}
+
+function EmptyNavHint({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-400 transition hover:bg-slate-50 hover:text-indigo-600"
+    >
+      <Plus className="h-4 w-4" /> {children}
+    </button>
   )
 }
 
@@ -174,21 +360,49 @@ function MainArea({
   selection,
   onSelect,
   onReload,
+  onOpenSchema,
+  addSeq,
+  addKind,
+  onBrowseTemplates,
 }: {
   schema: Schema
   selection: Selection | null
   onSelect: (s: Selection) => void
   onReload: () => Promise<Schema>
+  onOpenSchema: (add?: 'collection' | 'singleton') => void
+  addSeq: number
+  addKind: 'collection' | 'singleton' | null
+  onBrowseTemplates?: () => void
 }) {
-  if (!selection) return <Centered>Soldan bir koleksiyon seç.</Centered>
+  if (!selection)
+    return (
+      <EmptyState
+        icon={<Boxes className="h-6 w-6" />}
+        title="Soldan başla"
+        hint="Bir koleksiyon ya da tekil kayıt seçerek düzenlemeye başla. Yapıyı değiştirmek istersen Şema'ya git."
+        action={
+          <PrimaryButton onClick={() => onOpenSchema()}>
+            <PencilRuler className="h-4 w-4" /> Şemayı aç
+          </PrimaryButton>
+        }
+      />
+    )
 
   if (selection.kind === 'schema') {
-    return <SchemaBuilder schema={schema} onSaved={() => void onReload()} />
+    return (
+      <SchemaBuilder
+        key={addSeq}
+        schema={schema}
+        initialAdd={addKind ?? undefined}
+        onSaved={() => void onReload()}
+        onBrowseTemplates={onBrowseTemplates}
+      />
+    )
   }
 
   if (selection.kind === 'collection') {
     const col = schema.collections.find((c) => c.name === selection.name)
-    if (!col) return <Centered>Koleksiyon yok.</Centered>
+    if (!col) return <Centered>Bu koleksiyon bulunamadı.</Centered>
     return (
       <CollectionView
         collection={col}
@@ -200,7 +414,7 @@ function MainArea({
 
   if (selection.kind === 'entry' || selection.kind === 'newEntry') {
     const col = schema.collections.find((c) => c.name === selection.collection)
-    if (!col) return <Centered>Koleksiyon yok.</Centered>
+    if (!col) return <Centered>Bu koleksiyon bulunamadı.</Centered>
     const slug = selection.kind === 'entry' ? selection.slug : null
     return (
       <EntryEditor
@@ -214,8 +428,33 @@ function MainArea({
   }
 
   const s = schema.singletons.find((x) => x.name === selection.name)
-  if (!s) return <Centered>Tekil yok.</Centered>
+  if (!s) return <Centered>Bu tekil kayıt bulunamadı.</Centered>
   return <SingletonEditor key={s.name} singleton={s} />
+}
+
+function EmptyState({
+  icon,
+  title,
+  hint,
+  action,
+}: {
+  icon?: React.ReactNode
+  title: string
+  hint?: string
+  action?: React.ReactNode
+}) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+      {icon && (
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+          {icon}
+        </div>
+      )}
+      <p className="text-sm font-medium text-slate-600">{title}</p>
+      {hint && <p className="mt-1 max-w-xs text-sm text-slate-400">{hint}</p>}
+      {action && <div className="mt-4">{action}</div>}
+    </div>
+  )
 }
 
 function Page({ children }: { children: React.ReactNode }) {

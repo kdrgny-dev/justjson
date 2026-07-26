@@ -1,6 +1,6 @@
 import { slugify } from '@justjson/core'
 import type { Collection, Field, FieldType, Schema, Singleton } from '@justjson/core'
-import { ArrowDown, ArrowUp, Check, Plus, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, Boxes, Check, Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import * as api from './api'
 import { FIELD_META, FIELD_TYPES } from './field-types'
@@ -25,8 +25,39 @@ function move<T>(arr: T[], idx: number, dir: -1 | 1): void {
   arr.splice(to, 0, item as T)
 }
 
-export function SchemaBuilder({ schema, onSaved }: { schema: Schema; onSaved: () => void }) {
-  const [draft, setDraft] = useState<Schema>(() => clone(schema))
+function newCollection(d: Schema): void {
+  const name = uniqueName(
+    'koleksiyon',
+    d.collections.map((c) => c.name),
+  )
+  d.collections.push({ name, label: 'Yeni koleksiyon', path: name, fields: [] })
+}
+
+function newSingleton(d: Schema): void {
+  const name = uniqueName(
+    'tekil',
+    d.singletons.map((s) => s.name),
+  )
+  d.singletons.push({ name, label: 'Yeni tekil', path: `${name}.json`, fields: [] })
+}
+
+export function SchemaBuilder({
+  schema,
+  onSaved,
+  onBrowseTemplates,
+  initialAdd,
+}: {
+  schema: Schema
+  onSaved: () => void
+  onBrowseTemplates?: () => void
+  initialAdd?: 'collection' | 'singleton'
+}) {
+  const [draft, setDraft] = useState<Schema>(() => {
+    const d = clone(schema)
+    if (initialAdd === 'collection') newCollection(d)
+    else if (initialAdd === 'singleton') newSingleton(d)
+    return d
+  })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [picker, setPicker] = useState<PickerTarget | null>(null)
@@ -38,6 +69,8 @@ export function SchemaBuilder({ schema, onSaved }: { schema: Schema; onSaved: ()
       fn(d)
       return d
     })
+
+  const isEmpty = draft.collections.length === 0 && draft.singletons.length === 0
 
   const applyType = (type: FieldType) => {
     if (!picker) return
@@ -100,65 +133,57 @@ export function SchemaBuilder({ schema, onSaved }: { schema: Schema; onSaved: ()
           </p>
         )}
 
-        <div className="mx-auto max-w-3xl space-y-10">
-          <Section
-            title="Koleksiyonlar"
-            hint="Çok kayıtlı içerik (yazılar, ürünler…)"
-            onAdd={() =>
-              update((d) => {
-                const name = uniqueName(
-                  'koleksiyon',
-                  d.collections.map((c) => c.name),
-                )
-                d.collections.push({ name, label: 'Yeni koleksiyon', path: name, fields: [] })
-              })
-            }
-          >
-            {draft.collections.map((col, ci) => (
-              <ContainerCard
-                // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
-                key={ci}
-                container={col}
-                kind="collection"
-                collectionNames={collectionNames}
-                onChange={(fn) => update((d) => fn(d.collections[ci] as Container))}
-                onRemove={() => update((d) => d.collections.splice(ci, 1))}
-                onMove={(dir) => update((d) => move(d.collections, ci, dir))}
-                onAddField={() => setPicker({ kind: 'collection', ci, fi: null })}
-                onChangeType={(fi) => setPicker({ kind: 'collection', ci, fi })}
-              />
-            ))}
-          </Section>
+        {isEmpty ? (
+          <SchemaEmpty
+            onAddCollection={() => update(newCollection)}
+            onAddSingleton={() => update(newSingleton)}
+            onBrowseTemplates={onBrowseTemplates}
+          />
+        ) : (
+          <div className="mx-auto max-w-3xl space-y-10">
+            <Section
+              title="Koleksiyonlar"
+              hint="Çok kayıtlı içerik (yazılar, ürünler…)"
+              onAdd={() => update(newCollection)}
+            >
+              {draft.collections.map((col, ci) => (
+                <ContainerCard
+                  // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
+                  key={ci}
+                  container={col}
+                  kind="collection"
+                  collectionNames={collectionNames}
+                  onChange={(fn) => update((d) => fn(d.collections[ci] as Container))}
+                  onRemove={() => update((d) => d.collections.splice(ci, 1))}
+                  onMove={(dir) => update((d) => move(d.collections, ci, dir))}
+                  onAddField={() => setPicker({ kind: 'collection', ci, fi: null })}
+                  onChangeType={(fi) => setPicker({ kind: 'collection', ci, fi })}
+                />
+              ))}
+            </Section>
 
-          <Section
-            title="Tekil"
-            hint="Tek kayıt (site ayarları, profil…)"
-            onAdd={() =>
-              update((d) => {
-                const name = uniqueName(
-                  'tekil',
-                  d.singletons.map((s) => s.name),
-                )
-                d.singletons.push({ name, label: 'Yeni tekil', path: `${name}.json`, fields: [] })
-              })
-            }
-          >
-            {draft.singletons.map((s, ci) => (
-              <ContainerCard
-                // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
-                key={ci}
-                container={s}
-                kind="singleton"
-                collectionNames={collectionNames}
-                onChange={(fn) => update((d) => fn(d.singletons[ci] as Container))}
-                onRemove={() => update((d) => d.singletons.splice(ci, 1))}
-                onMove={(dir) => update((d) => move(d.singletons, ci, dir))}
-                onAddField={() => setPicker({ kind: 'singleton', ci, fi: null })}
-                onChangeType={(fi) => setPicker({ kind: 'singleton', ci, fi })}
-              />
-            ))}
-          </Section>
-        </div>
+            <Section
+              title="Tekil"
+              hint="Tek kayıt (site ayarları, profil…)"
+              onAdd={() => update(newSingleton)}
+            >
+              {draft.singletons.map((s, ci) => (
+                <ContainerCard
+                  // biome-ignore lint/suspicious/noArrayIndexKey: kontrollü kart; ad düzenlenebilir, stabil index gerekli
+                  key={ci}
+                  container={s}
+                  kind="singleton"
+                  collectionNames={collectionNames}
+                  onChange={(fn) => update((d) => fn(d.singletons[ci] as Container))}
+                  onRemove={() => update((d) => d.singletons.splice(ci, 1))}
+                  onMove={(dir) => update((d) => move(d.singletons, ci, dir))}
+                  onAddField={() => setPicker({ kind: 'singleton', ci, fi: null })}
+                  onChangeType={(fi) => setPicker({ kind: 'singleton', ci, fi })}
+                />
+              ))}
+            </Section>
+          </div>
+        )}
       </div>
 
       {picker && <TypePicker onPick={applyType} onClose={() => setPicker(null)} />}
@@ -194,6 +219,57 @@ function Section({
       </div>
       <div className="space-y-3">{children}</div>
     </section>
+  )
+}
+
+function SchemaEmpty({
+  onAddCollection,
+  onAddSingleton,
+  onBrowseTemplates,
+}: {
+  onAddCollection: () => void
+  onAddSingleton: () => void
+  onBrowseTemplates?: () => void
+}) {
+  return (
+    <div className="mx-auto flex max-w-md flex-col items-center px-6 py-16 text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+        <Boxes className="h-7 w-7" />
+      </div>
+      <h2 className="text-lg font-semibold text-slate-900">Şeman boş</h2>
+      <p className="mt-1.5 text-sm text-slate-500">
+        Koleksiyon, içeriğinin bir tipini tanımlar — yazılar, ürünler, projeler. İlkini ekleyerek
+        başla.
+      </p>
+      <button
+        type="button"
+        onClick={onAddCollection}
+        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700"
+      >
+        <Plus className="h-4 w-4" /> Koleksiyon ekle
+      </button>
+      <div className="mt-3 flex items-center gap-3 text-sm">
+        <button
+          type="button"
+          onClick={onAddSingleton}
+          className="font-medium text-slate-500 transition hover:text-slate-700"
+        >
+          Tekil kayıt ekle
+        </button>
+        {onBrowseTemplates && (
+          <>
+            <span className="text-slate-300">·</span>
+            <button
+              type="button"
+              onClick={onBrowseTemplates}
+              className="font-medium text-indigo-600 transition hover:text-indigo-700"
+            >
+              veya bir template’den başla
+            </button>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 
