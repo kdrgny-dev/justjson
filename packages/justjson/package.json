@@ -1,28 +1,35 @@
 {
   "name": "justjson",
-  "version": "0.0.0",
-  "description": "Lokalde çalışan, JSON üreten mini CMS",
+  "version": "1.0.0",
+  "description": "A tiny local-first CMS — build your schema in a visual UI, edit content, keep everything as plain JSON on disk.",
   "type": "module",
   "license": "MIT",
-  "keywords": ["cms", "json", "headless", "local", "content", "git", "static-site"],
+  "author": "Kadir Günay",
+  "homepage": "https://github.com/kdrgny-dev/justjson",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kdrgny-dev/justjson.git",
+    "directory": "packages/justjson"
+  },
+  "keywords": ["cms", "json", "headless", "local", "content", "git", "static-site", "schema"],
   "bin": {
     "justjson": "./dist/cli.js"
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup src/cli.ts --format esm --clean && node scripts/bundle-editor.mjs",
-    "dev": "tsup src/cli.ts --format esm --watch",
+    "build": "tsup && node scripts/bundle-editor.mjs",
+    "dev": "tsup --watch",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@justjson/core": "workspace:*",
     "commander": "^12.1.0",
     "hono": "^4.6.14",
     "@hono/node-server": "^1.13.7",
     "fflate": "^0.8.2"
   },
   "devDependencies": {
+    "@justjson/core": "workspace:*",
     "@justjson/editor": "workspace:*",
     "@types/node": "^22.10.2",
     "tsup": "^8.3.5",
