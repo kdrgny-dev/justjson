@@ -6,8 +6,15 @@
 
 No database · no account · no lock-in.
 
+[**Website**](https://justjson-site.vercel.app)
+&nbsp;·&nbsp;
+[![npm](https://img.shields.io/npm/v/@kdrgny/justjson?color=4f46e5&label=npm)](https://www.npmjs.com/package/@kdrgny/justjson)
+&nbsp;·&nbsp;
 [![License: MIT](https://img.shields.io/badge/License-MIT-4f46e5.svg)](LICENSE)
-&nbsp;·&nbsp; `npx @kdrgny/justjson`
+
+```bash
+npx @kdrgny/justjson
+```
 
 </div>
 
