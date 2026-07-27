@@ -6,11 +6,17 @@
 
 No database · no account · no lock-in.
 
-[**Website**](https://justjson-site.vercel.app)
+[**Website**](https://justjson.vercel.app)
+
+[![npm](https://img.shields.io/npm/v/@kdrgny/justjson?color=e0a72e&label=npm)](https://www.npmjs.com/package/@kdrgny/justjson)
 &nbsp;·&nbsp;
-[![npm](https://img.shields.io/npm/v/@kdrgny/justjson?color=4f46e5&label=npm)](https://www.npmjs.com/package/@kdrgny/justjson)
+[![npm downloads](https://img.shields.io/npm/dm/@kdrgny/justjson?color=e0a72e&label=downloads)](https://www.npmjs.com/package/@kdrgny/justjson)
 &nbsp;·&nbsp;
-[![License: MIT](https://img.shields.io/badge/License-MIT-4f46e5.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/kdrgny-dev/justjson?color=e0a72e)](https://github.com/kdrgny-dev/justjson/stargazers)
+&nbsp;·&nbsp;
+[![GitHub forks](https://img.shields.io/github/forks/kdrgny-dev/justjson?color=e0a72e)](https://github.com/kdrgny-dev/justjson/network/members)
+&nbsp;·&nbsp;
+[![License: MIT](https://img.shields.io/badge/License-MIT-e0a72e.svg)](LICENSE)
 
 ```bash
 npx @kdrgny/justjson
@@ -101,13 +107,20 @@ pnpm test
 
 ## Roadmap
 
-Small, need-driven improvements shipped as releases:
+Small, need-driven improvements shipped as releases. Recently landed in `1.2.0`:
+eight ready-made templates, prompt-assisted (bring-your-own-key) schema
+scaffolding, and a live/raw JSON view. Next up:
 
-- Faster setup with more ready-made schema templates
-- Prompt-assisted schema & content scaffolding
 - Draft / published status
+- More field types
 
 Ideas and issues welcome.
+
+## Star history
+
+<a href="https://star-history.com/#kdrgny-dev/justjson&Date">
+  <img src="https://api.star-history.com/svg?repos=kdrgny-dev/justjson&type=Date" alt="Star history chart" width="600" />
+</a>
 
 ## License
 
