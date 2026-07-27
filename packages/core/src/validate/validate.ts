@@ -62,6 +62,8 @@ export function validateEntry(fields: Field[], data: Record<string, unknown>): V
   }
 
   for (const key of Object.keys(data)) {
+    // _ ile başlayan anahtarlar reserved (ör. _status) — şema dışı sayılmaz.
+    if (key.startsWith('_')) continue
     if (!known.has(key)) {
       issues.push({ key, level: 'warning', kind: 'unknown-key', message: 'anahtar şemada yok' })
     }

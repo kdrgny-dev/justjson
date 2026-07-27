@@ -14,7 +14,12 @@ import { fileURLToPath } from 'node:url'`
 
 const READERS = `export type WithSlug<T> = T & { slug: string }
 
-async function readCollection<T>(dir: string): Promise<WithSlug<T>[]> {
+export interface LoadOptions {
+  /** true ise _status: 'draft' olan kayıtlar da dahil edilir (varsayılan: yalnızca yayınlananlar). */
+  drafts?: boolean
+}
+
+async function readCollection<T>(dir: string, opts?: LoadOptions): Promise<WithSlug<T>[]> {
   let files: string[]
   try {
     files = (await readdir(join(contentDir, dir))).filter((f) => f.endsWith('.json'))
@@ -24,7 +29,9 @@ async function readCollection<T>(dir: string): Promise<WithSlug<T>[]> {
   const out: WithSlug<T>[] = []
   for (const file of files.sort()) {
     const raw = await readFile(join(contentDir, dir, file), 'utf8')
-    out.push({ ...(JSON.parse(raw) as T), slug: file.slice(0, -'.json'.length) })
+    const data = JSON.parse(raw) as T & { _status?: string }
+    if (!opts?.drafts && data._status === 'draft') continue
+    out.push({ ...data, slug: file.slice(0, -'.json'.length) })
   }
   return out
 }
@@ -60,7 +67,7 @@ export function generateLoader(schema: Schema, contentDir: string): string {
   for (const col of schema.collections) {
     const name = pascalCase(col.name)
     loaders.push(
-      `export const load${name} = (): Promise<WithSlug<${name}>[]> => readCollection<${name}>(${q(col.path)})`,
+      `export const load${name} = (opts?: LoadOptions): Promise<WithSlug<${name}>[]> => readCollection<${name}>(${q(col.path)}, opts)`,
     )
   }
   for (const s of schema.singletons) {

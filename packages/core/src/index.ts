@@ -21,6 +21,8 @@ export { MemoryAdapter } from './storage/memory'
 export type { EntryRow } from './content/store'
 export { ContentStore, loadSchema, saveSchema } from './content/store'
 export { entryTitle } from './content/title'
+export type { EntryStatus } from './content/status'
+export { STATUS_KEY, entryStatus, isPublished } from './content/status'
 
 export type { IssueKind, ValidationIssue, ValidationResult } from './validate/validate'
 export { validateEntry } from './validate/validate'

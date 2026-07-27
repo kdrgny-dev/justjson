@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -30,15 +30,24 @@ describe('generateTypesFile', () => {
     expect(loader).toContain('export const loadPosts')
   })
 
-  it('üretilen loader gerçekten içeriği slug ile yükler', async () => {
+  it('üretilen loader gerçekten içeriği slug ile yükler, draft filtreler', async () => {
     await initProject(root, 'blog')
+    // Bir taslak ekle
+    await writeFile(
+      join(root, 'content', 'posts', 'taslak.json'),
+      JSON.stringify({ title: 'Taslak', _status: 'draft' }),
+    )
     await generateTypesFile(root)
     const mod = (await import(/* @vite-ignore */ join(root, 'content.ts'))) as {
-      loadPosts: () => Promise<Array<{ slug: string }>>
+      loadPosts: (opts?: { drafts?: boolean }) => Promise<Array<{ slug: string }>>
     }
-    const posts = await mod.loadPosts()
-    expect(posts.length).toBeGreaterThan(0)
-    expect(typeof posts[0]?.slug).toBe('string')
+    const published = await mod.loadPosts()
+    expect(published.length).toBeGreaterThan(0)
+    expect(typeof published[0]?.slug).toBe('string')
+    expect(published.some((p) => p.slug === 'taslak')).toBe(false)
+
+    const all = await mod.loadPosts({ drafts: true })
+    expect(all.some((p) => p.slug === 'taslak')).toBe(true)
   })
 
   it('şema yoksa hata verir', async () => {

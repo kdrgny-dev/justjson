@@ -41,6 +41,12 @@ describe('validateEntry', () => {
     expect(r.issues.some((i) => i.key === 'age' && i.level === 'error')).toBe(true)
   })
 
+  it('_ ile başlayan reserved anahtar (ör. _status) uyarı vermez', () => {
+    const r = validateEntry(fields, { title: 'X', _status: 'draft' })
+    expect(r.ok).toBe(true)
+    expect(r.issues.some((i) => i.key === '_status')).toBe(false)
+  })
+
   it('bilinmeyen anahtar → warning, ok kalır', () => {
     const r = validateEntry(fields, { title: 'X', ekstra: 1 })
     expect(r.ok).toBe(true)

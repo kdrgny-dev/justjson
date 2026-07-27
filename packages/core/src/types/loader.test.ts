@@ -27,8 +27,8 @@ describe('generateLoader', () => {
   it('koleksiyon için tipli loader üretir (pascalCase isim, path ile okur)', () => {
     expect(out).toContain('export const loadPosts')
     expect(out).toContain('export const loadBlogTags')
-    expect(out).toContain("readCollection<Posts>('posts')")
-    expect(out).toContain("readCollection<BlogTags>('blog-tags')")
+    expect(out).toContain("readCollection<Posts>('posts', opts)")
+    expect(out).toContain("readCollection<BlogTags>('blog-tags', opts)")
   })
 
   it('singleton için nullable loader üretir', () => {
@@ -40,6 +40,13 @@ describe('generateLoader', () => {
   it('slug enjekte eden WithSlug tipi içerir', () => {
     expect(out).toContain('WithSlug')
     expect(out).toContain('slug: string')
+  })
+
+  it('varsayılan draft filtreler, drafts seçeneği sunar', () => {
+    expect(out).toContain('LoadOptions')
+    expect(out).toContain('drafts')
+    expect(out).toContain('_status')
+    expect(out).toContain('export const loadPosts = (opts?: LoadOptions)')
   })
 
   it('sıfır runtime bağımlılık — sadece node: builtinleri', () => {
