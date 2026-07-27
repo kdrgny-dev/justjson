@@ -280,6 +280,15 @@
       </div>
       <div class="grid stagger">
         <div class="card">
+          <div class="lbl">AI · optional</div>
+          <h3>Describe it, AI drafts the schema</h3>
+          <p>
+            Say what you're managing and JustJSON drafts the collections and fields. Bring your own
+            key (Gemini, Groq, OpenRouter or local Ollama) — it goes straight to the provider,
+            never to us.
+          </p>
+        </div>
+        <div class="card">
           <div class="lbl">Start</div>
           <h3>Bring your own JSON</h3>
           <p>
@@ -349,8 +358,9 @@
           <div>
             <h3>Start</h3>
             <p>
-              <code>npx @kdrgny/justjson init</code> — begin from a template (blog, cv, portfolio,
-              docs, changelog), from scratch, or from JSON you already have.
+              Begin from one of eight templates (blog, CV, portfolio, docs, changelog, recipe box,
+              event schedule, product catalog), from JSON you already have, or just describe it and
+              let AI draft the schema.
             </p>
           </div>
         </div>
@@ -373,6 +383,37 @@
               your flow, your repo, your call.
             </p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block wrap reveal">
+      <div class="head">
+        <span class="eyebrow">In the wild</span>
+        <h2>Built with JustJSON</h2>
+        <p>Real sites whose content is nothing but the JSON in their own repo.</p>
+      </div>
+      <div class="builtwith">
+        <a class="builtwith-card" href="https://cv.kdrgny.com" target="_blank" rel="noreferrer">
+          <div class="bw-top">
+            <span class="bw-dot"></span><span class="bw-dot"></span><span class="bw-dot"></span>
+            <span class="bw-host mono">cv.kdrgny.com</span>
+          </div>
+          <div class="bw-body">
+            <h3>Kadir Günay — CV</h3>
+            <p>
+              A personal CV site. Built from the <span class="mono">cv</span> template, edited in
+              JustJSON, shipped as <span class="mono">content/*.json</span> read straight at build.
+            </p>
+            <span class="bw-go">Visit <span class="arrow">→</span></span>
+          </div>
+        </a>
+        <div class="builtwith-note">
+          <p>
+            Made something with JustJSON?
+            <a href="https://github.com/kdrgny-dev/justjson/issues/new">Tell us</a> and we'll add it
+            here.
+          </p>
         </div>
       </div>
     </section>

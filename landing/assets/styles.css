@@ -1215,6 +1215,100 @@ tbody tr {
   font-size: 0.93rem;
 }
 
+/* ---------- built with ---------- */
+.builtwith {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+.builtwith-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--kraft);
+  border-radius: 10px;
+  background: var(--raised);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s var(--ease), border-color 0.2s, box-shadow 0.2s;
+}
+.builtwith-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--signal) 50%, var(--line));
+  box-shadow: 0 18px 36px -28px var(--signal-ink);
+}
+.bw-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--sunk);
+}
+.bw-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.bw-host {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--signal-ink);
+}
+.bw-body {
+  padding: 20px 22px 22px;
+}
+.bw-body h3 {
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+.bw-body p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+.bw-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--signal-ink);
+}
+.builtwith-card:hover .bw-go .arrow {
+  transform: translateX(3px);
+}
+.bw-go .arrow {
+  transition: transform 0.2s var(--ease);
+}
+.builtwith-note {
+  display: flex;
+  align-items: center;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: var(--raised);
+  padding: 20px 22px;
+}
+.builtwith-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.builtwith-note a {
+  color: var(--signal-ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+.builtwith-note a:hover {
+  text-decoration: underline;
+}
+
 /* ---------- steps ---------- */
 .steps {
   position: relative;
@@ -1420,6 +1514,9 @@ footer a:hover {
   }
   .thesis {
     gap: 28px;
+  }
+  .builtwith {
+    grid-template-columns: 1fr;
   }
   .segments {
     padding-bottom: 56px;

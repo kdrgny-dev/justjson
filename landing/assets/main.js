@@ -188,6 +188,48 @@
         { key: "body", type: "richtext", value: "Drag and drop in the schema." }
       ],
       live: { key: "type", mode: "select", values: ["Added", "Fixed", "Changed"] }
+    },
+    {
+      id: "recipe",
+      label: "Recipe box",
+      collection: "recipes",
+      path: "content/recipes/weeknight-pasta.json",
+      caption: "Recipes with ingredients, steps and a cover — a cookbook on disk.",
+      fields: [
+        { key: "title", type: "text", value: "Weeknight pasta" },
+        { key: "time", type: "text", value: "20 min" },
+        { key: "servings", type: "number", value: 2 },
+        { key: "steps", type: "richtext", value: "Boil. Toss. Eat." }
+      ],
+      live: { key: "servings", mode: "number", values: [2, 4, 6] }
+    },
+    {
+      id: "event",
+      label: "Event",
+      collection: "sessions",
+      path: "content/sessions/opening-keynote.json",
+      caption: "Sessions with date, time and speaker — an agenda that writes itself.",
+      fields: [
+        { key: "title", type: "text", value: "Opening keynote" },
+        { key: "time", type: "text", value: "09:00" },
+        { key: "speaker", type: "text", value: "Ada Lovelace" },
+        { key: "room", type: "text", value: "Main hall" }
+      ],
+      live: { key: "speaker", mode: "type", values: ["Ada Lovelace", "Grace Hopper"] }
+    },
+    {
+      id: "catalog",
+      label: "Catalog",
+      collection: "products",
+      path: "content/products/ceramic-mug.json",
+      caption: "Products with price, category and image — your store, as files.",
+      fields: [
+        { key: "title", type: "text", value: "Ceramic mug" },
+        { key: "price", type: "number", value: 18 },
+        { key: "category", type: "select", value: "Home" },
+        { key: "cover", type: "image", value: "media/mug.webp" }
+      ],
+      live: { key: "category", mode: "select", values: ["Home", "Apparel", "Accessory"] }
     }
   ];
 
