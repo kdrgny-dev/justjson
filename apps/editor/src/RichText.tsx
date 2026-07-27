@@ -25,7 +25,7 @@ export function RichText({ value, onChange }: { value: string; onChange: (md: st
     },
     editorProps: {
       attributes: {
-        class: 'tiptap min-h-40 px-4 py-3 text-sm text-slate-800 outline-none',
+        class: 'tiptap min-h-40 px-4 py-3 text-sm text-foreground outline-none',
       },
     },
   })
@@ -33,8 +33,8 @@ export function RichText({ value, onChange }: { value: string; onChange: (md: st
   if (!editor) return null
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100">
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-slate-100 bg-slate-50/60 px-2 py-1.5">
+    <div className="overflow-hidden rounded-lg border border-input bg-card shadow-sm focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20">
+      <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/50 px-2 py-1.5">
         <Btn editor={editor} on="bold" cmd={(e) => e.toggleBold()} title="Kalın">
           <Bold className="h-4 w-4" />
         </Btn>
@@ -120,7 +120,7 @@ function Btn({
       title={title}
       onClick={() => cmd(editor.chain().focus()).run()}
       className={`flex h-8 w-8 items-center justify-center rounded-md transition ${
-        active ? 'bg-indigo-100 text-indigo-700' : 'text-slate-500 hover:bg-slate-200/60'
+        active ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent/60'
       }`}
     >
       {children}
@@ -129,5 +129,5 @@ function Btn({
 }
 
 function Sep() {
-  return <span className="mx-1 h-5 w-px bg-slate-200" />
+  return <span className="mx-1 h-5 w-px bg-border" />
 }

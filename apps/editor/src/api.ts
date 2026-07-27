@@ -152,3 +152,18 @@ export async function putSingleton(name: string, data: Entry): Promise<void> {
     }),
   )
 }
+
+export async function aiGenerate(
+  config: { provider: string; model: string; apiKey: string; baseUrl?: string },
+  system: string,
+  prompt: string,
+): Promise<string> {
+  const res = await fetch('/api/_ai/generate', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ ...config, system, prompt }),
+  })
+  const data = (await res.json()) as { text?: string; error?: string }
+  if (!res.ok || !data.text) throw new Error(data.error || `AI isteği başarısız (${res.status})`)
+  return data.text
+}

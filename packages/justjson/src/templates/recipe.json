@@ -1,0 +1,43 @@
+{
+  "title": "Tarif Defteri",
+  "description": "Malzeme, yapılış ve kapak görselli tarifler; bir de Mutfak ayarları.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "tarifler",
+        "label": "Tarifler",
+        "path": "tarifler",
+        "fields": [
+          { "key": "title", "label": "Başlık", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "sure", "label": "Süre", "type": "text" },
+          { "key": "porsiyon", "label": "Porsiyon", "type": "number" },
+          { "key": "kapak", "label": "Kapak", "type": "image" },
+          { "key": "malzemeler", "label": "Malzemeler", "type": "richtext" },
+          { "key": "yapilis", "label": "Yapılış", "type": "richtext" }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "mutfak",
+        "label": "Mutfak",
+        "path": "mutfak.json",
+        "fields": [{ "key": "title", "label": "Site adı", "type": "text" }]
+      }
+    ]
+  },
+  "samples": {
+    "tarifler": [
+      {
+        "title": "Akşam Makarnası",
+        "slug": "aksam-makarnasi",
+        "sure": "20 dk",
+        "porsiyon": 2,
+        "malzemeler": "- 200g makarna\n- 2 diş sarımsak\n- Zeytinyağı",
+        "yapilis": "Makarnayı haşla. Sarımsağı zeytinyağında kavur. Karıştır."
+      }
+    ]
+  }
+}

@@ -55,6 +55,7 @@ import {
   RotateCcw,
   Search,
   SearchX,
+  Sparkles,
   Trash2,
   Upload,
   X,
@@ -64,6 +65,8 @@ import { toast } from 'sonner'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
 import { TemplateGallery } from './TemplateGallery'
+import { AIAssist } from './ai/AIAssist'
+import { AiSettingsProvider, useAiSettings } from './ai/AiSettingsContext'
 import * as api from './api'
 import {
   PageBody,
@@ -87,7 +90,9 @@ type Selection =
 export function App() {
   return (
     <TooltipProvider delayDuration={300}>
-      <AppShell />
+      <AiSettingsProvider>
+        <AppShell />
+      </AiSettingsProvider>
       <Toaster position="bottom-right" />
     </TooltipProvider>
   )
@@ -301,7 +306,7 @@ function Sidebar({
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r bg-card">
       <div className="flex h-12 shrink-0 items-center border-b px-5">
-        <div className="text-[15px] font-bold tracking-tight text-foreground">
+        <div className="font-mono text-[15px] font-bold tracking-tight text-foreground">
           Just<span className="text-primary">JSON</span>
         </div>
       </div>
@@ -363,6 +368,7 @@ function ProjectMenu({
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [resetting, setResetting] = useState(false)
+  const { config: aiConfig, openSettings: openAiSettings } = useAiSettings()
 
   const confirmReset = async () => {
     setResetting(true)
@@ -394,6 +400,16 @@ function ProjectMenu({
           <DropdownMenuItem onSelect={onExport}>
             <Download />
             Dışa aktar (.zip)
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={openAiSettings}>
+            <Sparkles />
+            AI ayarları
+            {aiConfig && (
+              <Badge variant="secondary" className="ml-auto font-normal">
+                bağlı
+              </Badge>
+            )}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirmOpen(true)}>
@@ -1006,6 +1022,7 @@ function EntryEditor({
                 field={field}
                 value={data[field.key]}
                 onChange={setField}
+                context={collection.label ?? collection.name}
               />
             ))}
           </div>
@@ -1090,6 +1107,7 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
                 field={field}
                 value={data[field.key]}
                 onChange={setField}
+                context={singleton.label ?? singleton.name}
               />
             ))}
           </div>
@@ -1161,12 +1179,14 @@ function FieldShell({
   required,
   type,
   hint,
+  actions,
   children,
 }: {
   label: string
   required?: boolean
   type?: string
   hint?: string
+  actions?: React.ReactNode
   children: React.ReactNode
 }) {
   const Icon = type ? FIELD_META[type as keyof typeof FIELD_META]?.icon : null
@@ -1181,24 +1201,49 @@ function FieldShell({
           </span>
         )}
         {hint && <span className="ml-auto truncate font-mono text-xs text-primary">{hint}</span>}
+        {actions && <span className={hint ? '' : 'ml-auto'}>{actions}</span>}
       </div>
       {children}
     </div>
   )
 }
 
+const AI_ELIGIBLE_TYPES = new Set(['text', 'richtext'])
+
 function FieldEditor({
   field,
   value,
   onChange,
+  context,
 }: {
   field: Field
   value: unknown
   onChange: (key: string, value: unknown) => void
+  context: string
 }) {
+  const [aiRev, setAiRev] = useState(0)
+  const handleAiResult = (text: string) => {
+    onChange(field.key, text)
+    if (field.type === 'richtext') setAiRev((r) => r + 1)
+  }
   return (
-    <FieldShell label={field.label || field.key} required={field.required} type={field.type}>
-      <FieldInput field={field} value={value} onChange={onChange} />
+    <FieldShell
+      label={field.label || field.key}
+      required={field.required}
+      type={field.type}
+      actions={
+        AI_ELIGIBLE_TYPES.has(field.type) ? (
+          <AIAssist
+            context={context}
+            fieldLabel={field.label || field.key}
+            currentValue={typeof value === 'string' ? value : ''}
+            richtext={field.type === 'richtext'}
+            onResult={handleAiResult}
+          />
+        ) : undefined
+      }
+    >
+      <FieldInput field={field} value={value} onChange={onChange} richtextKey={aiRev} />
     </FieldShell>
   )
 }
@@ -1207,15 +1252,23 @@ function FieldInput({
   field,
   value,
   onChange,
+  richtextKey,
 }: {
   field: Field
   value: unknown
   onChange: (key: string, value: unknown) => void
+  richtextKey?: number
 }) {
   const k = field.key
   switch (field.type) {
     case 'richtext':
-      return <RichText value={(value as string) ?? ''} onChange={(md) => onChange(k, md)} />
+      return (
+        <RichText
+          key={richtextKey}
+          value={(value as string) ?? ''}
+          onChange={(md) => onChange(k, md)}
+        />
+      )
     case 'number':
       return (
         <Input

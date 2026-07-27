@@ -39,7 +39,7 @@ Design your schema, enter content, upload images. Everything is written to `cont
 
 | | |
 |---|---|
-| **Start from a template** | Blog, CV, portfolio, docs or changelog — each card previews the collections and fields it creates. |
+| **Start from a template** | Blog, CV, portfolio, docs, changelog, recipe box, event schedule or product catalog — each card previews the collections and fields it creates. |
 | **Bring your own JSON** | Paste any content JSON and JustJSON infers the structure: lists become collections, objects become singletons, HTML becomes rich text. |
 | **Visual schema builder** | Define collections and fields in the UI. Pick a field type from icon cards — no config file to hand-write. |
 | **Searchable content table** | Entries listed by title, slug and date. Search and edit instantly — content, not a pile of slugs. |
@@ -56,7 +56,7 @@ Field types: `text` · `richtext` · `number` · `boolean` · `date` · `select`
 | Command | What it does |
 |---|---|
 | `npx @kdrgny/justjson` (or `serve`) | Starts the local editor and opens it in your browser |
-| `npx @kdrgny/justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`, `portfolio`, `docs`, `changelog`) |
+| `npx @kdrgny/justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`, `portfolio`, `docs`, `changelog`, `recipe`, `event`, `catalog`) |
 | `npx @kdrgny/justjson types` | Generates `types.ts` from your schema |
 | `npx @kdrgny/justjson export` | Exports a ZIP snapshot (schema + content + types) |
 

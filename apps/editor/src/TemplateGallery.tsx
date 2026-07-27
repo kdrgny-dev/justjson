@@ -24,6 +24,8 @@ import {
   AlertCircle,
   BookOpen,
   Braces,
+  CalendarDays,
+  ChefHat,
   FileJson,
   FileStack,
   FileText,
@@ -33,11 +35,14 @@ import {
   Newspaper,
   PenLine,
   Rows3,
+  ShoppingBag,
+  Sparkles,
   Upload,
   User,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useAiSettings } from './ai/AiSettingsContext'
 import * as api from './api'
 import type { TemplateMeta } from './api'
 
@@ -47,6 +52,9 @@ const ICONS: Record<string, LucideIcon> = {
   portfolio: LayoutGrid,
   docs: BookOpen,
   changelog: History,
+  recipe: ChefHat,
+  event: CalendarDays,
+  catalog: ShoppingBag,
 }
 
 function structureSummary(t: TemplateMeta) {
@@ -75,6 +83,115 @@ function SkeletonCard() {
         <div className="h-9 w-full animate-pulse rounded-lg bg-muted" />
       </CardFooter>
     </Card>
+  )
+}
+
+const SCHEMA_SYSTEM_PROMPT = [
+  'Bir headless CMS için içerik şeması tasarlıyorsun.',
+  'SADECE geçerli JSON döndür — açıklama, markdown kod bloğu ya da başka metin ekleme.',
+  'Tam olarak şu şekle uy:',
+  '{"version":1,"collections":[{"name":"ingilizce-cogul-kimlik","label":"Görünen ad","path":"ayni-kimlik","fields":[{"key":"alan_adi","label":"Görünen ad","type":"text|richtext|number|boolean|date|select|relation|image","required":true}]}],"singletons":[{"name":"ingilizce-kimlik","label":"Görünen ad","path":"isim.json","fields":[...]}]}',
+  'Kullanıcının anlattığı içeriğe göre alan tiplerini akıllıca seç: uzun/biçimli metin için richtext, tarih için date, sabit seçenekli alan için select (bir de "options" dizisi ekle), görsel için image, başka bir koleksiyona bağlantı için relation (bir de hedef koleksiyonun name\'ini "to" alanına yaz).',
+  "En az bir koleksiyon üret. Her koleksiyonda title/slug'a benzer bir kimlik alanı olsun.",
+  'name ve key değerleri İngilizce, kebap/snake-case, kısa olsun. label değerleri kullanıcının dilinde olsun.',
+].join(' ')
+
+function stripCodeFence(text: string): string {
+  return text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/```\s*$/, '')
+    .trim()
+}
+
+function AiScaffoldPanel({ onApplied, disabled }: { onApplied: () => void; disabled: boolean }) {
+  const { config, openSettings } = useAiSettings()
+  const [prompt, setPrompt] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const generate = async () => {
+    if (!config) {
+      openSettings()
+      return
+    }
+    if (!prompt.trim()) return
+    setError(null)
+    setBusy(true)
+    try {
+      const raw = await api.aiGenerate(config, SCHEMA_SYSTEM_PROMPT, prompt.trim())
+      let schema: unknown
+      try {
+        schema = JSON.parse(stripCodeFence(raw))
+      } catch {
+        throw new Error('AI geçerli bir JSON döndürmedi, tekrar dene.')
+      }
+      await api.importProject(schema)
+      onApplied()
+    } catch (e) {
+      setError((e as Error).message)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="mb-8 rounded-2xl border border-primary/30 bg-accent/40 p-6 sm:p-8">
+      <div className="flex items-center gap-2 text-sm font-medium text-primary">
+        <Sparkles className="size-4" /> AI ile oluştur
+      </div>
+      <h2 className="mt-2 font-heading text-lg font-semibold text-foreground sm:text-xl">
+        Ne yöneteceğini anlat, şemayı senin için tasarlasın
+      </h2>
+      <p className="mt-1.5 text-sm text-muted-foreground">
+        Kendi API key'inle çalışır — tamamen opsiyonel, hiçbir şey bize gitmez. Sadece koleksiyon ve
+        alanları üretir; içeriği sen girersin.
+      </p>
+
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start">
+        <Textarea
+          value={prompt}
+          onChange={(e) => {
+            setPrompt(e.target.value)
+            if (error) setError(null)
+          }}
+          disabled={busy || disabled}
+          rows={2}
+          placeholder='Örn. "Tarif paylaştığım bir blog; kategori, zorluk seviyesi ve pişirme süresi olsun"'
+          className="min-h-0 flex-1 resize-none bg-card"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void generate()
+          }}
+        />
+        <Button
+          onClick={generate}
+          disabled={busy || disabled || !prompt.trim()}
+          className="shrink-0 sm:mt-0"
+        >
+          {busy ? (
+            <>
+              <Loader2 className="animate-spin" /> Oluşturuluyor…
+            </>
+          ) : (
+            <>
+              <Sparkles /> Şema oluştur
+            </>
+          )}
+        </Button>
+      </div>
+
+      {!config && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          Henüz bir AI sağlayıcı bağlamadın — butona basınca ayarlar açılacak.
+        </p>
+      )}
+
+      {error && (
+        <div className="mt-3 flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" />
+          <span className="break-words">{error}</span>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -300,6 +417,14 @@ export function TemplateGallery({
             <span>{error}</span>
           </div>
         )}
+
+        <AiScaffoldPanel onApplied={onApplied} disabled={busy} />
+
+        <div className="mb-5 flex items-center gap-3 text-xs font-medium text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          ya da bir şablonla başla
+          <span className="h-px flex-1 bg-border" />
+        </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {templates === null && !error && [0, 1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}

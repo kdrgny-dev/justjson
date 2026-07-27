@@ -14,22 +14,11 @@
     "url": "git+https://github.com/kdrgny-dev/justjson.git",
     "directory": "packages/justjson"
   },
-  "keywords": [
-    "cms",
-    "json",
-    "headless",
-    "local",
-    "content",
-    "git",
-    "static-site",
-    "schema"
-  ],
+  "keywords": ["cms", "json", "headless", "local", "content", "git", "static-site", "schema"],
   "bin": {
     "justjson": "./dist/cli.js"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsup && node scripts/bundle-editor.mjs",
     "dev": "tsup --watch",

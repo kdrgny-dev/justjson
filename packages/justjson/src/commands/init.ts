@@ -3,10 +3,13 @@ import type { Schema, StorageAdapter } from '@justjson/core'
 import { resolveContentDir } from '../config'
 import { FsAdapter } from '../fs-adapter'
 import blog from '../templates/blog.json'
+import catalog from '../templates/catalog.json'
 import changelog from '../templates/changelog.json'
 import cv from '../templates/cv.json'
 import docs from '../templates/docs.json'
+import event from '../templates/event.json'
 import portfolio from '../templates/portfolio.json'
+import recipe from '../templates/recipe.json'
 
 export interface Template {
   title: string
@@ -29,6 +32,9 @@ const templates: Record<string, Template> = {
   portfolio: portfolio as Template,
   docs: docs as Template,
   changelog: changelog as Template,
+  recipe: recipe as Template,
+  event: event as Template,
+  catalog: catalog as Template,
 }
 
 export function listTemplates(): string[] {

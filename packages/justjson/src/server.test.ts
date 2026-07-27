@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { initProject } from './commands/init'
 import { createServer } from './server'
 
@@ -265,5 +265,69 @@ describe('createServer boş klasörde', () => {
     } finally {
       await rm(dir, { recursive: true, force: true })
     }
+  })
+})
+
+describe('/api/_ai/generate', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('provider/model/apiKey/prompt eksikse 400 döner', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_ai/generate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ provider: 'gemini' }),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('key sunucuya kalıcı yazılmaz, her istekte doğrudan sağlayıcıya gider', async () => {
+    const app = await createServer(root)
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'merhaba' }] } }] }), {
+        status: 200,
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const res = await app.request('/api/_ai/generate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        provider: 'gemini',
+        model: 'gemini-2.0-flash',
+        apiKey: 'sahte-key',
+        prompt: 'başlık üret',
+      }),
+    })
+    expect(res.status).toBe(200)
+    expect((await res.json()) as { text: string }).toEqual({ text: 'merhaba' })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('sahte-key')
+  })
+
+  it('sağlayıcı hata döndürürse mesajı ileterek 502 verir', async () => {
+    const app = await createServer(root)
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: { message: 'geçersiz key' } }), { status: 401 }),
+      ),
+    )
+
+    const res = await app.request('/api/_ai/generate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        provider: 'groq',
+        model: 'llama-3.3-70b-versatile',
+        apiKey: 'x',
+        prompt: 'başlık üret',
+      }),
+    })
+    expect(res.status).toBe(502)
+    expect((await res.json()) as { error: string }).toEqual({ error: 'geçersiz key' })
   })
 })

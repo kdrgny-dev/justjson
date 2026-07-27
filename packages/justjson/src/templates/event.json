@@ -1,0 +1,46 @@
+{
+  "title": "Etkinlik Programı",
+  "description": "Tarih, saat ve konuşmacılı oturumlardan oluşan bir etkinlik ajandası.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "oturumlar",
+        "label": "Oturumlar",
+        "path": "oturumlar",
+        "fields": [
+          { "key": "title", "label": "Başlık", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "tarih", "label": "Tarih", "type": "date" },
+          { "key": "saat", "label": "Saat", "type": "text" },
+          { "key": "konusmaci", "label": "Konuşmacı", "type": "text" },
+          { "key": "yer", "label": "Salon", "type": "text" },
+          { "key": "aciklama", "label": "Açıklama", "type": "richtext" }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "etkinlik",
+        "label": "Etkinlik",
+        "path": "etkinlik.json",
+        "fields": [
+          { "key": "title", "label": "Etkinlik adı", "type": "text" },
+          { "key": "slogan", "label": "Slogan", "type": "text" }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "oturumlar": [
+      {
+        "title": "Açılış Konuşması",
+        "slug": "acilis-konusmasi",
+        "saat": "09:00",
+        "konusmaci": "Ayşe Yılmaz",
+        "yer": "Ana Salon",
+        "aciklama": "Etkinliğe hoş geldiniz."
+      }
+    ]
+  }
+}

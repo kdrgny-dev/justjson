@@ -20,6 +20,78 @@ import { FsAdapter } from './fs-adapter'
 
 const editorDir = fileURLToPath(new URL('./editor', import.meta.url))
 
+type AiProvider = 'gemini' | 'groq' | 'openrouter' | 'custom'
+
+interface AiRequest {
+  provider?: AiProvider
+  baseUrl?: string
+  model?: string
+  apiKey?: string
+  system?: string
+  prompt?: string
+}
+
+const PROVIDER_BASE_URLS: Partial<Record<AiProvider, string>> = {
+  groq: 'https://api.groq.com/openai/v1',
+  openrouter: 'https://openrouter.ai/api/v1',
+}
+
+interface GeminiResponse {
+  candidates?: { content?: { parts?: { text?: string }[] } }[]
+  error?: { message?: string }
+}
+
+async function callGemini(
+  apiKey: string,
+  model: string,
+  system: string | undefined,
+  prompt: string,
+): Promise<string> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+    }),
+  })
+  const data = (await res.json()) as GeminiResponse
+  if (!res.ok) throw new Error(data.error?.message ?? `Gemini isteği başarısız (${res.status})`)
+  const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? ''
+  if (!text) throw new Error('Gemini boş yanıt döndü')
+  return text
+}
+
+interface OpenAiCompatibleResponse {
+  choices?: { message?: { content?: string } }[]
+  error?: { message?: string }
+}
+
+async function callOpenAiCompatible(
+  baseUrl: string,
+  apiKey: string,
+  model: string,
+  system: string | undefined,
+  prompt: string,
+): Promise<string> {
+  if (!baseUrl) throw new Error('Bu sağlayıcı için taban URL gerekli')
+  const messages = [
+    ...(system ? [{ role: 'system', content: system }] : []),
+    { role: 'user', content: prompt },
+  ]
+  const res = await fetch(`${baseUrl.replace(/\/$/, '')}/chat/completions`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({ model, messages }),
+  })
+  const data = (await res.json()) as OpenAiCompatibleResponse
+  if (!res.ok) throw new Error(data.error?.message ?? `İstek başarısız (${res.status})`)
+  const text = data.choices?.[0]?.message?.content ?? ''
+  if (!text) throw new Error('Sağlayıcı boş yanıt döndü')
+  return text
+}
+
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript',
@@ -155,6 +227,29 @@ export async function createServer(root: string): Promise<Hono> {
     await mkdir(dirname(abs), { recursive: true })
     await writeFile(abs, Buffer.from(body.dataBase64, 'base64'))
     return c.json({ path: rel })
+  })
+
+  app.post('/api/_ai/generate', async (c) => {
+    const body = (await c.req.json()) as AiRequest
+    const { provider, apiKey, model, system, prompt } = body
+    if (!provider || !apiKey || !model || !prompt) {
+      return c.json({ error: 'provider, model, apiKey ve prompt zorunlu' }, 400)
+    }
+    try {
+      const text =
+        provider === 'gemini'
+          ? await callGemini(apiKey, model, system, prompt)
+          : await callOpenAiCompatible(
+              body.baseUrl || PROVIDER_BASE_URLS[provider] || '',
+              apiKey,
+              model,
+              system,
+              prompt,
+            )
+      return c.json({ text })
+    } catch (e) {
+      return c.json({ error: (e as Error).message }, 502)
+    }
   })
 
   app.get('/media/:file', async (c) => {

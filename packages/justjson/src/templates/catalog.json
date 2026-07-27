@@ -1,0 +1,49 @@
+{
+  "title": "Ürün Kataloğu",
+  "description": "Fiyat, kategori ve görselli ürünler; bir de Mağaza ayarları.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "urunler",
+        "label": "Ürünler",
+        "path": "urunler",
+        "fields": [
+          { "key": "title", "label": "Başlık", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "fiyat", "label": "Fiyat", "type": "number" },
+          {
+            "key": "kategori",
+            "label": "Kategori",
+            "type": "select",
+            "options": ["Ev", "Giyim", "Aksesuar"]
+          },
+          { "key": "kapak", "label": "Görsel", "type": "image" },
+          { "key": "aciklama", "label": "Açıklama", "type": "richtext" }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "magaza",
+        "label": "Mağaza",
+        "path": "magaza.json",
+        "fields": [
+          { "key": "title", "label": "Mağaza adı", "type": "text" },
+          { "key": "slogan", "label": "Slogan", "type": "text" }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "urunler": [
+      {
+        "title": "Seramik Kupa",
+        "slug": "seramik-kupa",
+        "fiyat": 180,
+        "kategori": "Ev",
+        "aciklama": "Elde yapım seramik kupa."
+      }
+    ]
+  }
+}
