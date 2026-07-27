@@ -23,8 +23,16 @@ describe('validateEntry', () => {
     expect(r.issues).toContainEqual({
       key: 'title',
       level: 'warning',
+      kind: 'required',
       message: expect.stringContaining('zorunlu'),
     })
+  })
+
+  it('issue kind alanı taşır (required/type/unknown-key)', () => {
+    const r = validateEntry(fields, { age: 'üç', ekstra: 1 })
+    expect(r.issues.find((i) => i.key === 'title')?.kind).toBe('required')
+    expect(r.issues.find((i) => i.key === 'age')?.kind).toBe('type')
+    expect(r.issues.find((i) => i.key === 'ekstra')?.kind).toBe('unknown-key')
   })
 
   it('yanlış tip → error, ok false', () => {
@@ -39,6 +47,7 @@ describe('validateEntry', () => {
     expect(r.issues).toContainEqual({
       key: 'ekstra',
       level: 'warning',
+      kind: 'unknown-key',
       message: expect.stringContaining('şemada yok'),
     })
   })

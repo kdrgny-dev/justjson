@@ -65,6 +65,20 @@ Field types: `text` · `richtext` · `number` · `boolean` · `date` · `select`
 | `npx @kdrgny/justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`, `portfolio`, `docs`, `changelog`, `recipe`, `event`, `catalog`) |
 | `npx @kdrgny/justjson types` | Generates `types.ts` from your schema |
 | `npx @kdrgny/justjson export` | Exports a ZIP snapshot (schema + content + types) |
+| `npx @kdrgny/justjson validate` | Checks your content against the schema (great for CI) |
+
+### Validating content in CI
+
+`validate` walks your `content/` and reports anything that would break your
+build: missing required fields, type mismatches, **broken relations**, duplicate
+slugs, and images pointing at missing media. It exits non-zero on errors, so you
+can gate a deploy on it:
+
+```bash
+npx @kdrgny/justjson validate            # human-readable report
+npx @kdrgny/justjson validate --json     # machine-readable, for CI annotations
+npx @kdrgny/justjson validate --strict   # warnings fail too (e.g. keys not in schema)
+```
 
 ## How it works
 

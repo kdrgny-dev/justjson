@@ -1,8 +1,11 @@
 import type { Field } from '../schema/types'
 
+export type IssueKind = 'required' | 'type' | 'unknown-key'
+
 export interface ValidationIssue {
   key: string
   level: 'error' | 'warning'
+  kind: IssueKind
   message: string
 }
 
@@ -45,17 +48,22 @@ export function validateEntry(fields: Field[], data: Record<string, unknown>): V
     const value = data[field.key]
     if (isEmpty(value)) {
       if (field.required) {
-        issues.push({ key: field.key, level: 'warning', message: 'zorunlu alan boş' })
+        issues.push({
+          key: field.key,
+          level: 'warning',
+          kind: 'required',
+          message: 'zorunlu alan boş',
+        })
       }
       continue
     }
     const err = typeError(field, value)
-    if (err) issues.push({ key: field.key, level: 'error', message: err })
+    if (err) issues.push({ key: field.key, level: 'error', kind: 'type', message: err })
   }
 
   for (const key of Object.keys(data)) {
     if (!known.has(key)) {
-      issues.push({ key, level: 'warning', message: 'anahtar şemada yok' })
+      issues.push({ key, level: 'warning', kind: 'unknown-key', message: 'anahtar şemada yok' })
     }
   }
 

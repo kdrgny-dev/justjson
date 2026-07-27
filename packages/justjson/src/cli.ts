@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import { exportZip } from './commands/export'
 import { initProject, listTemplates } from './commands/init'
 import { generateTypesFile } from './commands/types'
+import { formatJson, formatText, shouldFail, validateProjectAt } from './commands/validate'
 import { startServer } from './server'
 import { readVersion } from './version'
 
@@ -34,6 +35,22 @@ program
   .action(async () => {
     const out = await exportZip(root)
     console.log(`Yazıldı: ${out}`)
+  })
+
+program
+  .command('validate')
+  .description('İçeriği şemaya karşı doğrular (CI için)')
+  .option('--json', 'makine-okur JSON çıktı')
+  .option('--strict', 'uyarıları da hata say')
+  .action(async (opts: { json?: boolean; strict?: boolean }) => {
+    const issues = await validateProjectAt(root)
+    if (issues === null) {
+      console.error('Şema bulunamadı. Önce `justjson init` çalıştırın.')
+      process.exitCode = 1
+      return
+    }
+    console.log(opts.json ? formatJson(issues) : formatText(issues))
+    if (shouldFail(issues, Boolean(opts.strict))) process.exitCode = 1
   })
 
 program

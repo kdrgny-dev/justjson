@@ -22,8 +22,16 @@ export type { EntryRow } from './content/store'
 export { ContentStore, loadSchema, saveSchema } from './content/store'
 export { entryTitle } from './content/title'
 
-export type { ValidationIssue, ValidationResult } from './validate/validate'
+export type { IssueKind, ValidationIssue, ValidationResult } from './validate/validate'
 export { validateEntry } from './validate/validate'
+
+export type {
+  ProjectContent,
+  ProjectEntry,
+  ProjectIssue,
+  ProjectIssueKind,
+} from './validate/project'
+export { validateProject } from './validate/project'
 
 export { generateTypes } from './types/generate'
 
