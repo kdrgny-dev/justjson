@@ -47,7 +47,7 @@ export interface InferredProject {
  * Şemaya girmeyen karmaşık alanlar (iç içe dizi/nesne) veride korunur.
  */
 export function inferProject(data: unknown): InferredProject {
-  if (!isPlainObject(data)) throw new Error('İçe aktarılan JSON bir nesne olmalı.')
+  if (!isPlainObject(data)) throw new Error('The imported JSON must be an object.')
 
   const collections: Collection[] = []
   const singletons: Singleton[] = []

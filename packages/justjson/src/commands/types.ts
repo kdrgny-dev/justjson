@@ -11,7 +11,7 @@ export async function generateTypesFile(
   const adapter = new FsAdapter(root)
   const contentDir = await resolveContentDir(root)
   const schema = await loadSchema(adapter, contentDir)
-  if (!schema) throw new Error('Şema bulunamadı. Önce `justjson init` çalıştırın.')
+  if (!schema) throw new Error('No schema found. Run `justjson init` first.')
   await adapter.write(outPath, generateTypes(schema))
   await adapter.write(loaderPath, generateLoader(schema, contentDir))
   return join(root, outPath)

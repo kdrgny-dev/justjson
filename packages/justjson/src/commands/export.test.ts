@@ -23,7 +23,7 @@ describe('exportZip', () => {
     const files = unzipSync(new Uint8Array(buf))
     const names = Object.keys(files)
     expect(names).toContain('content/_schema.json')
-    expect(names).toContain('content/posts/ilk-yazi.json')
+    expect(names).toContain('content/posts/first-post.json')
     expect(names).toContain('types.ts')
   })
 

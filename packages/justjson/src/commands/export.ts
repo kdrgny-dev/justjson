@@ -11,7 +11,7 @@ export async function collectExportZip(
   contentDir: string,
 ): Promise<Uint8Array> {
   const schema = await loadSchema(adapter, contentDir)
-  if (!schema) throw new Error('Şema bulunamadı. Önce `justjson init` çalıştırın.')
+  if (!schema) throw new Error('No schema found. Run `justjson init` first.')
 
   const store = new ContentStore(adapter, schema, contentDir)
   const entries: Record<string, Record<string, unknown>[]> = {}

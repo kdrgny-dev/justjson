@@ -109,7 +109,7 @@ describe('summarize / shouldFail', () => {
 
 describe('formatText', () => {
   it('temizde olumlu mesaj', () => {
-    expect(formatText([]).toLowerCase()).toContain('sorun yok')
+    expect(formatText([]).toLowerCase()).toContain('no issues')
   })
 
   it('konum ve mesaj içerir', () => {
@@ -120,12 +120,12 @@ describe('formatText', () => {
         collection: 'posts',
         slug: 'hello',
         field: 'title',
-        message: 'metin bekleniyor',
+        message: 'expected text',
       },
     ] as Parameters<typeof formatText>[0])
     expect(out).toContain('posts')
     expect(out).toContain('hello')
     expect(out).toContain('title')
-    expect(out).toContain('metin bekleniyor')
+    expect(out).toContain('expected text')
   })
 })

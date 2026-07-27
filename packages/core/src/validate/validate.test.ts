@@ -24,7 +24,7 @@ describe('validateEntry', () => {
       key: 'title',
       level: 'warning',
       kind: 'required',
-      message: expect.stringContaining('zorunlu'),
+      message: expect.stringContaining('required'),
     })
   })
 
@@ -54,7 +54,7 @@ describe('validateEntry', () => {
       key: 'ekstra',
       level: 'warning',
       kind: 'unknown-key',
-      message: expect.stringContaining('şemada yok'),
+      message: expect.stringContaining('not in the schema'),
     })
   })
 

@@ -82,18 +82,18 @@ function location(issue: ProjectIssue): string {
   if (issue.singleton) parts.push(issue.singleton)
   if (issue.slug) parts.push(issue.slug)
   if (issue.field) parts.push(issue.field)
-  return parts.join(':') || '(proje)'
+  return parts.join(':') || '(project)'
 }
 
 export function formatText(issues: ProjectIssue[]): string {
-  if (issues.length === 0) return '✓ Sorun yok — içerik şemayla uyumlu.'
+  if (issues.length === 0) return '✓ No issues — content matches the schema.'
   const lines = issues.map((i) => {
-    const tag = i.level === 'error' ? 'HATA ' : 'UYARI'
+    const tag = i.level === 'error' ? 'ERROR' : 'WARN '
     return `  ${tag}  ${location(i)}  ${i.message}`
   })
   const { errors, warnings } = summarize(issues)
   lines.push('')
-  lines.push(`${errors} hata, ${warnings} uyarı`)
+  lines.push(`${errors} error(s), ${warnings} warning(s)`)
   return lines.join('\n')
 }
 

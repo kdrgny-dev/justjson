@@ -1,24 +1,42 @@
 {
   "title": "Changelog",
-  "description": "Sürüm notları: versiyon, tarih, tür ve rich-text açıklama.",
+  "description": "Release notes: version, date, type and a rich-text body.",
   "schema": {
     "version": 1,
     "collections": [
       {
         "name": "releases",
-        "label": "Sürümler",
+        "label": "Releases",
         "path": "releases",
         "fields": [
-          { "key": "version", "label": "Versiyon", "type": "text", "required": true },
-          { "key": "slug", "label": "Slug", "type": "text", "required": true },
-          { "key": "date", "label": "Tarih", "type": "date" },
+          {
+            "key": "version",
+            "label": "Version",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "date",
+            "label": "Date",
+            "type": "date"
+          },
           {
             "key": "type",
-            "label": "Tür",
+            "label": "Type",
             "type": "select",
-            "options": ["Eklendi", "Değişti", "Düzeltildi"]
+            "options": ["Added", "Changed", "Fixed"]
           },
-          { "key": "body", "label": "Notlar", "type": "richtext" }
+          {
+            "key": "body",
+            "label": "Notes",
+            "type": "richtext"
+          }
         ]
       }
     ],
@@ -29,8 +47,8 @@
       {
         "version": "1.0.0",
         "slug": "1-0-0",
-        "type": "Eklendi",
-        "body": "İlk sürüm."
+        "type": "Added",
+        "body": "First release."
       }
     ]
   }

@@ -1,33 +1,62 @@
 {
   "title": "CV",
-  "description": "Deneyim koleksiyonu ve kişisel bilgiler için bir Profil.",
+  "description": "An Experience collection and a Profile singleton for your personal details.",
   "schema": {
     "version": 1,
     "collections": [
       {
         "name": "experience",
-        "label": "Deneyim",
+        "label": "Experience",
         "path": "experience",
         "fields": [
-          { "key": "role", "label": "Pozisyon", "type": "text", "required": true },
-          { "key": "company", "label": "Şirket", "type": "text", "required": true },
-          { "key": "summary", "label": "Özet", "type": "richtext" }
+          {
+            "key": "role",
+            "label": "Role",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "company",
+            "label": "Company",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "type": "richtext"
+          }
         ]
       }
     ],
     "singletons": [
       {
         "name": "profile",
-        "label": "Profil",
+        "label": "Profile",
         "path": "profile.json",
         "fields": [
-          { "key": "name", "label": "Ad", "type": "text", "required": true },
-          { "key": "headline", "label": "Başlık", "type": "text" }
+          {
+            "key": "name",
+            "label": "Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "headline",
+            "label": "Headline",
+            "type": "text"
+          }
         ]
       }
     ]
   },
   "samples": {
-    "experience": [{ "role": "Yazılımcı", "company": "Örnek A.Ş.", "summary": "..." }]
+    "experience": [
+      {
+        "role": "Developer",
+        "company": "Acme Inc.",
+        "summary": "..."
+      }
+    ]
   }
 }

@@ -27,13 +27,13 @@ describe('createServer', () => {
     const app = await createServer(root)
     const res = await app.request('/api/posts')
     const data = (await res.json()) as { items: Array<{ slug: string; title: string }> }
-    const row = data.items.find((i) => i.slug === 'ilk-yazi')
-    expect(row?.title).toBe('İlk yazı')
+    const row = data.items.find((i) => i.slug === 'first-post')
+    expect(row?.title).toBe('First post')
   })
 
   it('tek kaydı verir, olmayanda 404', async () => {
     const app = await createServer(root)
-    expect((await app.request('/api/posts/ilk-yazi')).status).toBe(200)
+    expect((await app.request('/api/posts/first-post')).status).toBe(200)
     expect((await app.request('/api/posts/yok')).status).toBe(404)
   })
 
@@ -52,10 +52,10 @@ describe('createServer', () => {
 
   it('DELETE siler', async () => {
     const app = await createServer(root)
-    await app.request('/api/posts/ilk-yazi', { method: 'DELETE' })
+    await app.request('/api/posts/first-post', { method: 'DELETE' })
     const listRes = await app.request('/api/posts')
     const list = (await listRes.json()) as { items: Array<{ slug: string }> }
-    expect(list.items.map((i) => i.slug)).not.toContain('ilk-yazi')
+    expect(list.items.map((i) => i.slug)).not.toContain('first-post')
   })
 
   it('GET path traversal ile dosya okuyamaz', async () => {

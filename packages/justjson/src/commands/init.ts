@@ -86,7 +86,7 @@ export async function initProject(root: string, templateName: string): Promise<v
   const adapter = new FsAdapter(root)
   const contentDir = await resolveContentDir(root)
   if (await loadSchema(adapter, contentDir)) {
-    throw new Error('Bu klasörde zaten bir şema var (content/_schema.json).')
+    throw new Error('This folder already has a schema (content/_schema.json).')
   }
 
   await applyTemplate(adapter, contentDir, template)

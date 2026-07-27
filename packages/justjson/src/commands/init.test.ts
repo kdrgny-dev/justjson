@@ -32,8 +32,8 @@ describe('initProject', () => {
     await initProject(root, 'blog')
     const schema = JSON.parse(await readFile(join(root, 'content/_schema.json'), 'utf8'))
     expect(schema.collections[0].name).toBe('posts')
-    const entry = JSON.parse(await readFile(join(root, 'content/posts/ilk-yazi.json'), 'utf8'))
-    expect(entry.title).toBe('İlk yazı')
+    const entry = JSON.parse(await readFile(join(root, 'content/posts/first-post.json'), 'utf8'))
+    expect(entry.title).toBe('First post')
   })
 
   it('şema zaten varsa hata verir', async () => {

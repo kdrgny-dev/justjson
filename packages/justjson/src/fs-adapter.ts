@@ -9,7 +9,7 @@ export class FsAdapter implements StorageAdapter {
     const rootAbs = resolve(this.root)
     const full = resolve(rootAbs, path)
     if (full !== rootAbs && !full.startsWith(rootAbs + sep)) {
-      throw new PathEscapeError(`Yol kök dışına çıkıyor: ${path}`)
+      throw new PathEscapeError(`Path escapes the project root: ${path}`)
     }
     return full
   }

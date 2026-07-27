@@ -30,13 +30,13 @@ const zField: z.ZodType<Field> = z.lazy(() =>
     })
     .superRefine((field, ctx) => {
       if (field.type === 'select' && (!field.options || field.options.length === 0)) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'select alanı options gerektirir' })
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'a select field requires options' })
       }
       if (field.type === 'relation' && !field.to) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'relation alanı "to" gerektirir' })
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'a relation field requires "to"' })
       }
       if (field.type === 'group' && (!field.fields || field.fields.length === 0)) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'group alanı fields gerektirir' })
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'a group field requires fields' })
       }
     }),
 )
@@ -69,25 +69,28 @@ const zSchema = z
 
     for (const c of containers) {
       if (names.has(c.name)) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `tekrar eden ad: ${c.name}` })
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `duplicate name: ${c.name}` })
       }
       names.add(c.name)
       if (c.path.includes('..') || c.path.startsWith('/') || c.path.includes('\\')) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `güvensiz path: ${c.path}` })
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `unsafe path: ${c.path}` })
       }
       if (paths.has(c.path)) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `tekrar eden path: ${c.path}` })
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `duplicate path: ${c.path}` })
       }
       paths.add(c.path)
 
       const keys = new Set<string>()
       for (const f of c.fields) {
         if (keys.has(f.key)) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, message: `tekrar eden field key: ${f.key}` })
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: `duplicate field key: ${f.key}` })
         }
         keys.add(f.key)
         if (f.type === 'relation' && f.to && !collectionNames.has(f.to)) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, message: `relation hedefi yok: ${f.to}` })
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `relation target does not exist: ${f.to}`,
+          })
         }
       }
     }

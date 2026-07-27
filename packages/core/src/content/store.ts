@@ -18,7 +18,7 @@ function schemaPath(contentDir: string): string {
 
 function assertSafeSlug(slug: string): void {
   if (slug.length === 0 || slug.includes('/') || slug.includes('\\') || slug.includes('..')) {
-    throw new UnsafeSlugError(`Güvensiz slug: ${slug}`)
+    throw new UnsafeSlugError(`Unsafe slug: ${slug}`)
   }
 }
 

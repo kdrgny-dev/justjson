@@ -1,36 +1,67 @@
 {
-  "title": "Dokümantasyon",
-  "description": "Sıralanabilir sayfalar ve rich-text içerik; site başlığı için bir Ayarlar.",
+  "title": "Documentation",
+  "description": "Orderable pages with rich-text content, plus a Settings singleton for the site title.",
   "schema": {
     "version": 1,
     "collections": [
       {
         "name": "pages",
-        "label": "Sayfalar",
+        "label": "Pages",
         "path": "pages",
         "fields": [
-          { "key": "title", "label": "Başlık", "type": "text", "required": true },
-          { "key": "slug", "label": "Slug", "type": "text", "required": true },
-          { "key": "order", "label": "Sıra", "type": "number" },
-          { "key": "body", "label": "İçerik", "type": "richtext" }
+          {
+            "key": "title",
+            "label": "Title",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "order",
+            "label": "Order",
+            "type": "number"
+          },
+          {
+            "key": "body",
+            "label": "Body",
+            "type": "richtext"
+          }
         ]
       }
     ],
     "singletons": [
       {
         "name": "settings",
-        "label": "Ayarlar",
+        "label": "Settings",
         "path": "settings.json",
         "fields": [
-          { "key": "title", "label": "Site adı", "type": "text" },
-          { "key": "tagline", "label": "Slogan", "type": "text" }
+          {
+            "key": "title",
+            "label": "Site name",
+            "type": "text"
+          },
+          {
+            "key": "tagline",
+            "label": "Tagline",
+            "type": "text"
+          }
         ]
       }
     ]
   },
   "samples": {
     "pages": [
-      { "title": "Başlarken", "slug": "baslarken", "order": 1, "body": "Kuruluma hoş geldin." }
+      {
+        "title": "Getting started",
+        "slug": "getting-started",
+        "order": 1,
+        "body": "Welcome aboard."
+      }
     ]
   }
 }

@@ -1,42 +1,78 @@
 {
-  "title": "Tarif Defteri",
-  "description": "Malzeme, yapılış ve kapak görselli tarifler; bir de Mutfak ayarları.",
+  "title": "Recipe box",
+  "description": "Recipes with ingredients, steps and a cover image, plus Kitchen settings.",
   "schema": {
     "version": 1,
     "collections": [
       {
-        "name": "tarifler",
-        "label": "Tarifler",
-        "path": "tarifler",
+        "name": "recipes",
+        "label": "Recipes",
+        "path": "recipes",
         "fields": [
-          { "key": "title", "label": "Başlık", "type": "text", "required": true },
-          { "key": "slug", "label": "Slug", "type": "text", "required": true },
-          { "key": "sure", "label": "Süre", "type": "text" },
-          { "key": "porsiyon", "label": "Porsiyon", "type": "number" },
-          { "key": "kapak", "label": "Kapak", "type": "image" },
-          { "key": "malzemeler", "label": "Malzemeler", "type": "richtext" },
-          { "key": "yapilis", "label": "Yapılış", "type": "richtext" }
+          {
+            "key": "title",
+            "label": "Title",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "time",
+            "label": "Time",
+            "type": "text"
+          },
+          {
+            "key": "servings",
+            "label": "Servings",
+            "type": "number"
+          },
+          {
+            "key": "cover",
+            "label": "Cover",
+            "type": "image"
+          },
+          {
+            "key": "ingredients",
+            "label": "Ingredients",
+            "type": "richtext"
+          },
+          {
+            "key": "steps",
+            "label": "Steps",
+            "type": "richtext"
+          }
         ]
       }
     ],
     "singletons": [
       {
-        "name": "mutfak",
-        "label": "Mutfak",
-        "path": "mutfak.json",
-        "fields": [{ "key": "title", "label": "Site adı", "type": "text" }]
+        "name": "kitchen",
+        "label": "Kitchen",
+        "path": "kitchen.json",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Site name",
+            "type": "text"
+          }
+        ]
       }
     ]
   },
   "samples": {
-    "tarifler": [
+    "recipes": [
       {
-        "title": "Akşam Makarnası",
-        "slug": "aksam-makarnasi",
-        "sure": "20 dk",
-        "porsiyon": 2,
-        "malzemeler": "- 200g makarna\n- 2 diş sarımsak\n- Zeytinyağı",
-        "yapilis": "Makarnayı haşla. Sarımsağı zeytinyağında kavur. Karıştır."
+        "title": "Weeknight pasta",
+        "slug": "weeknight-pasta",
+        "time": "20 min",
+        "servings": 2,
+        "ingredients": "- 200g pasta\n- 2 cloves garlic\n- Olive oil",
+        "steps": "Boil the pasta. Fry the garlic in olive oil. Toss together."
       }
     ]
   }

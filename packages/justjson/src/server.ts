@@ -61,9 +61,9 @@ async function callGemini(
     }),
   })
   const data = (await res.json()) as GeminiResponse
-  if (!res.ok) throw new Error(data.error?.message ?? `Gemini isteği başarısız (${res.status})`)
+  if (!res.ok) throw new Error(data.error?.message ?? `Gemini request failed (${res.status})`)
   const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? ''
-  if (!text) throw new Error('Gemini boş yanıt döndü')
+  if (!text) throw new Error('Gemini returned an empty response')
   return text
 }
 
@@ -76,7 +76,8 @@ async function listGeminiModels(apiKey: string): Promise<{ id: string; label: st
   const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}&pageSize=1000`
   const res = await fetch(url)
   const data = (await res.json()) as GeminiModelsResponse
-  if (!res.ok) throw new Error(data.error?.message ?? `Model listesi alınamadı (${res.status})`)
+  if (!res.ok)
+    throw new Error(data.error?.message ?? `Could not fetch the model list (${res.status})`)
   return (data.models ?? [])
     .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
     .map((m) => ({
@@ -102,12 +103,13 @@ async function listOpenAiCompatibleModels(
   baseUrl: string,
   apiKey: string,
 ): Promise<{ id: string; label: string }[]> {
-  if (!baseUrl) throw new Error('Bu sağlayıcı için taban URL gerekli')
+  if (!baseUrl) throw new Error('This provider needs a base URL')
   const res = await fetch(`${baseUrl.replace(/\/$/, '')}/models`, {
     headers: apiKey ? { authorization: `Bearer ${apiKey}` } : {},
   })
   const data = (await res.json()) as OpenAiModelsResponse
-  if (!res.ok) throw new Error(data.error?.message ?? `Model listesi alınamadı (${res.status})`)
+  if (!res.ok)
+    throw new Error(data.error?.message ?? `Could not fetch the model list (${res.status})`)
   return (data.data ?? []).map((m) => ({ id: m.id ?? '', label: m.id ?? '' })).filter((m) => m.id)
 }
 
@@ -118,7 +120,7 @@ async function callOpenAiCompatible(
   system: string | undefined,
   prompt: string,
 ): Promise<string> {
-  if (!baseUrl) throw new Error('Bu sağlayıcı için taban URL gerekli')
+  if (!baseUrl) throw new Error('This provider needs a base URL')
   const messages = [
     ...(system ? [{ role: 'system', content: system }] : []),
     { role: 'user', content: prompt },
@@ -129,9 +131,9 @@ async function callOpenAiCompatible(
     body: JSON.stringify({ model, messages }),
   })
   const data = (await res.json()) as OpenAiCompatibleResponse
-  if (!res.ok) throw new Error(data.error?.message ?? `İstek başarısız (${res.status})`)
+  if (!res.ok) throw new Error(data.error?.message ?? `Request failed (${res.status})`)
   const text = data.choices?.[0]?.message?.content ?? ''
-  if (!text) throw new Error('Sağlayıcı boş yanıt döndü')
+  if (!text) throw new Error('The provider returned an empty response')
   return text
 }
 
@@ -160,12 +162,12 @@ export async function createServer(root: string): Promise<Hono> {
     if (err instanceof UnsafeSlugError || err instanceof PathEscapeError) {
       return c.json({ error: err.message }, 400)
     }
-    return c.json({ error: 'sunucu hatası' }, 500)
+    return c.json({ error: 'server error' }, 500)
   })
 
   app.get('/api/_project', (c) =>
     c.json({
-      name: basename(root) || 'proje',
+      name: basename(root) || 'project',
       path: root,
       contentDir,
       collections: schema.collections.length,
@@ -178,9 +180,9 @@ export async function createServer(root: string): Promise<Hono> {
   app.post('/api/_init', async (c) => {
     const { template: id } = (await c.req.json()) as { template?: string }
     const t = id ? getTemplate(id) : undefined
-    if (!t) return c.json({ error: 'Bilinmeyen template' }, 404)
+    if (!t) return c.json({ error: 'Unknown template' }, 404)
     if (schema.collections.length > 0 || schema.singletons.length > 0) {
-      return c.json({ error: 'Bu klasörde zaten bir şema var.' }, 400)
+      return c.json({ error: 'This folder already has a schema.' }, 400)
     }
     schema = await applyTemplate(adapter, contentDir, t)
     store = new ContentStore(adapter, schema, contentDir)
@@ -189,7 +191,7 @@ export async function createServer(root: string): Promise<Hono> {
 
   app.post('/api/_import', async (c) => {
     if (schema.collections.length > 0 || schema.singletons.length > 0) {
-      return c.json({ error: 'Bu klasörde zaten bir şema var.' }, 400)
+      return c.json({ error: 'This folder already has a schema.' }, 400)
     }
     const { raw } = (await c.req.json()) as { raw?: unknown }
 
@@ -206,7 +208,7 @@ export async function createServer(root: string): Promise<Hono> {
         entries = inferred.entries
         singletonData = inferred.singletons
       } catch (e) {
-        return c.json({ error: `İçe aktarılamadı: ${(e as Error).message}` }, 400)
+        return c.json({ error: `Import failed: ${(e as Error).message}` }, 400)
       }
     }
 
@@ -334,7 +336,7 @@ export async function createServer(root: string): Promise<Hono> {
 
   app.get('/api/:collection/:slug', async (c) => {
     const data = await store.readEntry(c.req.param('collection'), c.req.param('slug'))
-    return data ? c.json(data) : c.json({ error: 'bulunamadı' }, 404)
+    return data ? c.json(data) : c.json({ error: 'not found' }, 404)
   })
 
   app.put('/api/:collection/:slug', async (c) => {
@@ -362,7 +364,7 @@ export async function createServer(root: string): Promise<Hono> {
         const html = await readFile(join(editorDir, 'index.html'))
         return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
       } catch {
-        return c.text('Editör arayüzü bulunamadı (justjson build gerekli).', 404)
+        return c.text('Editor UI not found (run the justjson build first).', 404)
       }
     }
   })
@@ -380,6 +382,6 @@ export async function startServer(root: string, port: number): Promise<void> {
   const app = await createServer(root)
   serve({ fetch: app.fetch, port })
   const url = `http://localhost:${port}`
-  console.log(`JustJSON çalışıyor: ${url}`)
+  console.log(`JustJSON is running at ${url}`)
   openBrowser(url)
 }

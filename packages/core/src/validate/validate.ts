@@ -28,38 +28,38 @@ function typeError(field: Field, value: unknown): string | null {
     case 'richtext':
     case 'date':
     case 'image':
-      return typeof value === 'string' ? null : 'metin bekleniyor'
+      return typeof value === 'string' ? null : 'expected text'
     case 'url':
-      if (typeof value !== 'string') return 'metin bekleniyor'
-      return URL_RE.test(value) ? null : 'geçerli bir URL bekleniyor'
+      if (typeof value !== 'string') return 'expected text'
+      return URL_RE.test(value) ? null : 'expected a valid URL'
     case 'email':
-      if (typeof value !== 'string') return 'metin bekleniyor'
-      return EMAIL_RE.test(value) ? null : 'geçerli bir e-posta bekleniyor'
+      if (typeof value !== 'string') return 'expected text'
+      return EMAIL_RE.test(value) ? null : 'expected a valid email address'
     case 'color':
-      if (typeof value !== 'string') return 'metin bekleniyor'
-      return COLOR_RE.test(value) ? null : 'hex renk bekleniyor (ör. #ff0000)'
+      if (typeof value !== 'string') return 'expected text'
+      return COLOR_RE.test(value) ? null : 'expected a hex color (e.g. #ff0000)'
     case 'list':
       if (!Array.isArray(value) || value.some((v) => typeof v !== 'string')) {
-        return 'metin dizisi bekleniyor'
+        return 'expected a list of text'
       }
       return null
     case 'relation':
       if (!Array.isArray(value) || value.some((v) => typeof v !== 'string')) {
-        return 'slug dizisi bekleniyor'
+        return 'expected a list of slugs'
       }
       return null
     case 'group':
       if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-        return 'nesne bekleniyor'
+        return 'expected an object'
       }
       return null
     case 'number':
-      return typeof value === 'number' ? null : 'sayı bekleniyor'
+      return typeof value === 'number' ? null : 'expected a number'
     case 'boolean':
-      return typeof value === 'boolean' ? null : 'boolean bekleniyor'
+      return typeof value === 'boolean' ? null : 'expected true or false'
     case 'select':
-      if (typeof value !== 'string') return 'metin bekleniyor'
-      return field.options?.includes(value) ? null : 'seçenek dışı değer'
+      if (typeof value !== 'string') return 'expected text'
+      return field.options?.includes(value) ? null : 'not one of the options'
   }
 }
 
@@ -75,7 +75,7 @@ export function validateEntry(fields: Field[], data: Record<string, unknown>): V
           key: field.key,
           level: 'warning',
           kind: 'required',
-          message: 'zorunlu alan boş',
+          message: 'required field is empty',
         })
       }
       continue
@@ -88,7 +88,12 @@ export function validateEntry(fields: Field[], data: Record<string, unknown>): V
     // _ ile başlayan anahtarlar reserved (ör. _status) — şema dışı sayılmaz.
     if (key.startsWith('_')) continue
     if (!known.has(key)) {
-      issues.push({ key, level: 'warning', kind: 'unknown-key', message: 'anahtar şemada yok' })
+      issues.push({
+        key,
+        level: 'warning',
+        kind: 'unknown-key',
+        message: 'key is not in the schema',
+      })
     }
   }
 

@@ -54,7 +54,7 @@ export function validateProject(schema: Schema, content: ProjectContent): Projec
         level: 'warning',
         kind: 'schema-content-mismatch',
         collection: name,
-        message: `Koleksiyon klasörü '${name}' şemada yok`,
+        message: `Collection folder '${name}' is not in the schema`,
       })
     }
   }
@@ -79,7 +79,7 @@ export function validateProject(schema: Schema, content: ProjectContent): Projec
           kind: 'duplicate-slug',
           collection: col.name,
           slug,
-          message: `'${col.name}' içinde yinelenen slug: ${slug}`,
+          message: `Duplicate slug in '${col.name}': ${slug}`,
         })
       }
       seen.add(slug)
@@ -116,8 +116,8 @@ export function validateProject(schema: Schema, content: ProjectContent): Projec
               slug,
               field: field.key,
               message: field.to
-                ? `Kırık bağlantı: '${field.to}' içinde '${ref}' yok`
-                : `Relation alanı '${field.key}' için hedef koleksiyon tanımsız`,
+                ? `Broken relation: '${ref}' does not exist in '${field.to}'`
+                : `Relation field '${field.key}' has no target collection`,
             })
           }
         }
@@ -135,7 +135,7 @@ export function validateProject(schema: Schema, content: ProjectContent): Projec
               collection: col.name,
               slug,
               field: field.key,
-              message: `Eksik medya: ${value}`,
+              message: `Missing media: ${value}`,
             })
           }
         }
@@ -164,7 +164,7 @@ export function validateProject(schema: Schema, content: ProjectContent): Projec
             kind: 'missing-media',
             singleton: s.name,
             field: field.key,
-            message: `Eksik medya: ${value}`,
+            message: `Missing media: ${value}`,
           })
         }
       }

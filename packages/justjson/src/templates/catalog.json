@@ -1,48 +1,78 @@
 {
-  "title": "Ürün Kataloğu",
-  "description": "Fiyat, kategori ve görselli ürünler; bir de Mağaza ayarları.",
+  "title": "Product catalog",
+  "description": "Products with price, category and an image, plus Store settings.",
   "schema": {
     "version": 1,
     "collections": [
       {
-        "name": "urunler",
-        "label": "Ürünler",
-        "path": "urunler",
+        "name": "products",
+        "label": "Products",
+        "path": "products",
         "fields": [
-          { "key": "title", "label": "Başlık", "type": "text", "required": true },
-          { "key": "slug", "label": "Slug", "type": "text", "required": true },
-          { "key": "fiyat", "label": "Fiyat", "type": "number" },
           {
-            "key": "kategori",
-            "label": "Kategori",
-            "type": "select",
-            "options": ["Ev", "Giyim", "Aksesuar"]
+            "key": "title",
+            "label": "Title",
+            "type": "text",
+            "required": true
           },
-          { "key": "kapak", "label": "Görsel", "type": "image" },
-          { "key": "aciklama", "label": "Açıklama", "type": "richtext" }
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "price",
+            "label": "Price",
+            "type": "number"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "type": "select",
+            "options": ["Home", "Clothing", "Accessories"]
+          },
+          {
+            "key": "cover",
+            "label": "Image",
+            "type": "image"
+          },
+          {
+            "key": "description",
+            "label": "Description",
+            "type": "richtext"
+          }
         ]
       }
     ],
     "singletons": [
       {
-        "name": "magaza",
-        "label": "Mağaza",
-        "path": "magaza.json",
+        "name": "store",
+        "label": "Store",
+        "path": "store.json",
         "fields": [
-          { "key": "title", "label": "Mağaza adı", "type": "text" },
-          { "key": "slogan", "label": "Slogan", "type": "text" }
+          {
+            "key": "title",
+            "label": "Store name",
+            "type": "text"
+          },
+          {
+            "key": "tagline",
+            "label": "Tagline",
+            "type": "text"
+          }
         ]
       }
     ]
   },
   "samples": {
-    "urunler": [
+    "products": [
       {
-        "title": "Seramik Kupa",
-        "slug": "seramik-kupa",
-        "fiyat": 180,
-        "kategori": "Ev",
-        "aciklama": "Elde yapım seramik kupa."
+        "title": "Ceramic mug",
+        "slug": "ceramic-mug",
+        "price": 18,
+        "category": "Home",
+        "description": "Hand-made ceramic mug."
       }
     ]
   }
