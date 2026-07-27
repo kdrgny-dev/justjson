@@ -286,9 +286,12 @@ describe('/api/_ai/generate', () => {
   it('key sunucuya kalıcı yazılmaz, her istekte doğrudan sağlayıcıya gider', async () => {
     const app = await createServer(root)
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'merhaba' }] } }] }), {
-        status: 200,
-      }),
+      new Response(
+        JSON.stringify({ candidates: [{ content: { parts: [{ text: 'merhaba' }] } }] }),
+        {
+          status: 200,
+        },
+      ),
     )
     vi.stubGlobal('fetch', fetchMock)
 
@@ -308,13 +311,39 @@ describe('/api/_ai/generate', () => {
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain('sahte-key')
   })
 
+  it('gemini modelindeki fazladan "models/" önekini ve boşluğu temizler', async () => {
+    const app = await createServer(root)
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'ok' }] } }] }), {
+        status: 200,
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    await app.request('/api/_ai/generate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        provider: 'gemini',
+        model: '  models/gemini-2.0-flash  ',
+        apiKey: 'x',
+        prompt: 'başlık üret',
+      }),
+    })
+    const calledUrl = String(fetchMock.mock.calls[0]?.[0])
+    expect(calledUrl).toContain('/v1beta/models/gemini-2.0-flash:generateContent')
+    expect(calledUrl).not.toContain('models/models/')
+  })
+
   it('sağlayıcı hata döndürürse mesajı ileterek 502 verir', async () => {
     const app = await createServer(root)
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ error: { message: 'geçersiz key' } }), { status: 401 }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ error: { message: 'geçersiz key' } }), { status: 401 }),
+        ),
     )
 
     const res = await app.request('/api/_ai/generate', {
@@ -329,5 +358,61 @@ describe('/api/_ai/generate', () => {
     })
     expect(res.status).toBe(502)
     expect((await res.json()) as { error: string }).toEqual({ error: 'geçersiz key' })
+  })
+})
+
+describe('/api/_ai/models', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('gemini modellerini generateContent destekleyenlerle sınırlar ve models/ önekini atar', async () => {
+    const app = await createServer(root)
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            models: [
+              {
+                name: 'models/gemini-2.0-flash',
+                displayName: 'Gemini 2.0 Flash',
+                supportedGenerationMethods: ['generateContent'],
+              },
+              {
+                name: 'models/text-embedding-004',
+                displayName: 'Embedding',
+                supportedGenerationMethods: ['embedContent'],
+              },
+              {
+                name: 'models/gemini-2.5-flash-image',
+                displayName: 'Nano Banana',
+                supportedGenerationMethods: ['generateContent'],
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      ),
+    )
+
+    const res = await app.request('/api/_ai/models', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ provider: 'gemini', apiKey: 'x' }),
+    })
+    expect(res.status).toBe(200)
+    const { models } = (await res.json()) as { models: { id: string }[] }
+    expect(models.map((m) => m.id)).toEqual(['gemini-2.0-flash'])
+  })
+
+  it('provider eksikse 400 döner', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_ai/models', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+    expect(res.status).toBe(400)
   })
 })

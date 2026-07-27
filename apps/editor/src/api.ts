@@ -167,3 +167,23 @@ export async function aiGenerate(
   if (!res.ok || !data.text) throw new Error(data.error || `AI isteği başarısız (${res.status})`)
   return data.text
 }
+
+export interface AiModel {
+  id: string
+  label: string
+}
+
+export async function aiListModels(config: {
+  provider: string
+  apiKey: string
+  baseUrl?: string
+}): Promise<AiModel[]> {
+  const res = await fetch('/api/_ai/models', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(config),
+  })
+  const data = (await res.json()) as { models?: AiModel[]; error?: string }
+  if (!res.ok || !data.models) throw new Error(data.error || `Modeller alınamadı (${res.status})`)
+  return data.models
+}

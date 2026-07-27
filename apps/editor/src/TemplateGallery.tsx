@@ -136,8 +136,17 @@ function AiScaffoldPanel({ onApplied, disabled }: { onApplied: () => void; disab
 
   return (
     <div className="mb-8 rounded-2xl border border-primary/30 bg-accent/40 p-6 sm:p-8">
-      <div className="flex items-center gap-2 text-sm font-medium text-primary">
-        <Sparkles className="size-4" /> AI ile oluştur
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-sm font-medium text-primary">
+          <Sparkles className="size-4" /> AI ile oluştur
+        </div>
+        <button
+          type="button"
+          onClick={openSettings}
+          className="text-xs text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
+        >
+          {config ? 'AI ayarları' : 'Sağlayıcı bağla'}
+        </button>
       </div>
       <h2 className="mt-2 font-heading text-lg font-semibold text-foreground sm:text-xl">
         Ne yöneteceğini anlat, şemayı senin için tasarlasın

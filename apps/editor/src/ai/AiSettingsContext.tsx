@@ -17,10 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { KeyRound } from 'lucide-react'
+import { KeyRound, Loader2, RefreshCw } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import * as api from '../api'
+import type { AiModel } from '../api'
 import {
   AI_PROVIDERS,
   AI_PROVIDER_MAP,
@@ -53,6 +55,10 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
   const [apiKey, setApiKey] = useState(config?.apiKey ?? '')
   const [baseUrl, setBaseUrl] = useState(config?.baseUrl ?? '')
 
+  const [models, setModels] = useState<AiModel[]>([])
+  const [loadingModels, setLoadingModels] = useState(false)
+  const [manualModel, setManualModel] = useState(false)
+
   const meta = useMemo(() => AI_PROVIDER_MAP[provider], [provider])
 
   const openSettings = () => {
@@ -60,7 +66,49 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
     setModel(config?.model ?? '')
     setApiKey(config?.apiKey ?? '')
     setBaseUrl(config?.baseUrl ?? '')
+    setModels([])
+    setManualModel(false)
     setOpen(true)
+  }
+
+  const changeProvider = (p: AiProvider) => {
+    setProvider(p)
+    setModel('')
+    setModels([])
+    setManualModel(false)
+  }
+
+  const loadModels = async () => {
+    const m = AI_PROVIDER_MAP[provider]
+    if (!m.needsBaseUrl && !apiKey.trim()) {
+      toast.error('Önce API key gir')
+      return
+    }
+    if (m.needsBaseUrl && !baseUrl.trim()) {
+      toast.error('Önce taban URL gir')
+      return
+    }
+    setLoadingModels(true)
+    try {
+      const list = await api.aiListModels({
+        provider,
+        apiKey: apiKey.trim(),
+        ...(m.needsBaseUrl ? { baseUrl: baseUrl.trim() } : {}),
+      })
+      if (list.length === 0) {
+        setManualModel(true)
+        toast.error('Model bulunamadı — elle girebilirsin')
+        return
+      }
+      setModels(list)
+      setManualModel(false)
+      if (!list.some((x) => x.id === model)) setModel(list[0]?.id ?? '')
+    } catch (e) {
+      setManualModel(true)
+      toast.error((e as Error).message)
+    } finally {
+      setLoadingModels(false)
+    }
   }
 
   const save = () => {
@@ -114,7 +162,7 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Sağlayıcı</Label>
-              <Select value={provider} onValueChange={(v) => setProvider(v as AiProvider)}>
+              <Select value={provider} onValueChange={(v) => changeProvider(v as AiProvider)}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -127,16 +175,6 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">{meta.hint}</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Model</Label>
-              <Input
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                placeholder={meta.modelPlaceholder}
-                className="font-mono"
-              />
             </div>
 
             {meta.needsBaseUrl && (
@@ -174,6 +212,70 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
                 >
                   Ücretsiz key al →
                 </a>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Model</Label>
+              {manualModel ? (
+                <Input
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  placeholder={meta.modelPlaceholder}
+                  className="font-mono"
+                />
+              ) : models.length === 0 ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={loadModels}
+                  disabled={loadingModels}
+                >
+                  {loadingModels ? (
+                    <>
+                      <Loader2 className="animate-spin" /> Modeller yükleniyor…
+                    </>
+                  ) : (
+                    'Modelleri yükle'
+                  )}
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Select value={model} onValueChange={setModel}>
+                    <SelectTrigger className="w-full font-mono">
+                      <SelectValue placeholder="Model seç…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {models.map((m) => (
+                        <SelectItem key={m.id} value={m.id} className="font-mono">
+                          {m.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={loadModels}
+                    disabled={loadingModels}
+                    title="Modelleri yenile"
+                    className="text-muted-foreground"
+                  >
+                    {loadingModels ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+                    <span className="sr-only">Modelleri yenile</span>
+                  </Button>
+                </div>
+              )}
+              {!manualModel && models.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setManualModel(true)}
+                  className="text-xs text-muted-foreground hover:text-primary"
+                >
+                  Modeli elle gir
+                </button>
               )}
             </div>
           </div>

@@ -47,7 +47,8 @@ async function callGemini(
   system: string | undefined,
   prompt: string,
 ): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`
+  const cleanModel = model.trim().replace(/^models\//, '')
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(cleanModel)}:generateContent?key=${encodeURIComponent(apiKey)}`
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -63,9 +64,48 @@ async function callGemini(
   return text
 }
 
+interface GeminiModelsResponse {
+  models?: { name?: string; displayName?: string; supportedGenerationMethods?: string[] }[]
+  error?: { message?: string }
+}
+
+async function listGeminiModels(apiKey: string): Promise<{ id: string; label: string }[]> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}&pageSize=1000`
+  const res = await fetch(url)
+  const data = (await res.json()) as GeminiModelsResponse
+  if (!res.ok) throw new Error(data.error?.message ?? `Model listesi alınamadı (${res.status})`)
+  return (data.models ?? [])
+    .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
+    .map((m) => ({
+      id: (m.name ?? '').replace(/^models\//, ''),
+      label: m.displayName ?? (m.name ?? '').replace(/^models\//, ''),
+    }))
+    .filter(
+      (m) => m.id && !/tts|image|embedding|robotics|computer-use|veo|lyria|imagen|aqa/i.test(m.id),
+    )
+}
+
 interface OpenAiCompatibleResponse {
   choices?: { message?: { content?: string } }[]
   error?: { message?: string }
+}
+
+interface OpenAiModelsResponse {
+  data?: { id?: string }[]
+  error?: { message?: string }
+}
+
+async function listOpenAiCompatibleModels(
+  baseUrl: string,
+  apiKey: string,
+): Promise<{ id: string; label: string }[]> {
+  if (!baseUrl) throw new Error('Bu sağlayıcı için taban URL gerekli')
+  const res = await fetch(`${baseUrl.replace(/\/$/, '')}/models`, {
+    headers: apiKey ? { authorization: `Bearer ${apiKey}` } : {},
+  })
+  const data = (await res.json()) as OpenAiModelsResponse
+  if (!res.ok) throw new Error(data.error?.message ?? `Model listesi alınamadı (${res.status})`)
+  return (data.data ?? []).map((m) => ({ id: m.id ?? '', label: m.id ?? '' })).filter((m) => m.id)
 }
 
 async function callOpenAiCompatible(
@@ -227,6 +267,24 @@ export async function createServer(root: string): Promise<Hono> {
     await mkdir(dirname(abs), { recursive: true })
     await writeFile(abs, Buffer.from(body.dataBase64, 'base64'))
     return c.json({ path: rel })
+  })
+
+  app.post('/api/_ai/models', async (c) => {
+    const body = (await c.req.json()) as AiRequest
+    const { provider, apiKey } = body
+    if (!provider) return c.json({ error: 'provider zorunlu' }, 400)
+    try {
+      const models =
+        provider === 'gemini'
+          ? await listGeminiModels(apiKey ?? '')
+          : await listOpenAiCompatibleModels(
+              body.baseUrl || PROVIDER_BASE_URLS[provider] || '',
+              apiKey ?? '',
+            )
+      return c.json({ models })
+    } catch (e) {
+      return c.json({ error: (e as Error).message }, 502)
+    }
   })
 
   app.post('/api/_ai/generate', async (c) => {
