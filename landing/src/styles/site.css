@@ -1215,6 +1215,48 @@ tbody tr {
   font-size: 0.93rem;
 }
 
+/* ---------- stat band ---------- */
+.statband {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 44px 0;
+  text-align: center;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+.stat + .stat::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 44px;
+  width: 1px;
+  background: var(--line);
+}
+.stat-num {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 4.6vw, 2.9rem);
+  letter-spacing: -0.02em;
+  color: var(--signal-ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.stat-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 /* ---------- built with ---------- */
 .builtwith {
   display: grid;
@@ -1534,6 +1576,14 @@ footer a:hover {
   }
   .builtwith {
     grid-template-columns: 1fr;
+  }
+  .statband {
+    gap: 16px;
+    padding: 32px 0;
+  }
+  .stat + .stat::before {
+    left: -8px;
+    height: 34px;
   }
   .segments {
     padding-bottom: 56px;

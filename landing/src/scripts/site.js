@@ -117,6 +117,104 @@
   layoutPackets();
   addEventListener("resize", layoutPackets, { passive: true });
 
+  /* ---------- live stats (count-up) ---------- */
+  var REPO = "kdrgny-dev/justjson";
+  var PKG = "@kdrgny/justjson";
+
+  function fmt(n) {
+    return n.toLocaleString("en-US");
+  }
+
+  function countUp(el, target) {
+    if (reduce) {
+      el.textContent = fmt(target);
+      return;
+    }
+    var dur = 1100;
+    var start = null;
+    function step(ts) {
+      if (start === null) start = ts;
+      var t = Math.min(1, (ts - start) / dur);
+      var eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = fmt(Math.round(target * eased));
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function initStats() {
+    var els = document.querySelectorAll(".stat-num[data-source]");
+    if (!els.length) return;
+
+    // Scoped packages return 0 from the downloads point/range API (a known npm
+    // limitation); the per-version endpoint reports real counts, so we sum it.
+    var PKG_ENC = PKG.replace("/", "%2F");
+    function json(url) {
+      return fetch(url)
+        .then(function (r) {
+          return r.ok ? r.json() : {};
+        })
+        .catch(function () {
+          return {};
+        });
+    }
+    function sumVersions(body) {
+      var d = body && body.downloads;
+      if (!d || typeof d !== "object") return undefined;
+      var t = 0;
+      for (var k in d) t += d[k];
+      return t;
+    }
+
+    var valuesReady = null;
+    function loadValues() {
+      if (valuesReady) return valuesReady;
+      valuesReady = Promise.all([
+        json("https://api.github.com/repos/" + REPO),
+        json("https://api.npmjs.org/versions/" + PKG_ENC + "/last-week"),
+        json("https://api.npmjs.org/versions/" + PKG_ENC + "/last-month")
+      ]).then(function (res) {
+        var g = res[0] || {};
+        return {
+          "github-stars": g.stargazers_count,
+          "github-forks": g.forks_count,
+          "npm-downloads-week": sumVersions(res[1]),
+          "npm-downloads-month": sumVersions(res[2])
+        };
+      });
+      return valuesReady;
+    }
+
+    function reveal() {
+      loadValues().then(function (values) {
+        Array.prototype.forEach.call(els, function (el) {
+          var v = values[el.getAttribute("data-source")];
+          if (typeof v === "number") countUp(el, v);
+          else el.textContent = "—";
+        });
+      });
+    }
+
+    var band = els[0].closest(".band") || els[0];
+    if ("IntersectionObserver" in window) {
+      var so = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) {
+              so.unobserve(e.target);
+              reveal();
+            }
+          });
+        },
+        { threshold: 0.3 }
+      );
+      so.observe(band);
+    } else {
+      reveal();
+    }
+  }
+  initStats();
+
   /* ---------- segments ---------- */
   var SEGMENTS = [
     {

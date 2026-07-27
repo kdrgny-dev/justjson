@@ -19,6 +19,7 @@ const features = collection(import.meta.glob('../../content/features/*.json', { 
 const comparison = collection(import.meta.glob('../../content/comparison/*.json', { eager: true }))
 const steps = collection(import.meta.glob('../../content/steps/*.json', { eager: true }))
 const showcase = collection(import.meta.glob('../../content/showcase/*.json', { eager: true }))
+const stats = collection(import.meta.glob('../../content/stats/*.json', { eager: true }))
 ---
 
 <!doctype html>
@@ -311,6 +312,21 @@ const showcase = collection(import.meta.glob('../../content/showcase/*.json', { 
         </div>
       </div>
     </section>
+
+    {
+      stats.length > 0 && (
+        <div class="band reveal">
+          <div class="wrap statband">
+            {stats.map((s) => (
+              <div class="stat">
+                <span class="stat-num" data-source={s.source}>—</span>
+                <span class="stat-label">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
 
     <section class="closing wrap reveal">
       <h2>{closing.title}</h2>

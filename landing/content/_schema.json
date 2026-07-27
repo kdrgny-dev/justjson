@@ -54,6 +54,26 @@
       ]
     },
     {
+      "name": "stats",
+      "label": "İstatistikler",
+      "path": "stats",
+      "fields": [
+        { "key": "label", "label": "Etiket", "type": "text", "required": true },
+        {
+          "key": "source",
+          "label": "Kaynak",
+          "type": "select",
+          "options": [
+            "github-stars",
+            "github-forks",
+            "npm-downloads-week",
+            "npm-downloads-month"
+          ]
+        },
+        { "key": "order", "label": "Sıra", "type": "number" }
+      ]
+    },
+    {
       "name": "showcase",
       "label": "Bununla yapıldı",
       "path": "showcase",
