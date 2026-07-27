@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url'
 import { serve } from '@hono/node-server'
 import {
   ContentStore,
+  NotFoundError,
+  PathEscapeError,
+  UnsafeSlugError,
   inferProject,
   loadSchema,
   parseSchema,
@@ -153,9 +156,10 @@ export async function createServer(root: string): Promise<Hono> {
   const app = new Hono()
 
   app.onError((err, c) => {
-    const msg = err.message
-    if (msg.startsWith('Bilinmeyen')) return c.json({ error: msg }, 404)
-    if (msg.startsWith('Güvensiz') || msg.startsWith('Yol')) return c.json({ error: msg }, 400)
+    if (err instanceof NotFoundError) return c.json({ error: err.message }, 404)
+    if (err instanceof UnsafeSlugError || err instanceof PathEscapeError) {
+      return c.json({ error: err.message }, 400)
+    }
     return c.json({ error: 'sunucu hatası' }, 500)
   })
 

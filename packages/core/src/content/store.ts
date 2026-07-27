@@ -1,3 +1,4 @@
+import { NotFoundError, UnsafeSlugError } from '../errors'
 import { parseSchema, serializeSchema } from '../schema/schema'
 import type { Collection, Schema, Singleton } from '../schema/types'
 import type { StorageAdapter } from '../storage/adapter'
@@ -17,7 +18,7 @@ function schemaPath(contentDir: string): string {
 
 function assertSafeSlug(slug: string): void {
   if (slug.length === 0 || slug.includes('/') || slug.includes('\\') || slug.includes('..')) {
-    throw new Error(`Güvensiz slug: ${slug}`)
+    throw new UnsafeSlugError(`Güvensiz slug: ${slug}`)
   }
 }
 
@@ -47,13 +48,13 @@ export class ContentStore {
 
   private collection(name: string): Collection {
     const col = this.schema.collections.find((c) => c.name === name)
-    if (!col) throw new Error(`Bilinmeyen koleksiyon: ${name}`)
+    if (!col) throw new NotFoundError(`Bilinmeyen koleksiyon: ${name}`)
     return col
   }
 
   private singleton(name: string): Singleton {
     const s = this.schema.singletons.find((x) => x.name === name)
-    if (!s) throw new Error(`Bilinmeyen singleton: ${name}`)
+    if (!s) throw new NotFoundError(`Bilinmeyen singleton: ${name}`)
     return s
   }
 

@@ -4,11 +4,12 @@ import { exportZip } from './commands/export'
 import { initProject, listTemplates } from './commands/init'
 import { generateTypesFile } from './commands/types'
 import { startServer } from './server'
+import { readVersion } from './version'
 
 const program = new Command()
 const root = process.cwd()
 
-program.name('justjson').description('Lokalde çalışan, JSON üreten mini CMS').version('0.0.0')
+program.name('justjson').description('Lokalde çalışan, JSON üreten mini CMS').version(readVersion())
 
 program
   .command('init')

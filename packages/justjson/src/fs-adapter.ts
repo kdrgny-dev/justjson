@@ -1,6 +1,6 @@
 import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { dirname, resolve, sep } from 'node:path'
-import type { StorageAdapter } from '@justjson/core'
+import { PathEscapeError, type StorageAdapter } from '@justjson/core'
 
 export class FsAdapter implements StorageAdapter {
   constructor(private readonly root: string) {}
@@ -9,7 +9,7 @@ export class FsAdapter implements StorageAdapter {
     const rootAbs = resolve(this.root)
     const full = resolve(rootAbs, path)
     if (full !== rootAbs && !full.startsWith(rootAbs + sep)) {
-      throw new Error(`Yol kök dışına çıkıyor: ${path}`)
+      throw new PathEscapeError(`Yol kök dışına çıkıyor: ${path}`)
     }
     return full
   }

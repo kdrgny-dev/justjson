@@ -64,6 +64,12 @@ describe('createServer', () => {
     expect(res.status).not.toBe(200)
   })
 
+  it('bilinmeyen koleksiyon onError üzerinden 404 döner', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/bilinmeyenKoleksiyon')
+    expect(res.status).toBe(404)
+  })
+
   it('PUT /api/_schema şemayı kaydeder ve GET yansıtır', async () => {
     const app = await createServer(root)
     const next = {

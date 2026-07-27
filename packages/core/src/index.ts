@@ -1,5 +1,3 @@
-export const VERSION = '0.0.0'
-
 export type {
   Field,
   FieldType,
@@ -9,6 +7,13 @@ export type {
 } from './schema/types'
 export { parseSchema, serializeSchema } from './schema/schema'
 export { slugify } from './util/slug'
+
+export {
+  JustJsonError,
+  NotFoundError,
+  UnsafeSlugError,
+  PathEscapeError,
+} from './errors'
 
 export type { StorageAdapter } from './storage/adapter'
 export { MemoryAdapter } from './storage/memory'
