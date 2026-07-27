@@ -13,3 +13,6 @@ export class UnsafeSlugError extends JustJsonError {}
 
 /** Bir yol kök dizinin dışına çıkıyor. */
 export class PathEscapeError extends JustJsonError {}
+
+/** Şema doğrulamadan geçmedi; mesaj konumlu satırlar içerir. */
+export class SchemaError extends JustJsonError {}

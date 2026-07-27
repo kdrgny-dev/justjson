@@ -36,6 +36,7 @@ import {
 import { useState } from 'react'
 import * as api from './api'
 import { FIELD_META, FIELD_TYPES } from './field-types'
+import { t, tp } from './i18n'
 
 type Container = Collection | Singleton
 type Kind = 'collection' | 'singleton'
@@ -83,6 +84,10 @@ function reconcile(s: Schema, m: IdModel): IdModel {
   }
 }
 
+function groupSeed(): { fields: Field[] } {
+  return { fields: [{ key: 'field1', label: '', type: 'text' }] }
+}
+
 function uniqueName(base: string, taken: string[]): string {
   let n = 1
   while (taken.includes(`${base}${n}`)) n += 1
@@ -91,19 +96,19 @@ function uniqueName(base: string, taken: string[]): string {
 
 function newCollection(d: Schema, m: IdModel): void {
   const name = uniqueName(
-    'koleksiyon',
+    'collection',
     d.collections.map((c) => c.name),
   )
-  d.collections.push({ name, label: 'Yeni koleksiyon', path: name, fields: [] })
+  d.collections.push({ name, label: t('New collection'), path: name, fields: [] })
   m.collections.push({ id: uid('c'), fields: [] })
 }
 
 function newSingleton(d: Schema, m: IdModel): void {
   const name = uniqueName(
-    'tekil',
+    'singleton',
     d.singletons.map((s) => s.name),
   )
-  d.singletons.push({ name, label: 'Yeni tekil', path: `${name}.json`, fields: [] })
+  d.singletons.push({ name, label: t('New singleton'), path: `${name}.json`, fields: [] })
   m.singletons.push({ id: uid('s'), fields: [] })
 }
 
@@ -176,10 +181,11 @@ export function SchemaBuilder({
       if (!container) return
       if (picker.fi === null) {
         const key = uniqueName(
-          'alan',
+          'field',
           container.fields.map((f) => f.key),
         )
-        container.fields.push({ key, label: '', type })
+        // group şema düzeyinde en az bir alt alan ister; boş eklenirse kaydedilemez.
+        container.fields.push({ key, label: '', type, ...(type === 'group' ? groupSeed() : {}) })
         idList[picker.ci]?.fields.push(uid('f'))
       } else {
         const f = container.fields[picker.fi]
@@ -188,8 +194,7 @@ export function SchemaBuilder({
         if (type !== 'select') f.options = undefined
         if (type !== 'relation') f.to = undefined
         if (type !== 'group') f.fields = undefined
-        else if (!f.fields || f.fields.length === 0)
-          f.fields = [{ key: 'alan', label: '', type: 'text' }]
+        else if (!f.fields || f.fields.length === 0) f.fields = groupSeed().fields
       }
     })
     setPicker(null)
@@ -296,12 +301,14 @@ export function SchemaBuilder({
       <header className="sticky top-0 z-10 shrink-0 border-b bg-card px-8 py-4">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
           <div>
-            <h1 className="font-heading text-lg font-semibold text-foreground">Şema</h1>
-            <p className="text-sm text-muted-foreground">Koleksiyonlarını ve alanlarını tasarla.</p>
+            <h1 className="font-heading text-lg font-semibold text-foreground">{t('Schema')}</h1>
+            <p className="text-sm text-muted-foreground">
+              {t('Design your collections and fields.')}
+            </p>
           </div>
           <Button type="button" onClick={save} disabled={saving}>
             <Check />
-            {saving ? 'Kaydediliyor…' : 'Şemayı kaydet'}
+            {saving ? t('Saving…') : t('Save schema')}
           </Button>
         </div>
       </header>
@@ -323,8 +330,8 @@ export function SchemaBuilder({
           ) : (
             <div className="space-y-10">
               <Section
-                title="Koleksiyonlar"
-                hint="Çok kayıtlı içerik (yazılar, ürünler…)"
+                title={t('Collections')}
+                hint={t('Content with many entries (posts, products…)')}
                 onAdd={() => structural(newCollection)}
                 allCollapsed={
                   ids.collections.length > 0 && ids.collections.every((c) => collapsed[c.id])
@@ -339,8 +346,8 @@ export function SchemaBuilder({
               </Section>
 
               <Section
-                title="Tekil"
-                hint="Tek kayıt (site ayarları, profil…)"
+                title={t('Singletons')}
+                hint={t('A single record (site settings, profile…)')}
                 onAdd={() => structural(newSingleton)}
                 allCollapsed={
                   ids.singletons.length > 0 && ids.singletons.every((c) => collapsed[c.id])
@@ -397,11 +404,11 @@ function Section({
               className="text-muted-foreground"
             >
               {allCollapsed ? <ChevronsUpDown /> : <ChevronsDownUp />}
-              {allCollapsed ? 'Tümünü genişlet' : 'Tümünü daralt'}
+              {allCollapsed ? t('Expand all') : t('Collapse all')}
             </Button>
           )}
           <Button type="button" variant="outline" size="sm" onClick={onAdd}>
-            <Plus /> Ekle
+            <Plus /> {t('Add')}
           </Button>
         </div>
       </div>
@@ -425,13 +432,16 @@ function SchemaEmpty({
         <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           <Boxes className="size-7" />
         </div>
-        <h2 className="font-heading text-lg font-semibold text-foreground">Şeman boş</h2>
+        <h2 className="font-heading text-lg font-semibold text-foreground">
+          {t('Your schema is empty')}
+        </h2>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Koleksiyon, içeriğinin bir tipini tanımlar — yazılar, ürünler, projeler. İlkini ekleyerek
-          başla.
+          {t(
+            'A collection describes one type of your content — posts, products, projects. Start by adding the first one.',
+          )}
         </p>
         <Button type="button" size="lg" onClick={onAddCollection} className="mt-6">
-          <Plus /> Koleksiyon ekle
+          <Plus /> {t('Add collection')}
         </Button>
         <div className="mt-3 flex items-center gap-3 text-sm">
           <Button
@@ -440,7 +450,7 @@ function SchemaEmpty({
             onClick={onAddSingleton}
             className="h-auto p-0 text-muted-foreground hover:text-foreground"
           >
-            Tekil kayıt ekle
+            {t('Add a singleton')}
           </Button>
           {onBrowseTemplates && (
             <>
@@ -451,7 +461,7 @@ function SchemaEmpty({
                 onClick={onBrowseTemplates}
                 className="h-auto p-0"
               >
-                veya bir template’den başla
+                {t('or start from a template')}
               </Button>
             </>
           )}
@@ -498,7 +508,7 @@ function SortableContainerCard({ id, ...props }: ContainerCardProps & { id: stri
         dragHandle={
           <DragHandle
             ref={setActivatorNodeRef}
-            label="Sürükleyerek sırala"
+            label={t('Drag to reorder')}
             {...attributes}
             {...listeners}
           />
@@ -558,7 +568,7 @@ function ContainerCard({
           size="icon-sm"
           onClick={onToggleCollapse}
           aria-expanded={!collapsed}
-          aria-label={collapsed ? 'Genişlet' : 'Daralt'}
+          aria-label={collapsed ? t('Expand') : t('Collapse')}
           className="relative text-muted-foreground"
         >
           <ChevronDown className={cn('transition-transform', collapsed && '-rotate-90')} />
@@ -566,7 +576,7 @@ function ContainerCard({
         <Input
           className="relative h-8 border-transparent bg-transparent font-medium shadow-none focus-visible:border-input focus-visible:bg-background"
           value={container.label ?? ''}
-          placeholder={kind === 'collection' ? 'Koleksiyon adı' : 'Tekil ad'}
+          placeholder={kind === 'collection' ? t('Collection name') : t('Singleton name')}
           onChange={(e) =>
             onChange((c) => {
               c.label = e.target.value
@@ -576,17 +586,17 @@ function ContainerCard({
         <div className="relative flex items-center gap-2">
           {collapsed && (
             <span className="whitespace-nowrap rounded-full bg-foreground/5 px-2 py-0.5 text-xs text-muted-foreground">
-              {count} alan
+              {tp(count, '{n} field', '{n} fields')}
             </span>
           )}
           <Input
             className="h-8 w-40 border-transparent bg-transparent font-mono text-xs text-primary hover:border-input focus-visible:bg-background"
             value={container.name}
-            placeholder="api-adi"
+            placeholder="api-name"
             onChange={(e) => setName(e.target.value)}
           />
         </div>
-        <IconButton label="Sil" danger onClick={onRemove} className="relative">
+        <IconButton label={t('Delete')} danger onClick={onRemove} className="relative">
           <Trash2 />
         </IconButton>
       </CardHeader>
@@ -596,7 +606,7 @@ function ContainerCard({
           <CardContent className="px-0">
             {count === 0 && (
               <p className="px-4 py-6 text-center text-sm text-muted-foreground">
-                Henüz alan yok. Aşağıdan ilk alanı ekle.
+                {t('No fields yet. Add the first one below.')}
               </p>
             )}
             <SortableList
@@ -634,7 +644,7 @@ function ContainerCard({
             onClick={onAddField}
             className="h-11 w-full justify-center gap-1.5 rounded-none border-t text-primary hover:bg-primary/5 hover:text-primary"
           >
-            <Plus /> Alan ekle
+            <Plus /> {t('Add field')}
           </Button>
         </>
       )}
@@ -651,7 +661,7 @@ function ContainerPreview({ container }: { container: Container }) {
       </span>
       <span className="truncate font-mono text-xs text-primary">{container.name}</span>
       <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-        {container.fields.length} alan
+        {tp(container.fields.length, '{n} field', '{n} fields')}
       </span>
     </div>
   )
@@ -685,7 +695,7 @@ function SortableFieldRow({ id, ...props }: FieldRowProps & { id: string }) {
       dragHandle={
         <DragHandle
           ref={setActivatorNodeRef}
-          label="Sürükleyerek sırala"
+          label={t('Drag to reorder')}
           {...attributes}
           {...listeners}
         />
@@ -733,19 +743,21 @@ function FieldRow({
             variant="ghost"
             size="icon"
             onClick={onChangeType}
-            aria-label="Tipi değiştir"
+            aria-label={t('Change type')}
             className="bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
           >
             <Icon />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{meta.label} · tipi değiştir</TooltipContent>
+        <TooltipContent>
+          {t(meta.label)} · {t('change type')}
+        </TooltipContent>
       </Tooltip>
 
       <Input
         className="h-8 border-transparent bg-transparent font-medium shadow-none focus-visible:border-input focus-visible:bg-background"
         value={field.label ?? ''}
-        placeholder="Alan adı"
+        placeholder={t('Field name')}
         onChange={(e) =>
           onChange((f) => {
             f.label = e.target.value
@@ -755,7 +767,7 @@ function FieldRow({
       <Input
         className="h-8 border-transparent bg-transparent font-mono text-xs text-muted-foreground hover:border-input focus-visible:bg-background focus-visible:text-foreground"
         value={field.key}
-        placeholder="anahtar"
+        placeholder={t('key')}
         onChange={(e) =>
           onChange((f) => {
             f.key = slugify(e.target.value)
@@ -768,7 +780,7 @@ function FieldRow({
         size="xs"
         variant={field.required ? 'default' : 'ghost'}
         aria-pressed={field.required ?? false}
-        title={field.required ? 'Zorunlu alan' : 'Zorunlu yap'}
+        title={field.required ? t('Required field') : t('Make it required')}
         onClick={() =>
           onChange((f) => {
             f.required = !f.required
@@ -779,10 +791,10 @@ function FieldRow({
           !field.required && `border-dashed border-border text-muted-foreground ${reveal}`,
         )}
       >
-        Zorunlu
+        {t('Required')}
       </Button>
 
-      <IconButton label="Sil" danger onClick={onRemove} className={reveal}>
+      <IconButton label={t('Delete')} danger onClick={onRemove} className={reveal}>
         <X />
       </IconButton>
 
@@ -790,7 +802,7 @@ function FieldRow({
         <Input
           className="col-start-3 col-end-[-1] row-start-2 mt-1"
           value={(field.options ?? []).join(', ')}
-          placeholder="seçenekler (virgülle ayır)"
+          placeholder={t('options (comma separated)')}
           onChange={(e) =>
             onChange((f) => {
               f.options = e.target.value
@@ -812,7 +824,7 @@ function FieldRow({
             }
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="hedef koleksiyon seç…" />
+              <SelectValue placeholder={t('pick a target collection…')} />
             </SelectTrigger>
             <SelectContent>
               {collectionNames.map((n) => (
@@ -834,7 +846,7 @@ function FieldRow({
 }
 
 // group alanları tek seviye iç içe; sadeleştirmek için alt-alanlar 'group' olamaz.
-const SUB_FIELD_TYPES = FIELD_TYPES.filter((t) => t.type !== 'group')
+const SUB_FIELD_TYPES = FIELD_TYPES.filter((f) => f.type !== 'group')
 
 function GroupFieldsEditor({
   field,
@@ -864,7 +876,7 @@ function GroupFieldsEditor({
             <SelectContent>
               {SUB_FIELD_TYPES.map(({ type, label }) => (
                 <SelectItem key={type} value={type}>
-                  {label}
+                  {t(label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -872,7 +884,7 @@ function GroupFieldsEditor({
           <Input
             className="h-8 flex-1 font-mono text-xs"
             value={sub.key}
-            placeholder="anahtar"
+            placeholder={t('key')}
             onChange={(e) =>
               onChange((f) => {
                 const s = f.fields?.[i]
@@ -883,7 +895,7 @@ function GroupFieldsEditor({
           <Input
             className="h-8 flex-1"
             value={sub.label ?? ''}
-            placeholder="Görünen ad"
+            placeholder={t('Display name')}
             onChange={(e) =>
               onChange((f) => {
                 const s = f.fields?.[i]
@@ -892,7 +904,7 @@ function GroupFieldsEditor({
             }
           />
           <IconButton
-            label="Alt alanı sil"
+            label={t('Delete sub-field')}
             danger
             onClick={() =>
               onChange((f) => {
@@ -914,12 +926,12 @@ function GroupFieldsEditor({
             const existing = (f.fields ?? []).map((s) => s.key)
             f.fields = [
               ...(f.fields ?? []),
-              { key: uniqueName('alan', existing), label: '', type: 'text' },
+              { key: uniqueName('field', existing), label: '', type: 'text' },
             ]
           })
         }
       >
-        <Plus /> Alt alan ekle
+        <Plus /> {t('Add sub-field')}
       </Button>
     </div>
   )
@@ -935,7 +947,7 @@ function FieldPreview({ field }: { field: Field }) {
         <Icon className="size-4" />
       </span>
       <span className="truncate text-sm font-medium text-foreground">
-        {field.label || meta.label}
+        {field.label || t(meta.label)}
       </span>
       <span className="ml-auto shrink-0 font-mono text-xs text-muted-foreground">{field.key}</span>
     </div>
@@ -960,8 +972,8 @@ function TypePicker({
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Alan tipi seç</DialogTitle>
-          <DialogDescription>Bu alanın hangi türde veri tutacağını belirle.</DialogDescription>
+          <DialogTitle>{t('Pick a field type')}</DialogTitle>
+          <DialogDescription>{t('Choose what kind of data this field holds.')}</DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-2.5">
           {FIELD_TYPES.map(({ type, label, desc, icon: Icon }) => (
@@ -975,8 +987,8 @@ function TypePicker({
                 <Icon className="size-4" />
               </span>
               <span>
-                <span className="block text-sm font-medium text-foreground">{label}</span>
-                <span className="block text-xs text-muted-foreground">{desc}</span>
+                <span className="block text-sm font-medium text-foreground">{t(label)}</span>
+                <span className="block text-xs text-muted-foreground">{t(desc)}</span>
               </span>
             </button>
           ))}

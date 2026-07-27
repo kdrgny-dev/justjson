@@ -22,6 +22,8 @@ function initial(): Lang {
 let current: Lang = initial()
 const subscribers = new Set<() => void>()
 
+if (typeof document !== 'undefined') document.documentElement.lang = current
+
 export function getLang(): Lang {
   return current
 }
@@ -29,6 +31,8 @@ export function getLang(): Lang {
 export function setLang(lang: Lang): void {
   current = lang
   if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, lang)
+  // <html lang> metin dönüşümünü etkiler: tr'de "title" → "TİTLE" olur.
+  if (typeof document !== 'undefined') document.documentElement.lang = lang
   for (const notify of subscribers) notify()
 }
 
@@ -52,4 +56,9 @@ export function t(key: string, vars?: Vars): string {
   return raw.replace(/\{(\w+)\}/g, (match, name: string) =>
     name in vars ? String(vars[name]) : match,
   )
+}
+
+// Türkçe sayıdan sonra çoğul eki almaz; iki anahtar da aynı çeviriye düşer.
+export function tp(n: number, one: string, many: string, vars?: Vars): string {
+  return t(n === 1 ? one : many, { n, ...vars })
 }

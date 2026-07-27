@@ -63,12 +63,7 @@
           "key": "source",
           "label": "Kaynak",
           "type": "select",
-          "options": [
-            "github-stars",
-            "github-forks",
-            "npm-downloads-week",
-            "npm-downloads-month"
-          ]
+          "options": ["github-stars", "github-forks", "npm-downloads-week", "npm-downloads-month"]
         },
         { "key": "order", "label": "Sıra", "type": "number" }
       ]

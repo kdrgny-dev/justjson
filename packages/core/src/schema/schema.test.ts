@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { SchemaError } from '../errors'
 import { parseSchema, serializeSchema } from './schema'
 
 const valid = {
@@ -173,5 +174,23 @@ describe('parseSchema bütünlük', () => {
       singletons: [],
     }
     expect(() => parseSchema(ok)).not.toThrow()
+  })
+})
+
+describe('parseSchema hata mesajı', () => {
+  const badGroup = {
+    version: 1,
+    collections: [{ name: 'a', path: 'a', fields: [{ key: 'g', label: 'G', type: 'group' }] }],
+    singletons: [],
+  }
+
+  it('SchemaError fırlatır', () => {
+    expect(() => parseSchema(badGroup)).toThrow(SchemaError)
+  })
+
+  it('ham JSON yerine konumlu, okunur satır verir', () => {
+    expect(() => parseSchema(badGroup)).toThrow(
+      'collections.0.fields.0: a group field requires fields',
+    )
   })
 })

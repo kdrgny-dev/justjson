@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { t } from '@/i18n'
 import { cn } from '@/lib/utils'
 import type { Announcements } from '@dnd-kit/core'
 import {
@@ -61,12 +62,16 @@ export function SortableList({
 
   const position = (id: string | number) => ids.indexOf(String(id)) + 1
   const announcements: Announcements = {
-    onDragStart: () => 'Öğe kaldırıldı. Ok tuşlarıyla taşı, boşluk tuşuyla bırak.',
+    onDragStart: () => t('Item picked up. Use the arrow keys to move it, space to drop it.'),
     onDragOver: ({ over }) =>
-      over ? `${position(over.id)}. sıraya taşınıyor.` : 'Öğe listenin dışında.',
+      over
+        ? t('Moving to position {n}.', { n: position(over.id) })
+        : t('The item is outside the list.'),
     onDragEnd: ({ over }) =>
-      over ? `${position(over.id)}. sıraya bırakıldı.` : 'Öğe eski yerine döndü.',
-    onDragCancel: () => 'Taşıma iptal edildi.',
+      over
+        ? t('Dropped at position {n}.', { n: position(over.id) })
+        : t('The item returned to its original place.'),
+    onDragCancel: () => t('Move cancelled.'),
   }
 
   return (

@@ -32,7 +32,7 @@ describe('inferProject', () => {
     // content bir satırda HTML → richtext'e yükselir
     expect(exp?.fields.find((f) => f.key === 'content')?.type).toBe('richtext')
     expect(entries.experience).toHaveLength(2)
-    expect(entries.experience[0]?.slug).toBe('balina')
+    expect(entries.experience?.[0]?.slug).toBe('balina')
 
     // home → tekil; summary richtext, name/title text
     const home = schema.singletons.find((s) => s.name === 'home')
@@ -45,9 +45,9 @@ describe('inferProject', () => {
     expect(entries.urls).toHaveLength(1)
 
     // tekil veride şemaya girmeyen anahtar kalmaz (yoksa "şemada yok" uyarısı çıkar)
-    expect(singletons.home.urls).toBeUndefined()
+    expect(singletons.home?.urls).toBeUndefined()
     const homeKeys = new Set(home?.fields.map((f) => f.key))
-    for (const k of Object.keys(singletons.home)) expect(homeKeys.has(k)).toBe(true)
+    for (const k of Object.keys(singletons.home ?? {})) expect(homeKeys.has(k)).toBe(true)
   })
 
   it('koleksiyon satırlarında şema dışı anahtar bırakmaz', () => {
@@ -56,7 +56,7 @@ describe('inferProject', () => {
     })
     const col = schema.collections.find((c) => c.name === 'projects')
     const keys = new Set(col?.fields.map((f) => f.key))
-    for (const row of entries.projects) {
+    for (const row of entries.projects ?? []) {
       for (const k of Object.keys(row)) expect(keys.has(k)).toBe(true)
     }
   })
@@ -70,7 +70,7 @@ describe('inferProject', () => {
     const { entries } = inferProject({
       items: [{ title: 'Aynı' }, { title: 'Aynı' }],
     })
-    const slugs = entries.items.map((r) => r.slug)
+    const slugs = (entries.items ?? []).map((r) => r.slug)
     expect(new Set(slugs).size).toBe(2)
   })
 

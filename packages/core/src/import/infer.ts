@@ -58,7 +58,7 @@ export function inferProject(data: unknown): InferredProject {
   const usedNames = new Set<string>()
 
   const uniqueName = (base: string): string => {
-    let name = base || 'alan'
+    let name = base || 'field'
     let n = 2
     while (usedNames.has(name)) name = `${base}-${n++}`
     usedNames.add(name)
@@ -118,8 +118,8 @@ export function inferProject(data: unknown): InferredProject {
   }
 
   if (generalFields.length > 0) {
-    const name = uniqueName('genel')
-    singletons.push({ name, label: 'Genel', path: `${name}.json`, fields: generalFields })
+    const name = uniqueName('general')
+    singletons.push({ name, label: 'General', path: `${name}.json`, fields: generalFields })
     singletonData[name] = generalData
   }
 

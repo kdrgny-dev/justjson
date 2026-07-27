@@ -72,7 +72,7 @@ export async function applyTemplate(
   const store = new ContentStore(adapter, schema, contentDir)
   for (const [collection, rows] of Object.entries(template.samples)) {
     for (const row of rows) {
-      const slug = slugify(typeof row.slug === 'string' ? row.slug : String(row.title ?? 'icerik'))
+      const slug = slugify(typeof row.slug === 'string' ? row.slug : String(row.title ?? 'content'))
       await store.writeEntry(collection, slug, row)
     }
   }

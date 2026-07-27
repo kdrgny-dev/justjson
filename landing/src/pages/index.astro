@@ -1,10 +1,10 @@
 ---
 import Analytics from '@vercel/analytics/astro'
 import '../styles/site.css'
-import meta from '../../content/meta.json'
-import hero from '../../content/hero.json'
-import sections from '../../content/sections.json'
 import closing from '../../content/closing.json'
+import hero from '../../content/hero.json'
+import meta from '../../content/meta.json'
+import sections from '../../content/sections.json'
 
 type Row = Record<string, any>
 function collection(glob: Record<string, { default: Row }>): Row[] {

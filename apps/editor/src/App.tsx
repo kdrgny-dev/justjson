@@ -81,6 +81,7 @@ import {
 } from './components/PageShell'
 import { SKELETON_KEYS, Skeleton } from './components/Skeleton'
 import { FIELD_META } from './field-types'
+import { LANGS, getLang, setLang, t, tp, useLang } from './i18n'
 
 type Selection =
   | { kind: 'schema' }
@@ -102,6 +103,7 @@ export function App() {
 }
 
 function AppShell() {
+  useLang()
   const [schema, setSchema] = useState<Schema | null>(null)
   const [project, setProject] = useState<api.ProjectInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -133,7 +135,7 @@ function AppShell() {
           setGallery(true)
         }
       })
-      .catch(() => setError('Şema yüklenemedi. `justjson serve` çalışıyor mu?'))
+      .catch(() => setError(t('Could not load the schema. Is `justjson serve` running?')))
   }, [])
 
   useEffect(() => {
@@ -144,7 +146,7 @@ function AppShell() {
   }, [])
 
   if (error) return <Centered>{error}</Centered>
-  if (!schema) return <Centered>Yükleniyor…</Centered>
+  if (!schema) return <Centered>{t('Loading…')}</Centered>
 
   if (gallery) {
     return (
@@ -170,7 +172,7 @@ function AppShell() {
 
   const exportProject = () => {
     api.downloadExport()
-    toast.success('Dışa aktarma indiriliyor')
+    toast.success(t('Downloading export'))
   }
 
   const resetSchema = async () => {
@@ -178,7 +180,7 @@ function AppShell() {
     await reload()
     setSelection(null)
     setGallery(true)
-    toast.success('Şema sıfırlandı')
+    toast.success(t('Schema reset'))
   }
 
   return (
@@ -219,8 +221,8 @@ function crumbsFor(
   onSelect: (s: Selection) => void,
 ): Crumb[] {
   if (!selection) return []
-  if (selection.kind === 'schema') return [{ label: 'Şema' }]
-  if (selection.kind === 'json') return [{ label: 'Ham JSON' }]
+  if (selection.kind === 'schema') return [{ label: t('Schema') }]
+  if (selection.kind === 'json') return [{ label: t('Raw JSON') }]
   if (selection.kind === 'collection') {
     const col = schema.collections.find((c) => c.name === selection.name)
     return [{ label: col?.label ?? selection.name }]
@@ -232,11 +234,11 @@ function crumbsFor(
         label: col?.label ?? selection.collection,
         onClick: () => onSelect({ kind: 'collection', name: selection.collection }),
       },
-      selection.kind === 'entry' ? { label: selection.slug } : { label: 'Yeni kayıt' },
+      selection.kind === 'entry' ? { label: selection.slug } : { label: t('New entry') },
     ]
   }
   const s = schema.singletons.find((x) => x.name === selection.name)
-  return [{ label: s?.label ?? selection.name, tag: 'tekil' }]
+  return [{ label: s?.label ?? selection.name, tag: t('singleton') }]
 }
 
 function ContextBar({ project, crumbs }: { project: api.ProjectInfo | null; crumbs: Crumb[] }) {
@@ -327,12 +329,18 @@ function Sidebar({
           active={selection?.kind === 'json'}
           onClick={() => onSelect({ kind: 'json' })}
         >
-          Ham JSON
+          {t('Raw JSON')}
         </NavItem>
 
-        <NavSection label="Koleksiyonlar" onAdd={() => onOpenSchema('collection')}>
+        <NavSection
+          label={t('Collections')}
+          addLabel={t('Add collection')}
+          onAdd={() => onOpenSchema('collection')}
+        >
           {schema.collections.length === 0 ? (
-            <EmptyNavHint onClick={() => onOpenSchema('collection')}>Koleksiyon ekle</EmptyNavHint>
+            <EmptyNavHint onClick={() => onOpenSchema('collection')}>
+              {t('Add collection')}
+            </EmptyNavHint>
           ) : (
             schema.collections.map((c) => (
               <NavItem
@@ -347,9 +355,15 @@ function Sidebar({
           )}
         </NavSection>
 
-        <NavSection label="Tekil" onAdd={() => onOpenSchema('singleton')}>
+        <NavSection
+          label={t('Singletons')}
+          addLabel={t('Add singleton')}
+          onAdd={() => onOpenSchema('singleton')}
+        >
           {schema.singletons.length === 0 ? (
-            <EmptyNavHint onClick={() => onOpenSchema('singleton')}>Tekil ekle</EmptyNavHint>
+            <EmptyNavHint onClick={() => onOpenSchema('singleton')}>
+              {t('Add singleton')}
+            </EmptyNavHint>
           ) : (
             schema.singletons.map((s) => (
               <NavItem
@@ -380,6 +394,7 @@ function ProjectMenu({
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [resetting, setResetting] = useState(false)
   const { config: aiConfig, openSettings: openAiSettings } = useAiSettings()
+  const lang = useLang()
 
   const confirmReset = async () => {
     setResetting(true)
@@ -410,22 +425,35 @@ function ProjectMenu({
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={onExport}>
             <Download />
-            Dışa aktar (.zip)
+            {t('Export (.zip)')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={openAiSettings}>
             <Sparkles />
-            AI ayarları
+            {t('AI settings')}
             {aiConfig && (
               <Badge variant="secondary" className="ml-auto font-normal">
-                bağlı
+                {t('connected')}
               </Badge>
             )}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+            {t('Language')}
+          </DropdownMenuLabel>
+          {LANGS.map((l) => (
+            <DropdownMenuCheckboxItem
+              key={l.code}
+              checked={lang === l.code}
+              onCheckedChange={() => setLang(l.code)}
+            >
+              {l.label}
+            </DropdownMenuCheckboxItem>
+          ))}
+          <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirmOpen(true)}>
             <RotateCcw />
-            Baştan başla (sıfırla)
+            {t('Start over (reset)')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -433,17 +461,19 @@ function ProjectMenu({
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Şemayı sıfırla?</DialogTitle>
+            <DialogTitle>{t('Reset the schema?')}</DialogTitle>
             <DialogDescription>
-              İçerik dosyaların diskte kalır ama şema temizlenir, baştan şablon/JSON seçebilirsin.
+              {t(
+                'Your content files stay on disk, but the schema is cleared so you can pick a template or JSON again.',
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Vazgeç</Button>
+              <Button variant="outline">{t('Cancel')}</Button>
             </DialogClose>
             <Button variant="destructive" onClick={confirmReset} disabled={resetting}>
-              {resetting ? 'Sıfırlanıyor…' : 'Sıfırla'}
+              {resetting ? t('Resetting…') : t('Reset')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -464,14 +494,14 @@ function SchemaNavItem({ active, onClick }: { active: boolean; onClick: () => vo
     >
       <PencilRuler className="h-4 w-4 shrink-0" />
       <span className="min-w-0">
-        <span className="block text-sm font-medium leading-tight">Şema</span>
+        <span className="block text-sm font-medium leading-tight">{t('Schema')}</span>
         <span
           className={cn(
             'block text-xs leading-tight',
             active ? 'text-primary/70' : 'text-muted-foreground/70',
           )}
         >
-          İçerik yapısı
+          {t('Content structure')}
         </span>
       </span>
     </button>
@@ -480,10 +510,12 @@ function SchemaNavItem({ active, onClick }: { active: boolean; onClick: () => vo
 
 function NavSection({
   label,
+  addLabel,
   onAdd,
   children,
 }: {
   label: string
+  addLabel: string
   onAdd: () => void
   children: React.ReactNode
 }) {
@@ -502,10 +534,10 @@ function NavSection({
               className="text-muted-foreground hover:text-primary"
             >
               <Plus />
-              <span className="sr-only">{label} ekle</span>
+              <span className="sr-only">{addLabel}</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{label} ekle</TooltipContent>
+          <TooltipContent>{addLabel}</TooltipContent>
         </Tooltip>
       </div>
       <div className="space-y-0.5">{children}</div>
@@ -576,11 +608,13 @@ function MainArea({
     return (
       <EmptyState
         icon={<Boxes className="h-6 w-6" />}
-        title="Soldan başla"
-        hint="Bir koleksiyon ya da tekil kayıt seçerek düzenlemeye başla. Yapıyı değiştirmek istersen Şema'ya git."
+        title={t('Start on the left')}
+        hint={t(
+          'Pick a collection or singleton to start editing. To change the structure, go to Schema.',
+        )}
         action={
           <Button onClick={() => onOpenSchema()}>
-            <PencilRuler /> Şemayı aç
+            <PencilRuler /> {t('Open schema')}
           </Button>
         }
       />
@@ -604,7 +638,7 @@ function MainArea({
 
   if (selection.kind === 'collection') {
     const col = schema.collections.find((c) => c.name === selection.name)
-    if (!col) return <Centered>Bu koleksiyon bulunamadı.</Centered>
+    if (!col) return <Centered>{t('This collection no longer exists.')}</Centered>
     return (
       <CollectionView
         collection={col}
@@ -616,7 +650,7 @@ function MainArea({
 
   if (selection.kind === 'entry' || selection.kind === 'newEntry') {
     const col = schema.collections.find((c) => c.name === selection.collection)
-    if (!col) return <Centered>Bu koleksiyon bulunamadı.</Centered>
+    if (!col) return <Centered>{t('This collection no longer exists.')}</Centered>
     const slug = selection.kind === 'entry' ? selection.slug : null
     return (
       <EntryEditor
@@ -630,7 +664,7 @@ function MainArea({
   }
 
   const s = schema.singletons.find((x) => x.name === selection.name)
-  if (!s) return <Centered>Bu tekil kayıt bulunamadı.</Centered>
+  if (!s) return <Centered>{t('This singleton no longer exists.')}</Centered>
   return <SingletonEditor key={s.name} singleton={s} />
 }
 
@@ -683,7 +717,7 @@ function JsonPreview({ path, data }: { path: string; data: Record<string, unknow
 
   const copy = () => {
     if (navigator.clipboard) navigator.clipboard.writeText(json)
-    toast.success('JSON kopyalandı')
+    toast.success(t('JSON copied'))
   }
 
   return (
@@ -698,11 +732,11 @@ function JsonPreview({ path, data }: { path: string; data: Record<string, unknow
           disabled={empty}
           className="ml-auto text-muted-foreground hover:text-primary"
         >
-          <Copy /> Kopyala
+          <Copy /> {t('Copy')}
         </Button>
       </div>
       {empty ? (
-        <p className="jk-pre text-muted-foreground/70">Henüz alan doldurulmadı.</p>
+        <p className="jk-pre text-muted-foreground/70">{t('No fields filled in yet.')}</p>
       ) : (
         <pre className="jk-pre overflow-x-auto">
           {/* biome-ignore lint/security/noDangerouslySetInnerHtml: içerik JSON.stringify çıktısı, HTML kaçışından geçiriliyor */}
@@ -795,18 +829,18 @@ function ProjectJsonView({ schema }: { schema: Schema }) {
   return (
     <PageShell>
       <PageHeader
-        title="Ham JSON"
+        title={t('Raw JSON')}
         subtitle={
           files
-            ? `content/ • ${files.length} dosya`
-            : 'content/ klasöründeki her dosya, diske yazıldığı hâliyle'
+            ? `content/ • ${tp(files.length, '{n} file', '{n} files')}`
+            : t('Every file in content/, exactly as written to disk')
         }
       />
       <PageBody>
         <div className="mx-auto max-w-3xl space-y-2 px-8 py-6">
-          {error && <AlertPanel title="Yüklenemedi">{error}</AlertPanel>}
+          {error && <AlertPanel title={t('Could not load')}>{error}</AlertPanel>}
           {files === null && !error && (
-            <p className="px-1 text-sm text-muted-foreground">Yükleniyor…</p>
+            <p className="px-1 text-sm text-muted-foreground">{t('Loading…')}</p>
           )}
           {files?.map((f, i) => (
             <JsonFile key={f.path} path={f.path} data={f.data} defaultOpen={i === 0} />
@@ -839,16 +873,17 @@ function LoadFailed({ onRetry, onBack }: { onRetry: () => void; onBack?: () => v
         <div className="mb-3 flex size-12 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
           <AlertTriangle className="size-5" />
         </div>
-        <p className="font-medium text-foreground">Kayıt yüklenemedi</p>
+        <p className="font-medium text-foreground">{t('Could not load the entry')}</p>
         <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-          Dosya okunamadı ya da silinmiş olabilir. Boş bir formla üzerine yazmamak için düzenleme
-          kapatıldı.
+          {t(
+            'The file could not be read, or it may have been deleted. Editing is disabled so an empty form does not overwrite it.',
+          )}
         </p>
         <div className="mt-4 flex items-center gap-2">
-          <Button onClick={onRetry}>Tekrar dene</Button>
+          <Button onClick={onRetry}>{t('Try again')}</Button>
           {onBack && (
             <Button variant="outline" onClick={onBack}>
-              Listeye dön
+              {t('Back to the list')}
             </Button>
           )}
         </div>
@@ -859,7 +894,7 @@ function LoadFailed({ onRetry, onBack }: { onRetry: () => void; onBack?: () => v
 
 function formatDate(ms: number | null): string {
   if (!ms) return '—'
-  return new Intl.DateTimeFormat('tr-TR', {
+  return new Intl.DateTimeFormat(getLang() === 'tr' ? 'tr-TR' : 'en-GB', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -891,10 +926,10 @@ function CollectionView({
     <PageShell>
       <PageHeader
         title={collection.label ?? collection.name}
-        subtitle={rows ? `${rows.length} kayıt` : 'Kayıtlar yükleniyor…'}
+        subtitle={rows ? tp(rows.length, '{n} entry', '{n} entries') : t('Loading entries…')}
         actions={
           <Button onClick={onNew}>
-            <Plus /> Yeni kayıt
+            <Plus /> {t('New entry')}
           </Button>
         }
         toolbar={
@@ -904,13 +939,13 @@ function CollectionView({
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   className="pl-9"
-                  placeholder="Başlık veya slug ara…"
+                  placeholder={t('Search by title or slug…')}
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                 />
               </div>
               <span className="ml-auto shrink-0 text-xs tabular-nums text-muted-foreground">
-                {query ? `${filtered?.length ?? 0} sonuç` : null}
+                {query ? tp(filtered?.length ?? 0, '{n} result', '{n} results') : null}
               </span>
             </div>
           ) : undefined
@@ -924,11 +959,11 @@ function CollectionView({
           {rows !== null && rows.length === 0 && (
             <SurfaceEmpty
               icon={<Boxes className="h-6 w-6" />}
-              title="Henüz kayıt yok"
-              hint="Bu koleksiyona ilk içeriği ekleyerek başla."
+              title={t('No entries yet')}
+              hint={t('Add the first piece of content to this collection.')}
               action={
                 <Button onClick={onNew} variant="outline">
-                  <Plus /> İlk kaydı oluştur
+                  <Plus /> {t('Create the first entry')}
                 </Button>
               }
             />
@@ -937,11 +972,11 @@ function CollectionView({
           {hasRows && filtered?.length === 0 && (
             <SurfaceEmpty
               icon={<SearchX className="h-6 w-6" />}
-              title="Eşleşen kayıt yok"
-              hint={`“${q.trim()}” için sonuç bulunamadı. Aramayı değiştir ya da temizle.`}
+              title={t('No matching entries')}
+              hint={t('Nothing found for “{q}”. Change the search or clear it.', { q: q.trim() })}
               action={
                 <Button variant="outline" onClick={() => setQ('')}>
-                  Aramayı temizle
+                  {t('Clear search')}
                 </Button>
               }
             />
@@ -967,11 +1002,11 @@ function EntryTable({
     <Table>
       <TableHeader className="sticky top-0 z-10">
         <TableRow className="hover:bg-transparent">
-          <TableHead className={cn(COL_HEAD, 'w-full')}>Başlık</TableHead>
-          <TableHead className={COL_HEAD}>Dosya</TableHead>
-          <TableHead className={cn(COL_HEAD, 'text-right')}>Güncellendi</TableHead>
+          <TableHead className={cn(COL_HEAD, 'w-full')}>{t('Title')}</TableHead>
+          <TableHead className={COL_HEAD}>{t('File')}</TableHead>
+          <TableHead className={cn(COL_HEAD, 'text-right')}>{t('Updated')}</TableHead>
           <TableHead className={cn(COL_HEAD, 'w-10 pl-0')}>
-            <span className="sr-only">Aç</span>
+            <span className="sr-only">{t('Open')}</span>
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -1008,7 +1043,7 @@ function EntryTable({
                 </TableCell>
                 <TableCell className="w-10 py-3 pr-4 pl-0 text-right">
                   <ChevronRight className="ml-auto h-4 w-4 text-transparent transition-colors group-hover/row:text-muted-foreground/70 group-focus/row:text-muted-foreground/70" />
-                  <span className="sr-only">aç</span>
+                  <span className="sr-only">{t('Open')}</span>
                 </TableCell>
               </TableRow>
             ))}
@@ -1062,7 +1097,7 @@ function StatusToggle({
       type="button"
       variant="outline"
       onClick={onToggle}
-      title={isDraft ? 'Taslak — yayına al' : 'Yayında — taslağa çevir'}
+      title={isDraft ? t('Draft — publish it') : t('Published — move back to draft')}
       className={cn(isDraft && 'border-dashed text-muted-foreground')}
     >
       <span
@@ -1071,7 +1106,7 @@ function StatusToggle({
           isDraft ? 'bg-muted-foreground/50' : 'bg-primary',
         )}
       />
-      {isDraft ? 'Taslak' : 'Yayında'}
+      {isDraft ? t('Draft') : t('Published')}
     </Button>
   )
 }
@@ -1107,22 +1142,20 @@ function EntryEditor({
     })
 
   const result = useMemo(() => validateEntry(collection.fields, data), [data, collection.fields])
-  const effectiveSlug = isNew
-    ? slugify(newSlug || String(data.title ?? 'icerik'))
-    : (slug as string)
+  const effectiveSlug = isNew ? slugify(newSlug || String(data.title ?? 'entry')) : (slug as string)
 
   const save = async () => {
     setSaveError(null)
     setSaving(true)
     try {
       if (isNew && (await api.getEntry(collection.name, effectiveSlug))) {
-        const msg = `"${effectiveSlug}" zaten var — farklı bir slug seç.`
+        const msg = t('"{slug}" already exists — pick a different slug.', { slug: effectiveSlug })
         setSaveError(msg)
         toast.error(msg)
         return
       }
       const saved = await api.putEntry(collection.name, effectiveSlug, data)
-      toast.success(`"${saved}" kaydedildi`)
+      toast.success(t('"{slug}" saved', { slug: saved }))
       onSaved(saved)
     } finally {
       setSaving(false)
@@ -1132,7 +1165,7 @@ function EntryEditor({
   const remove = async () => {
     if (isNew) return
     await api.deleteEntry(collection.name, slug as string)
-    toast.success(`"${slug}" silindi`)
+    toast.success(t('"{slug}" deleted', { slug: slug as string }))
     onDeleted()
   }
 
@@ -1168,7 +1201,7 @@ function EntryEditor({
         badge={
           isNew ? (
             <Badge variant="secondary" className="font-normal">
-              yeni
+              {t('new')}
             </Badge>
           ) : undefined
         }
@@ -1187,31 +1220,31 @@ function EntryEditor({
             </Button>
             {!isNew && (
               <Button variant="destructive" onClick={remove}>
-                <Trash2 /> Sil
+                <Trash2 /> {t('Delete')}
               </Button>
             )}
             <Button onClick={save} disabled={saving || !result.ok}>
-              {saving ? 'Kaydediliyor…' : 'Kaydet'}
+              {saving ? t('Saving…') : t('Save')}
             </Button>
           </>
         }
       />
       <EditorLayout>
-        {saveError && <AlertPanel title="Kaydedilemedi">{saveError}</AlertPanel>}
+        {saveError && <AlertPanel title={t('Could not save')}>{saveError}</AlertPanel>}
         {showJson && <JsonPreview path={`${collection.name}/${effectiveSlug}.json`} data={data} />}
         <FormCard>
           {isNew && (
             <div className="mb-6 rounded-lg border bg-muted/40 p-4">
-              <FieldShell label="Dosya adı" hint={`${effectiveSlug}.json`}>
+              <FieldShell label={t('File name')} hint={`${effectiveSlug}.json`}>
                 <Input
                   value={newSlug}
                   onChange={(e) => setNewSlug(e.target.value)}
-                  placeholder="otomatik"
+                  placeholder={t('automatic')}
                   className="bg-card font-mono"
                 />
               </FieldShell>
               <p className="mt-2 text-xs text-muted-foreground">
-                Boş bırakırsan başlıktan üretilir. Kaydettikten sonra değişmez.
+                {t('Leave it empty to derive it from the title. It cannot change after saving.')}
               </p>
             </div>
           )}
@@ -1254,7 +1287,7 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
     setSaving(true)
     try {
       await api.putSingleton(singleton.name, data)
-      toast.success(`${singleton.label ?? singleton.name} kaydedildi`)
+      toast.success(t('{name} saved', { name: singleton.label ?? singleton.name }))
     } finally {
       setSaving(false)
     }
@@ -1263,7 +1296,7 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
   const title = singleton.label ?? singleton.name
   const badge = (
     <Badge variant="secondary" className="font-normal">
-      tekil
+      {t('singleton')}
     </Badge>
   )
 
@@ -1302,7 +1335,7 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
               <Braces /> JSON
             </Button>
             <Button onClick={save} disabled={saving || !result.ok}>
-              {saving ? 'Kaydediliyor…' : 'Kaydet'}
+              {saving ? t('Saving…') : t('Save')}
             </Button>
           </>
         }
@@ -1361,7 +1394,7 @@ function Issues({ result }: { result: ReturnType<typeof validateEntry> }) {
   return (
     <AlertPanel
       tone={hasError ? 'error' : 'warning'}
-      title={hasError ? 'Kaydetmeden önce düzeltilecekler' : 'Uyarılar'}
+      title={hasError ? t('Fix these before saving') : t('Warnings')}
     >
       <ul className="space-y-2">
         {result.issues.map((i) => (
@@ -1376,7 +1409,7 @@ function Issues({ result }: { result: ReturnType<typeof validateEntry> }) {
             <span className="rounded bg-background px-1.5 py-0.5 font-mono text-xs text-foreground">
               {i.key}
             </span>
-            <span className="min-w-0">{i.message}</span>
+            <span className="min-w-0">{t(i.message)}</span>
           </li>
         ))}
       </ul>
@@ -1497,7 +1530,7 @@ function FieldInput({
           onClick={() => onChange(k, !value)}
           className="min-w-20"
         >
-          {value ? 'Evet' : 'Hayır'}
+          {value ? t('Yes') : t('No')}
         </Button>
       )
     case 'date':
@@ -1514,7 +1547,7 @@ function FieldInput({
         <div className="flex items-center gap-2">
           <Select value={(value as string) || undefined} onValueChange={(v) => onChange(k, v)}>
             <SelectTrigger className="w-[240px]">
-              <SelectValue placeholder="Seç…" />
+              <SelectValue placeholder={t('Select…')} />
             </SelectTrigger>
             <SelectContent>
               {(field.options ?? []).map((o) => (
@@ -1533,7 +1566,7 @@ function FieldInput({
               className="text-muted-foreground"
             >
               <X />
-              <span className="sr-only">Temizle</span>
+              <span className="sr-only">{t('Clear')}</span>
             </Button>
           ) : null}
         </div>
@@ -1557,7 +1590,7 @@ function FieldInput({
         <Input
           type="email"
           inputMode="email"
-          placeholder="ad@ornek.com"
+          placeholder="name@example.com"
           value={(value as string) ?? ''}
           onChange={(e) => onChange(k, e.target.value)}
         />
@@ -1590,7 +1623,7 @@ function ColorInput({
           value={hex || '#000000'}
           onChange={(e) => onChange(e.target.value)}
           className="absolute inset-0 cursor-pointer opacity-0"
-          aria-label="Renk seç"
+          aria-label={t('Pick a color')}
         />
       </label>
       <Input
@@ -1608,7 +1641,7 @@ function ColorInput({
           className="text-muted-foreground"
         >
           <X />
-          <span className="sr-only">Temizle</span>
+          <span className="sr-only">{t('Clear')}</span>
         </Button>
       ) : null}
     </div>
@@ -1650,7 +1683,7 @@ function ListInput({
                 type="button"
                 onClick={() => removeAt(i)}
                 className="rounded-full text-muted-foreground transition-colors hover:text-destructive"
-                aria-label={`${item} kaldır`}
+                aria-label={t('Remove {item}', { item })}
               >
                 <X className="h-3 w-3" />
               </button>
@@ -1668,7 +1701,7 @@ function ListInput({
           }
         }}
         onBlur={commit}
-        placeholder="Yaz ve Enter'a bas…"
+        placeholder={t('Type and press Enter…')}
       />
     </div>
   )
@@ -1738,7 +1771,7 @@ function RelationInput({
   if (options.length === 0)
     return (
       <p className="rounded-lg border border-dashed bg-muted/30 px-3 py-2.5 text-sm text-muted-foreground">
-        “{field.to}” içinde kayıt yok.
+        {t('No entries in “{name}”.', { name: field.to ?? '' })}
       </p>
     )
 
@@ -1753,7 +1786,7 @@ function RelationInput({
                 type="button"
                 onClick={() => toggle(slug)}
                 className="rounded-full text-muted-foreground transition-colors hover:text-destructive"
-                aria-label={`${slug} bağlantısını kaldır`}
+                aria-label={t('Remove the link to {slug}', { slug })}
               >
                 <X className="h-3 w-3" />
               </button>
@@ -1764,11 +1797,13 @@ function RelationInput({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline">
-            <Link2 /> Bağlantı ekle
+            <Link2 /> {t('Add link')}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="max-h-72 w-56 overflow-y-auto">
-          <DropdownMenuLabel>“{field.to}” kayıtları</DropdownMenuLabel>
+          <DropdownMenuLabel>
+            {t('Entries in “{name}”', { name: field.to ?? '' })}
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {options.map((slug) => (
             <DropdownMenuCheckboxItem
@@ -1796,10 +1831,10 @@ async function fileToWebpBase64(file: File, maxW = 1600): Promise<string> {
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('canvas yok')
+  if (!ctx) throw new Error('no canvas context')
   ctx.drawImage(bitmap, 0, 0, w, h)
   const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/webp', 0.85))
-  if (!blob) throw new Error('dönüştürülemedi')
+  if (!blob) throw new Error('conversion failed')
   const bytes = new Uint8Array(await blob.arrayBuffer())
   let binary = ''
   for (const b of bytes) binary += String.fromCharCode(b)
@@ -1815,7 +1850,7 @@ function ImageInput({ value, onChange }: { value: unknown; onChange: (v: unknown
     setBusy(true)
     try {
       onChange(await api.uploadMedia(await fileToWebpBase64(file), file.name))
-      toast.success('Görsel yüklendi')
+      toast.success(t('Image uploaded'))
     } finally {
       setBusy(false)
     }
@@ -1838,7 +1873,7 @@ function ImageInput({ value, onChange }: { value: unknown; onChange: (v: unknown
       <div className="min-w-0 space-y-2">
         <label className={cn(buttonVariants({ variant: 'outline' }), 'cursor-pointer bg-card')}>
           <Upload />
-          {busy ? 'Yükleniyor…' : 'Görsel yükle'}
+          {busy ? t('Uploading…') : t('Upload image')}
           <input
             type="file"
             accept="image/*"
@@ -1859,7 +1894,7 @@ function ImageInput({ value, onChange }: { value: unknown; onChange: (v: unknown
               onClick={() => onChange('')}
               className="text-muted-foreground hover:text-destructive"
             >
-              kaldır
+              {t('remove')}
             </Button>
           </div>
         )}

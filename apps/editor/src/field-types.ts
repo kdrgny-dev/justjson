@@ -24,19 +24,19 @@ export interface FieldTypeMeta {
 }
 
 export const FIELD_TYPES: FieldTypeMeta[] = [
-  { type: 'text', label: 'Metin', desc: 'Tek satır metin', icon: Type },
-  { type: 'richtext', label: 'Zengin metin', desc: 'Markdown içerik', icon: FileText },
-  { type: 'number', label: 'Sayı', desc: 'Sayısal değer', icon: Hash },
-  { type: 'boolean', label: 'Evet / Hayır', desc: 'Doğru veya yanlış', icon: ToggleLeft },
-  { type: 'date', label: 'Tarih', desc: 'Takvim tarihi', icon: Calendar },
-  { type: 'select', label: 'Seçim', desc: 'Sabit seçenekler listesi', icon: List },
-  { type: 'relation', label: 'İlişki', desc: 'Başka koleksiyona bağla', icon: Link2 },
-  { type: 'image', label: 'Görsel', desc: 'Resim URL veya yolu', icon: Image },
-  { type: 'url', label: 'URL', desc: 'Web adresi', icon: Link },
-  { type: 'email', label: 'E-posta', desc: 'E-posta adresi', icon: AtSign },
-  { type: 'list', label: 'Liste', desc: 'Serbest metin etiketleri', icon: Tags },
-  { type: 'color', label: 'Renk', desc: 'Hex renk seçici', icon: Palette },
-  { type: 'group', label: 'Grup', desc: 'İç içe alanlar', icon: Boxes },
+  { type: 'text', label: 'Text', desc: 'Single line of text', icon: Type },
+  { type: 'richtext', label: 'Rich text', desc: 'Markdown content', icon: FileText },
+  { type: 'number', label: 'Number', desc: 'Numeric value', icon: Hash },
+  { type: 'boolean', label: 'Yes / No', desc: 'True or false', icon: ToggleLeft },
+  { type: 'date', label: 'Date', desc: 'Calendar date', icon: Calendar },
+  { type: 'select', label: 'Select', desc: 'A fixed list of options', icon: List },
+  { type: 'relation', label: 'Relation', desc: 'Link to another collection', icon: Link2 },
+  { type: 'image', label: 'Image', desc: 'Image URL or path', icon: Image },
+  { type: 'url', label: 'URL', desc: 'Web address', icon: Link },
+  { type: 'email', label: 'Email', desc: 'Email address', icon: AtSign },
+  { type: 'list', label: 'List', desc: 'Free-text tags', icon: Tags },
+  { type: 'color', label: 'Color', desc: 'Hex color picker', icon: Palette },
+  { type: 'group', label: 'Group', desc: 'Nested fields', icon: Boxes },
 ]
 
 export const FIELD_META = Object.fromEntries(FIELD_TYPES.map((f) => [f.type, f])) as Record<

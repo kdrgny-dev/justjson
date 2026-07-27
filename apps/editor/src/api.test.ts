@@ -46,8 +46,8 @@ describe('api client', () => {
   })
 
   it('putSchema 400 mesajını fırlatır', async () => {
-    vi.stubGlobal('fetch', mockFetch(400, { error: 'geçersiz' }))
+    vi.stubGlobal('fetch', mockFetch(400, { error: 'invalid' }))
     const schema: Schema = { version: 1, collections: [], singletons: [] }
-    await expect(putSchema(schema)).rejects.toThrow('geçersiz')
+    await expect(putSchema(schema)).rejects.toThrow('invalid')
   })
 })

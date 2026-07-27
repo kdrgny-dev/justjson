@@ -217,7 +217,7 @@ export async function createServer(root: string): Promise<Hono> {
     store = new ContentStore(adapter, schema, contentDir)
     for (const [collection, rows] of Object.entries(entries)) {
       for (const row of rows) {
-        const slug = slugify(String(row.slug ?? row.title ?? 'icerik')) || 'icerik'
+        const slug = slugify(String(row.slug ?? row.title ?? 'content')) || 'content'
         await store.writeEntry(collection, slug, row)
       }
     }
@@ -265,7 +265,7 @@ export async function createServer(root: string): Promise<Hono> {
 
   app.post('/api/_media', async (c) => {
     const body = (await c.req.json()) as { filename?: string; dataBase64?: string }
-    if (!body.dataBase64) return c.json({ error: 'veri yok' }, 400)
+    if (!body.dataBase64) return c.json({ error: 'no data' }, 400)
     const base = slugify((body.filename ?? 'gorsel').replace(/\.[^.]+$/, '')) || 'gorsel'
     const name = `${base}-${Date.now().toString(36)}.webp`
     const rel = `${contentDir}/media/${name}`
@@ -278,7 +278,7 @@ export async function createServer(root: string): Promise<Hono> {
   app.post('/api/_ai/models', async (c) => {
     const body = (await c.req.json()) as AiRequest
     const { provider, apiKey } = body
-    if (!provider) return c.json({ error: 'provider zorunlu' }, 400)
+    if (!provider) return c.json({ error: 'provider is required' }, 400)
     try {
       const models =
         provider === 'gemini'
@@ -297,7 +297,7 @@ export async function createServer(root: string): Promise<Hono> {
     const body = (await c.req.json()) as AiRequest
     const { provider, apiKey, model, system, prompt } = body
     if (!provider || !apiKey || !model || !prompt) {
-      return c.json({ error: 'provider, model, apiKey ve prompt zorunlu' }, 400)
+      return c.json({ error: 'provider, model, apiKey and prompt are required' }, 400)
     }
     try {
       const text =
@@ -325,7 +325,7 @@ export async function createServer(root: string): Promise<Hono> {
       const bytes = await readFile(join(root, contentDir, 'media', file))
       return new Response(bytes, { headers: { 'content-type': 'image/webp' } })
     } catch {
-      return c.text('yok', 404)
+      return c.text('not found', 404)
     }
   })
 

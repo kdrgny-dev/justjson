@@ -45,6 +45,7 @@ import { useEffect, useState } from 'react'
 import { useAiSettings } from './ai/AiSettingsContext'
 import * as api from './api'
 import type { TemplateMeta } from './api'
+import { getLang, t, tp } from './i18n'
 
 const ICONS: Record<string, LucideIcon> = {
   blog: Newspaper,
@@ -57,10 +58,12 @@ const ICONS: Record<string, LucideIcon> = {
   catalog: ShoppingBag,
 }
 
-function structureSummary(t: TemplateMeta) {
+function structureSummary(tpl: TemplateMeta) {
   const parts: string[] = []
-  if (t.collections.length) parts.push(`${t.collections.length} koleksiyon`)
-  if (t.singletons.length) parts.push(`${t.singletons.length} tekil`)
+  if (tpl.collections.length)
+    parts.push(tp(tpl.collections.length, '{n} collection', '{n} collections'))
+  if (tpl.singletons.length)
+    parts.push(tp(tpl.singletons.length, '{n} singleton', '{n} singletons'))
   return parts.join(' · ')
 }
 
@@ -86,15 +89,19 @@ function SkeletonCard() {
   )
 }
 
-const SCHEMA_SYSTEM_PROMPT = [
-  'Bir headless CMS için içerik şeması tasarlıyorsun.',
-  'SADECE geçerli JSON döndür — açıklama, markdown kod bloğu ya da başka metin ekleme.',
-  'Tam olarak şu şekle uy:',
-  '{"version":1,"collections":[{"name":"ingilizce-cogul-kimlik","label":"Görünen ad","path":"ayni-kimlik","fields":[{"key":"alan_adi","label":"Görünen ad","type":"text|richtext|number|boolean|date|select|relation|image","required":true}]}],"singletons":[{"name":"ingilizce-kimlik","label":"Görünen ad","path":"isim.json","fields":[...]}]}',
-  'Kullanıcının anlattığı içeriğe göre alan tiplerini akıllıca seç: uzun/biçimli metin için richtext, tarih için date, sabit seçenekli alan için select (bir de "options" dizisi ekle), görsel için image, başka bir koleksiyona bağlantı için relation (bir de hedef koleksiyonun name\'ini "to" alanına yaz).',
-  "En az bir koleksiyon üret. Her koleksiyonda title/slug'a benzer bir kimlik alanı olsun.",
-  'name ve key değerleri İngilizce, kebap/snake-case, kısa olsun. label değerleri kullanıcının dilinde olsun.',
-].join(' ')
+const LABEL_LANGUAGE: Record<string, string> = { en: 'English', tr: 'Turkish' }
+
+function schemaSystemPrompt(): string {
+  return [
+    'You are designing a content schema for a headless CMS.',
+    'Return ONLY valid JSON — no explanation, markdown code fence or other text.',
+    'Follow this shape exactly:',
+    '{"version":1,"collections":[{"name":"plural-id","label":"Display name","path":"same-id","fields":[{"key":"field_key","label":"Display name","type":"text|richtext|number|boolean|date|select|relation|image|url|email|list|color","required":true}]}],"singletons":[{"name":"id","label":"Display name","path":"name.json","fields":[...]}]}',
+    'Pick field types sensibly from what the user describes: richtext for long or formatted text, date for dates, select for a fixed set of options (add an "options" array), image for pictures, url for links, email for addresses, list for free-text tags, color for colors, and relation for a link to another collection (put the target collection\'s name in "to").',
+    'Produce at least one collection. Give every collection an identifying field like title or slug.',
+    `Keep name and key values in English, kebab/snake-case and short. Write label values in ${LABEL_LANGUAGE[getLang()] ?? 'English'}.`,
+  ].join(' ')
+}
 
 function stripCodeFence(text: string): string {
   return text
@@ -119,12 +126,12 @@ function AiScaffoldPanel({ onApplied, disabled }: { onApplied: () => void; disab
     setError(null)
     setBusy(true)
     try {
-      const raw = await api.aiGenerate(config, SCHEMA_SYSTEM_PROMPT, prompt.trim())
+      const raw = await api.aiGenerate(config, schemaSystemPrompt(), prompt.trim())
       let schema: unknown
       try {
         schema = JSON.parse(stripCodeFence(raw))
       } catch {
-        throw new Error('AI geçerli bir JSON döndürmedi, tekrar dene.')
+        throw new Error(t('The AI did not return valid JSON — try again.'))
       }
       await api.importProject(schema)
       onApplied()
@@ -138,22 +145,23 @@ function AiScaffoldPanel({ onApplied, disabled }: { onApplied: () => void; disab
     <div className="mb-8 rounded-2xl border border-primary/30 bg-accent/40 p-6 sm:p-8">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-sm font-medium text-primary">
-          <Sparkles className="size-4" /> AI ile oluştur
+          <Sparkles className="size-4" /> {t('Generate with AI')}
         </div>
         <button
           type="button"
           onClick={openSettings}
           className="text-xs text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
         >
-          {config ? 'AI ayarları' : 'Sağlayıcı bağla'}
+          {config ? t('AI settings') : t('Connect a provider')}
         </button>
       </div>
       <h2 className="mt-2 font-heading text-lg font-semibold text-foreground sm:text-xl">
-        Ne yöneteceğini anlat, şemayı senin için tasarlasın
+        {t('Describe what you want to manage and let it design the schema')}
       </h2>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        Kendi API key'inle çalışır — tamamen opsiyonel, hiçbir şey bize gitmez. Sadece koleksiyon ve
-        alanları üretir; içeriği sen girersin.
+        {t(
+          'Runs on your own API key — entirely optional, nothing reaches us. It only creates collections and fields; the content is yours to write.',
+        )}
       </p>
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start">
@@ -165,7 +173,9 @@ function AiScaffoldPanel({ onApplied, disabled }: { onApplied: () => void; disab
           }}
           disabled={busy || disabled}
           rows={2}
-          placeholder='Örn. "Tarif paylaştığım bir blog; kategori, zorluk seviyesi ve pişirme süresi olsun"'
+          placeholder={t(
+            'e.g. "a blog where I share recipes, with category, difficulty and cooking time"',
+          )}
           className="min-h-0 flex-1 resize-none bg-card"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void generate()
@@ -178,11 +188,11 @@ function AiScaffoldPanel({ onApplied, disabled }: { onApplied: () => void; disab
         >
           {busy ? (
             <>
-              <Loader2 className="animate-spin" /> Oluşturuluyor…
+              <Loader2 className="animate-spin" /> {t('Generating…')}
             </>
           ) : (
             <>
-              <Sparkles /> Şema oluştur
+              <Sparkles /> {t('Generate schema')}
             </>
           )}
         </Button>
@@ -190,7 +200,7 @@ function AiScaffoldPanel({ onApplied, disabled }: { onApplied: () => void; disab
 
       {!config && (
         <p className="mt-3 text-xs text-muted-foreground">
-          Henüz bir AI sağlayıcı bağlamadın — butona basınca ayarlar açılacak.
+          {t('No AI provider connected yet — the settings open when you press the button.')}
         </p>
       )}
 
@@ -218,7 +228,7 @@ function ImportCard({ onApplied, disabled }: { onApplied: () => void; disabled: 
     try {
       setRaw(await file.text())
     } catch {
-      setError('Dosya okunamadı.')
+      setError(t('Could not read the file.'))
     }
   }
 
@@ -227,7 +237,7 @@ function ImportCard({ onApplied, disabled }: { onApplied: () => void; disabled: 
     try {
       parsed = JSON.parse(raw)
     } catch {
-      setError('Geçersiz JSON')
+      setError(t('Invalid JSON'))
       return
     }
     const schema =
@@ -266,25 +276,27 @@ function ImportCard({ onApplied, disabled }: { onApplied: () => void; disabled: 
             <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
               <FileJson className="size-5" />
             </span>
-            <CardTitle className="text-base">İçe aktar — kendi JSON'un</CardTitle>
+            <CardTitle className="text-base">{t('Import — your own JSON')}</CardTitle>
           </div>
           <CardDescription className="mt-2 leading-relaxed">
-            Elindeki JSON'u getir; JustJSON yapıyı çıkarıp projeni kurar.
+            {t(
+              'Bring the JSON you already have; JustJSON infers the structure and sets your project up.',
+            )}
           </CardDescription>
         </CardHeader>
 
         <CardContent className="flex-1">
           <div className="flex h-full items-center rounded-md border border-dashed border-border/70 px-3 py-4 text-sm text-muted-foreground">
-            İçerik JSON'un ya da hazır bir{' '}
-            <code className="mx-1 font-mono text-xs text-foreground">_schema.json</code> — yapı
-            otomatik çıkarılır.
+            {t('Your content JSON, or an existing')}
+            <code className="mx-1 font-mono text-xs text-foreground">_schema.json</code>
+            {t('— the structure is inferred automatically.')}
           </div>
         </CardContent>
 
         <CardFooter>
           <DialogTrigger asChild>
             <Button variant="outline" className="h-9 w-full" disabled={disabled}>
-              Kendi JSON'unu içe aktar
+              {t('Import your own JSON')}
             </Button>
           </DialogTrigger>
         </CardFooter>
@@ -292,11 +304,11 @@ function ImportCard({ onApplied, disabled }: { onApplied: () => void; disabled: 
 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Kendi JSON'unu içe aktar</DialogTitle>
+          <DialogTitle>{t('Import your own JSON')}</DialogTitle>
           <DialogDescription>
-            İçerik JSON'unu (ör. bir JustFields dışa aktarımı) ya da hazır bir{' '}
-            <code className="font-mono text-xs">_schema.json</code>'u yapıştır/seç — JustJSON
-            koleksiyon ve tekil yapısını otomatik çıkarır.
+            {t('Paste or pick your content JSON, or an existing')}{' '}
+            <code className="font-mono text-xs">_schema.json</code>{' '}
+            {t('— JustJSON works out the collections and singletons for you.')}
           </DialogDescription>
         </DialogHeader>
 
@@ -311,7 +323,7 @@ function ImportCard({ onApplied, disabled }: { onApplied: () => void; disabled: 
               )}
             >
               <Upload />
-              Dosya seç
+              {t('Choose a file')}
               <input
                 type="file"
                 accept=".json,application/json"
@@ -346,17 +358,17 @@ function ImportCard({ onApplied, disabled }: { onApplied: () => void; disabled: 
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost" disabled={importing}>
-              Vazgeç
+              {t('Cancel')}
             </Button>
           </DialogClose>
           <Button disabled={importing || !raw.trim()} onClick={runImport}>
             {importing ? (
               <>
                 <Loader2 className="animate-spin" />
-                İçe aktarılıyor…
+                {t('Importing…')}
               </>
             ) : (
-              'İçe aktar'
+              t('Import')
             )}
           </Button>
         </DialogFooter>
@@ -380,7 +392,7 @@ export function TemplateGallery({
     api
       .listTemplates()
       .then(setTemplates)
-      .catch(() => setError('Şablon listesi yüklenemedi.'))
+      .catch(() => setError(t('Could not load the template list.')))
   }, [])
 
   const apply = async (id: string) => {
@@ -408,15 +420,17 @@ export function TemplateGallery({
             JustJSON
           </div>
           <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            Bir şablon seç
+            {t('Pick a template')}
           </h1>
           <p className="mt-2 text-base leading-relaxed text-muted-foreground">
-            İçeriğini görsel olarak düzenle; her şey klasöründe düz JSON olarak kalır — sunucu yok,
-            hesap yok.
+            {t(
+              'Edit your content visually; everything stays in your folder as plain JSON — no server, no account.',
+            )}
           </p>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Seçtiğin şablon, içerik dosyalarını ve şemanı senin için oluşturur — hepsini sonra
-            değiştirebilirsin.
+            {t(
+              'The template you pick creates your schema and content files — you can change all of it later.',
+            )}
           </p>
         </header>
 
@@ -431,19 +445,19 @@ export function TemplateGallery({
 
         <div className="mb-5 flex items-center gap-3 text-xs font-medium text-muted-foreground">
           <span className="h-px flex-1 bg-border" />
-          ya da bir şablonla başla
+          {t('or start from a template')}
           <span className="h-px flex-1 bg-border" />
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {templates === null && !error && [0, 1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
 
-          {templates?.map((t) => {
-            const Icon = ICONS[t.id] ?? FileStack
-            const active = applying === t.id
+          {templates?.map((tpl) => {
+            const Icon = ICONS[tpl.id] ?? FileStack
+            const active = applying === tpl.id
             return (
               <Card
-                key={t.id}
+                key={tpl.id}
                 className="h-full transition-shadow hover:shadow-md data-[busy=true]:opacity-60"
                 data-busy={busy && !active}
               >
@@ -452,22 +466,24 @@ export function TemplateGallery({
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
                       <Icon className="size-5" />
                     </span>
-                    <CardTitle className="text-base">{t.title}</CardTitle>
+                    <CardTitle className="text-base">{tpl.title}</CardTitle>
                   </div>
                   <CardDescription className="mt-2 leading-relaxed">
-                    {t.description}
+                    {tpl.description}
                   </CardDescription>
                 </CardHeader>
 
                 <CardContent className="flex-1">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-xs font-medium text-muted-foreground">
-                      Oluşturulacak yapı
+                      {t('What it creates')}
                     </span>
-                    <span className="text-xs text-muted-foreground/80">{structureSummary(t)}</span>
+                    <span className="text-xs text-muted-foreground/80">
+                      {structureSummary(tpl)}
+                    </span>
                   </div>
                   <div className="space-y-1.5">
-                    {t.collections.map((c) => (
+                    {tpl.collections.map((c) => (
                       <div
                         key={c.label}
                         className="flex items-center gap-2 rounded-md bg-muted/60 px-2.5 py-1.5"
@@ -477,11 +493,11 @@ export function TemplateGallery({
                           {c.label}
                         </span>
                         <Badge variant="secondary" className="ml-auto shrink-0 font-normal">
-                          {c.fields} alan
+                          {tp(c.fields, '{n} field', '{n} fields')}
                         </Badge>
                       </div>
                     ))}
-                    {t.singletons.map((s) => (
+                    {tpl.singletons.map((s) => (
                       <div
                         key={s.label}
                         className="flex items-center gap-2 rounded-md bg-muted/60 px-2.5 py-1.5"
@@ -491,7 +507,7 @@ export function TemplateGallery({
                           {s.label}
                         </span>
                         <Badge variant="outline" className="ml-auto shrink-0 font-normal">
-                          tekil
+                          {t('singleton')}
                         </Badge>
                       </div>
                     ))}
@@ -499,14 +515,14 @@ export function TemplateGallery({
                 </CardContent>
 
                 <CardFooter>
-                  <Button className="h-9 w-full" disabled={busy} onClick={() => apply(t.id)}>
+                  <Button className="h-9 w-full" disabled={busy} onClick={() => apply(tpl.id)}>
                     {active ? (
                       <>
                         <Loader2 className="animate-spin" />
-                        Uygulanıyor…
+                        {t('Applying…')}
                       </>
                     ) : (
-                      'Bu şablonu kullan'
+                      t('Use this template')
                     )}
                   </Button>
                 </CardFooter>
@@ -523,22 +539,22 @@ export function TemplateGallery({
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                   <PenLine className="size-5" />
                 </span>
-                <CardTitle className="text-base">Sıfırdan başla</CardTitle>
+                <CardTitle className="text-base">{t('Start from scratch')}</CardTitle>
               </div>
               <CardDescription className="mt-2 leading-relaxed">
-                Boş bir şemayla başla, koleksiyonlarını ve alanlarını kendin tanımla.
+                {t('Begin with an empty schema and define your own collections and fields.')}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="flex-1">
               <div className="flex h-full items-center rounded-md border border-dashed border-border/70 px-3 py-4 text-sm text-muted-foreground">
-                Henüz içerik yok — yapıyı baştan sen kurarsın.
+                {t('Nothing here yet — you build the structure from the ground up.')}
               </div>
             </CardContent>
 
             <CardFooter>
               <Button variant="outline" className="h-9 w-full" disabled={busy} onClick={onScratch}>
-                Boş projeyle devam et
+                {t('Continue with an empty project')}
               </Button>
             </CardFooter>
           </Card>

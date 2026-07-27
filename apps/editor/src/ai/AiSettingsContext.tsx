@@ -23,6 +23,7 @@ import { createContext, useContext, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import * as api from '../api'
 import type { AiModel } from '../api'
+import { t } from '../i18n'
 import {
   AI_PROVIDERS,
   AI_PROVIDER_MAP,
@@ -42,7 +43,7 @@ const AiSettingsCtx = createContext<AiSettingsValue | null>(null)
 
 export function useAiSettings(): AiSettingsValue {
   const ctx = useContext(AiSettingsCtx)
-  if (!ctx) throw new Error('useAiSettings, AiSettingsProvider içinde kullanılmalı')
+  if (!ctx) throw new Error('useAiSettings must be used inside AiSettingsProvider')
   return ctx
 }
 
@@ -81,11 +82,11 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
   const loadModels = async () => {
     const m = AI_PROVIDER_MAP[provider]
     if (!m.needsBaseUrl && !apiKey.trim()) {
-      toast.error('Önce API key gir')
+      toast.error(t('Enter an API key first'))
       return
     }
     if (m.needsBaseUrl && !baseUrl.trim()) {
-      toast.error('Önce taban URL gir')
+      toast.error(t('Enter a base URL first'))
       return
     }
     setLoadingModels(true)
@@ -97,7 +98,7 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
       })
       if (list.length === 0) {
         setManualModel(true)
-        toast.error('Model bulunamadı — elle girebilirsin')
+        toast.error(t('No models found — you can type one in'))
         return
       }
       setModels(list)
@@ -113,15 +114,15 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
 
   const save = () => {
     if (!model.trim()) {
-      toast.error('Model adı gerekli')
+      toast.error(t('A model name is required'))
       return
     }
     if (meta.needsBaseUrl && !baseUrl.trim()) {
-      toast.error('Taban URL gerekli')
+      toast.error(t('A base URL is required'))
       return
     }
     if (!meta.needsBaseUrl && !apiKey.trim()) {
-      toast.error('API key gerekli')
+      toast.error(t('An API key is required'))
       return
     }
     const next: AiConfig = {
@@ -133,7 +134,7 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
     saveAiConfig(next)
     setConfig(next)
     setOpen(false)
-    toast.success('AI ayarları kaydedildi')
+    toast.success(t('AI settings saved'))
   }
 
   const disconnect = () => {
@@ -141,7 +142,7 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
     setConfig(null)
     setApiKey('')
     setModel('')
-    toast.success('AI bağlantısı kaldırıldı')
+    toast.success(t('AI disconnected'))
   }
 
   return (
@@ -151,17 +152,18 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <KeyRound className="h-4 w-4 text-primary" /> AI ayarları
+              <KeyRound className="h-4 w-4 text-primary" /> {t('AI settings')}
             </DialogTitle>
             <DialogDescription>
-              Tamamen opsiyonel. Girdiğin key yalnızca bu tarayıcıda saklanır ve doğrudan
-              sağlayıcıya gider — bize hiçbir şey ulaşmaz.
+              {t(
+                'Entirely optional. Your key is stored in this browser only and goes straight to the provider — nothing reaches us.',
+              )}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Sağlayıcı</Label>
+              <Label>{t('Provider')}</Label>
               <Select value={provider} onValueChange={(v) => changeProvider(v as AiProvider)}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -169,17 +171,17 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
                 <SelectContent>
                   {AI_PROVIDERS.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.label}
+                      {t(p.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">{meta.hint}</p>
+              <p className="text-xs text-muted-foreground">{t(meta.hint)}</p>
             </div>
 
             {meta.needsBaseUrl && (
               <div className="space-y-2">
-                <Label>Taban URL</Label>
+                <Label>{t('Base URL')}</Label>
                 <Input
                   value={baseUrl}
                   onChange={(e) => setBaseUrl(e.target.value)}
@@ -193,7 +195,7 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
               <Label>
                 API key
                 {meta.needsBaseUrl && (
-                  <span className="ml-1 font-normal text-muted-foreground">(opsiyonel)</span>
+                  <span className="ml-1 font-normal text-muted-foreground">({t('optional')})</span>
                 )}
               </Label>
               <Input
@@ -210,7 +212,7 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
                   rel="noreferrer"
                   className="inline-block text-xs text-primary hover:underline"
                 >
-                  Ücretsiz key al →
+                  {t('Get a free key')} →
                 </a>
               )}
             </div>
@@ -234,17 +236,17 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
                 >
                   {loadingModels ? (
                     <>
-                      <Loader2 className="animate-spin" /> Modeller yükleniyor…
+                      <Loader2 className="animate-spin" /> {t('Loading models…')}
                     </>
                   ) : (
-                    'Modelleri yükle'
+                    t('Load models')
                   )}
                 </Button>
               ) : (
                 <div className="flex items-center gap-2">
                   <Select value={model} onValueChange={setModel}>
                     <SelectTrigger className="w-full font-mono">
-                      <SelectValue placeholder="Model seç…" />
+                      <SelectValue placeholder={t('Pick a model…')} />
                     </SelectTrigger>
                     <SelectContent>
                       {models.map((m) => (
@@ -260,11 +262,11 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
                     size="icon-sm"
                     onClick={loadModels}
                     disabled={loadingModels}
-                    title="Modelleri yenile"
+                    title={t('Refresh models')}
                     className="text-muted-foreground"
                   >
                     {loadingModels ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-                    <span className="sr-only">Modelleri yenile</span>
+                    <span className="sr-only">{t('Refresh models')}</span>
                   </Button>
                 </div>
               )}
@@ -274,7 +276,7 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
                   onClick={() => setManualModel(true)}
                   className="text-xs text-muted-foreground hover:text-primary"
                 >
-                  Modeli elle gir
+                  {t('Type the model manually')}
                 </button>
               )}
             </div>
@@ -283,16 +285,16 @@ export function AiSettingsProvider({ children }: { children: ReactNode }) {
           <DialogFooter className="sm:justify-between">
             {config ? (
               <Button variant="ghost" onClick={disconnect} className="text-muted-foreground">
-                Bağlantıyı kaldır
+                {t('Disconnect')}
               </Button>
             ) : (
               <span />
             )}
             <div className="flex gap-2">
               <DialogClose asChild>
-                <Button variant="outline">Vazgeç</Button>
+                <Button variant="outline">{t('Cancel')}</Button>
               </DialogClose>
-              <Button onClick={save}>Kaydet</Button>
+              <Button onClick={save}>{t('Save')}</Button>
             </div>
           </DialogFooter>
         </DialogContent>

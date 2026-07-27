@@ -4,7 +4,7 @@ export type { EntryRow }
 export type Entry = Record<string, unknown>
 
 async function ok(res: Response): Promise<Response> {
-  if (!res.ok) throw new Error(`İstek başarısız: ${res.status}`)
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`)
   return res
 }
 
@@ -48,12 +48,12 @@ export async function applyTemplate(template: string): Promise<void> {
   })
   if (!res.ok) {
     const err = (await res.json().catch(() => ({}))) as { error?: string }
-    throw new Error(err.error ?? `Template uygulanamadı: ${res.status}`)
+    throw new Error(err.error ?? `Could not apply the template: ${res.status}`)
   }
 }
 
-// raw: bir JustJSON şeması VEYA ham içerik JSON'u — sunucu ayırt edip
-// içerikten şema çıkarır.
+// raw: either a JustJSON schema or plain content JSON — the server tells
+// them apart and infers a schema from content.
 export async function importProject(raw: unknown): Promise<void> {
   const res = await fetch('/api/_import', {
     method: 'POST',
@@ -62,7 +62,7 @@ export async function importProject(raw: unknown): Promise<void> {
   })
   if (!res.ok) {
     const err = (await res.json().catch(() => ({}))) as { error?: string }
-    throw new Error(err.error ?? `İçe aktarılamadı: ${res.status}`)
+    throw new Error(err.error ?? `Import failed: ${res.status}`)
   }
 }
 
@@ -85,7 +85,7 @@ export async function putSchema(schema: Schema): Promise<void> {
   })
   if (!res.ok) {
     const err = (await res.json().catch(() => ({}))) as { error?: string }
-    throw new Error(err.error ?? `Şema kaydedilemedi: ${res.status}`)
+    throw new Error(err.error ?? `Could not save the schema: ${res.status}`)
   }
 }
 
@@ -164,7 +164,7 @@ export async function aiGenerate(
     body: JSON.stringify({ ...config, system, prompt }),
   })
   const data = (await res.json()) as { text?: string; error?: string }
-  if (!res.ok || !data.text) throw new Error(data.error || `AI isteği başarısız (${res.status})`)
+  if (!res.ok || !data.text) throw new Error(data.error || `The AI request failed (${res.status})`)
   return data.text
 }
 
@@ -184,6 +184,7 @@ export async function aiListModels(config: {
     body: JSON.stringify(config),
   })
   const data = (await res.json()) as { models?: AiModel[]; error?: string }
-  if (!res.ok || !data.models) throw new Error(data.error || `Modeller alınamadı (${res.status})`)
+  if (!res.ok || !data.models)
+    throw new Error(data.error || `Could not fetch models (${res.status})`)
   return data.models
 }

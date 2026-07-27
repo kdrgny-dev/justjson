@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getLang, setLang, subscribeLang, t } from './i18n'
+import { getLang, setLang, subscribeLang, t, tp } from './i18n'
 
 afterEach(() => {
   setLang('en')
@@ -23,9 +23,18 @@ describe('i18n', () => {
   })
 
   it('{değişken} yer tutucularını doldurur', () => {
-    expect(t('{count} entries', { count: 3 })).toBe('3 entries')
+    expect(t('{n} entries', { n: 3 })).toBe('3 entries')
     setLang('tr')
-    expect(t('{count} entries', { count: 3 })).toBe('3 kayıt')
+    expect(t('{n} entries', { n: 3 })).toBe('3 kayıt')
+  })
+
+  it('tp tekil/çoğul anahtarı sayıya göre seçer', () => {
+    expect(tp(1, '{n} entry', '{n} entries')).toBe('1 entry')
+    expect(tp(3, '{n} entry', '{n} entries')).toBe('3 entries')
+    expect(tp(0, '{n} entry', '{n} entries')).toBe('0 entries')
+    setLang('tr')
+    expect(tp(1, '{n} entry', '{n} entries')).toBe('1 kayıt')
+    expect(tp(3, '{n} entry', '{n} entries')).toBe('3 kayıt')
   })
 
   it('bilinmeyen yer tutucuyu olduğu gibi bırakır', () => {

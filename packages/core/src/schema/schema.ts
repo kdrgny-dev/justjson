@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { SchemaError } from '../errors'
 import type { Field, Schema } from './types'
 
 const fieldTypes = [
@@ -97,7 +98,13 @@ const zSchema = z
   })
 
 export function parseSchema(input: unknown): Schema {
-  return zSchema.parse(input) as Schema
+  const result = zSchema.safeParse(input)
+  if (result.success) return result.data as Schema
+  // Zod'un ham JSON'u kullanıcıya gösterilemez; konumlu satırlara çeviriyoruz.
+  const lines = result.error.issues.map((i) =>
+    i.path.length ? `${i.path.join('.')}: ${i.message}` : i.message,
+  )
+  throw new SchemaError(lines.join('\n'))
 }
 
 export function serializeSchema(schema: Schema): string {

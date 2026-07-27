@@ -16,7 +16,7 @@ describe('slugify', () => {
     expect(slugify('  --a---b--  ')).toBe('a-b')
   })
   it('boş girdi için varsayılan verir', () => {
-    expect(slugify('!!!')).toBe('icerik')
-    expect(slugify('')).toBe('icerik')
+    expect(slugify('!!!')).toBe('content')
+    expect(slugify('')).toBe('content')
   })
 })

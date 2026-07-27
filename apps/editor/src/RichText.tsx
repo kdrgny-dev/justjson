@@ -14,6 +14,7 @@ import {
   Undo2,
 } from 'lucide-react'
 import { Markdown } from 'tiptap-markdown'
+import { t } from './i18n'
 
 export function RichText({ value, onChange }: { value: string; onChange: (md: string) => void }) {
   const editor = useEditor({
@@ -35,10 +36,10 @@ export function RichText({ value, onChange }: { value: string; onChange: (md: st
   return (
     <div className="overflow-hidden rounded-lg border border-input bg-card shadow-sm focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20">
       <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/50 px-2 py-1.5">
-        <Btn editor={editor} on="bold" cmd={(e) => e.toggleBold()} title="Kalın">
+        <Btn editor={editor} on="bold" cmd={(e) => e.toggleBold()} title={t('Bold')}>
           <Bold className="h-4 w-4" />
         </Btn>
-        <Btn editor={editor} on="italic" cmd={(e) => e.toggleItalic()} title="İtalik">
+        <Btn editor={editor} on="italic" cmd={(e) => e.toggleItalic()} title={t('Italic')}>
           <Italic className="h-4 w-4" />
         </Btn>
         <Sep />
@@ -47,7 +48,7 @@ export function RichText({ value, onChange }: { value: string; onChange: (md: st
           on="heading"
           attrs={{ level: 2 }}
           cmd={(e) => e.toggleHeading({ level: 2 })}
-          title="Başlık 2"
+          title={t('Heading 2')}
         >
           <Heading2 className="h-4 w-4" />
         </Btn>
@@ -56,7 +57,7 @@ export function RichText({ value, onChange }: { value: string; onChange: (md: st
           on="heading"
           attrs={{ level: 3 }}
           cmd={(e) => e.toggleHeading({ level: 3 })}
-          title="Başlık 3"
+          title={t('Heading 3')}
         >
           <Heading3 className="h-4 w-4" />
         </Btn>
@@ -65,7 +66,7 @@ export function RichText({ value, onChange }: { value: string; onChange: (md: st
           editor={editor}
           on="bulletList"
           cmd={(e) => e.toggleBulletList()}
-          title="Madde listesi"
+          title={t('Bullet list')}
         >
           <List className="h-4 w-4" />
         </Btn>
@@ -73,21 +74,21 @@ export function RichText({ value, onChange }: { value: string; onChange: (md: st
           editor={editor}
           on="orderedList"
           cmd={(e) => e.toggleOrderedList()}
-          title="Sıralı liste"
+          title={t('Ordered list')}
         >
           <ListOrdered className="h-4 w-4" />
         </Btn>
-        <Btn editor={editor} on="blockquote" cmd={(e) => e.toggleBlockquote()} title="Alıntı">
+        <Btn editor={editor} on="blockquote" cmd={(e) => e.toggleBlockquote()} title={t('Quote')}>
           <Quote className="h-4 w-4" />
         </Btn>
-        <Btn editor={editor} on="codeBlock" cmd={(e) => e.toggleCodeBlock()} title="Kod">
+        <Btn editor={editor} on="codeBlock" cmd={(e) => e.toggleCodeBlock()} title={t('Code')}>
           <Code className="h-4 w-4" />
         </Btn>
         <Sep />
-        <Btn editor={editor} cmd={(e) => e.undo()} title="Geri al">
+        <Btn editor={editor} cmd={(e) => e.undo()} title={t('Undo')}>
           <Undo2 className="h-4 w-4" />
         </Btn>
-        <Btn editor={editor} cmd={(e) => e.redo()} title="Yinele">
+        <Btn editor={editor} cmd={(e) => e.redo()} title={t('Redo')}>
           <Redo2 className="h-4 w-4" />
         </Btn>
       </div>

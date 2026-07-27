@@ -13,6 +13,7 @@ export {
   NotFoundError,
   UnsafeSlugError,
   PathEscapeError,
+  SchemaError,
 } from './errors'
 
 export type { StorageAdapter } from './storage/adapter'
