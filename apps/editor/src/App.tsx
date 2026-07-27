@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { slugify, validateEntry } from '@justjson/core'
+import { STATUS_KEY, entryStatus, slugify, validateEntry } from '@justjson/core'
 import type { Collection, Field, Schema, Singleton } from '@justjson/core'
 import {
   AlertTriangle,
@@ -1049,6 +1049,33 @@ function useEntryData(load: () => Promise<api.Entry | null>, expected: boolean) 
   return { data, setData, loading, failed, retry }
 }
 
+function StatusToggle({
+  status,
+  onToggle,
+}: {
+  status: 'draft' | 'published'
+  onToggle: () => void
+}) {
+  const isDraft = status === 'draft'
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={onToggle}
+      title={isDraft ? 'Taslak — yayına al' : 'Yayında — taslağa çevir'}
+      className={cn(isDraft && 'border-dashed text-muted-foreground')}
+    >
+      <span
+        className={cn(
+          'inline-block size-2 rounded-full',
+          isDraft ? 'bg-muted-foreground/50' : 'bg-primary',
+        )}
+      />
+      {isDraft ? 'Taslak' : 'Yayında'}
+    </Button>
+  )
+}
+
 function EntryEditor({
   collection,
   slug,
@@ -1148,6 +1175,10 @@ function EntryEditor({
         subtitle={<PathChip>{`${collection.name}/${effectiveSlug}.json`}</PathChip>}
         actions={
           <>
+            <StatusToggle
+              status={entryStatus(data)}
+              onToggle={() => setField(STATUS_KEY, entryStatus(data) === 'draft' ? '' : 'draft')}
+            />
             <Button
               variant={showJson ? 'secondary' : 'outline'}
               onClick={() => setShowJson((v) => !v)}
@@ -1511,9 +1542,171 @@ function FieldInput({
       return <RelationInput field={field} value={value} onChange={onChange} />
     case 'image':
       return <ImageInput value={value} onChange={(v) => onChange(k, v)} />
+    case 'url':
+      return (
+        <Input
+          type="url"
+          inputMode="url"
+          placeholder="https://…"
+          value={(value as string) ?? ''}
+          onChange={(e) => onChange(k, e.target.value)}
+        />
+      )
+    case 'email':
+      return (
+        <Input
+          type="email"
+          inputMode="email"
+          placeholder="ad@ornek.com"
+          value={(value as string) ?? ''}
+          onChange={(e) => onChange(k, e.target.value)}
+        />
+      )
+    case 'color':
+      return <ColorInput value={value} onChange={(v) => onChange(k, v)} />
+    case 'list':
+      return <ListInput value={value} onChange={(v) => onChange(k, v)} />
+    case 'group':
+      return <GroupInput field={field} value={value} onChange={(v) => onChange(k, v)} />
     default:
       return <Input value={(value as string) ?? ''} onChange={(e) => onChange(k, e.target.value)} />
   }
+}
+
+function ColorInput({
+  value,
+  onChange,
+}: {
+  value: unknown
+  onChange: (value: unknown) => void
+}) {
+  const hex = typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value : ''
+  return (
+    <div className="flex items-center gap-2">
+      <label className="relative size-9 shrink-0 cursor-pointer overflow-hidden rounded-lg border shadow-sm">
+        <span className="block size-full" style={{ backgroundColor: hex || '#ffffff' }} />
+        <input
+          type="color"
+          value={hex || '#000000'}
+          onChange={(e) => onChange(e.target.value)}
+          className="absolute inset-0 cursor-pointer opacity-0"
+          aria-label="Renk seç"
+        />
+      </label>
+      <Input
+        className="w-[140px] font-mono"
+        placeholder="#000000"
+        value={(value as string) ?? ''}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      {value ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => onChange('')}
+          className="text-muted-foreground"
+        >
+          <X />
+          <span className="sr-only">Temizle</span>
+        </Button>
+      ) : null}
+    </div>
+  )
+}
+
+function ListInput({
+  value,
+  onChange,
+}: {
+  value: unknown
+  onChange: (value: unknown) => void
+}) {
+  const items = Array.isArray(value) ? (value as string[]) : []
+  const [draft, setDraft] = useState('')
+
+  const commit = () => {
+    const v = draft.trim()
+    if (!v || items.includes(v)) {
+      setDraft('')
+      return
+    }
+    onChange([...items, v])
+    setDraft('')
+  }
+  const removeAt = (i: number) => {
+    const next = items.filter((_, idx) => idx !== i)
+    onChange(next.length ? next : '')
+  }
+
+  return (
+    <div className="space-y-2.5">
+      {items.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {items.map((item, i) => (
+            <Badge key={item} variant="secondary" className="gap-1 pr-1">
+              {item}
+              <button
+                type="button"
+                onClick={() => removeAt(i)}
+                className="rounded-full text-muted-foreground transition-colors hover:text-destructive"
+                aria-label={`${item} kaldır`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+      <Input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault()
+            commit()
+          }
+        }}
+        onBlur={commit}
+        placeholder="Yaz ve Enter'a bas…"
+      />
+    </div>
+  )
+}
+
+function GroupInput({
+  field,
+  value,
+  onChange,
+}: {
+  field: Field
+  value: unknown
+  onChange: (value: unknown) => void
+}) {
+  const obj =
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {}
+  const setSub = (key: string, subValue: unknown) => {
+    const next = { ...obj }
+    if (subValue === '' || subValue === undefined) delete next[key]
+    else next[key] = subValue
+    onChange(Object.keys(next).length ? next : '')
+  }
+  return (
+    <div className="space-y-5 rounded-lg border border-dashed bg-muted/20 p-4">
+      {(field.fields ?? []).map((sub) => (
+        <FieldShell
+          key={sub.key}
+          label={sub.label || sub.key}
+          required={sub.required}
+          type={sub.type}
+        >
+          <FieldInput field={sub} value={obj[sub.key]} onChange={setSub} />
+        </FieldShell>
+      ))}
+    </div>
+  )
 }
 
 function RelationInput({

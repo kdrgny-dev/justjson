@@ -187,6 +187,9 @@ export function SchemaBuilder({
         f.type = type
         if (type !== 'select') f.options = undefined
         if (type !== 'relation') f.to = undefined
+        if (type !== 'group') f.fields = undefined
+        else if (!f.fields || f.fields.length === 0)
+          f.fields = [{ key: 'alan', label: '', type: 'text' }]
       }
     })
     setPicker(null)
@@ -821,6 +824,103 @@ function FieldRow({
           </Select>
         </div>
       )}
+      {field.type === 'group' && (
+        <div className="col-start-3 col-end-[-1] row-start-2 mt-1">
+          <GroupFieldsEditor field={field} onChange={onChange} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+// group alanları tek seviye iç içe; sadeleştirmek için alt-alanlar 'group' olamaz.
+const SUB_FIELD_TYPES = FIELD_TYPES.filter((t) => t.type !== 'group')
+
+function GroupFieldsEditor({
+  field,
+  onChange,
+}: {
+  field: Field
+  onChange: (fn: (f: Field) => void) => void
+}) {
+  const subs = field.fields ?? []
+  return (
+    <div className="space-y-1.5 rounded-lg border border-dashed bg-muted/20 p-2.5">
+      {subs.map((sub, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: alt alanlar konuma göre kimliklenir; key düzenlenirken remount/focus kaybını önler
+        <div key={i} className="flex items-center gap-1.5">
+          <Select
+            value={sub.type}
+            onValueChange={(v) =>
+              onChange((f) => {
+                const s = f.fields?.[i]
+                if (s) s.type = v as FieldType
+              })
+            }
+          >
+            <SelectTrigger className="h-8 w-[7.5rem] shrink-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SUB_FIELD_TYPES.map(({ type, label }) => (
+                <SelectItem key={type} value={type}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            className="h-8 flex-1 font-mono text-xs"
+            value={sub.key}
+            placeholder="anahtar"
+            onChange={(e) =>
+              onChange((f) => {
+                const s = f.fields?.[i]
+                if (s) s.key = slugify(e.target.value)
+              })
+            }
+          />
+          <Input
+            className="h-8 flex-1"
+            value={sub.label ?? ''}
+            placeholder="Görünen ad"
+            onChange={(e) =>
+              onChange((f) => {
+                const s = f.fields?.[i]
+                if (s) s.label = e.target.value
+              })
+            }
+          />
+          <IconButton
+            label="Alt alanı sil"
+            danger
+            onClick={() =>
+              onChange((f) => {
+                if (f.fields) f.fields = f.fields.filter((_, idx) => idx !== i)
+              })
+            }
+          >
+            <X />
+          </IconButton>
+        </div>
+      ))}
+      <Button
+        type="button"
+        size="xs"
+        variant="ghost"
+        className="text-muted-foreground"
+        onClick={() =>
+          onChange((f) => {
+            const existing = (f.fields ?? []).map((s) => s.key)
+            f.fields = [
+              ...(f.fields ?? []),
+              { key: uniqueName('alan', existing), label: '', type: 'text' },
+            ]
+          })
+        }
+      >
+        <Plus /> Alt alan ekle
+      </Button>
     </div>
   )
 }
