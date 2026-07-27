@@ -128,6 +128,35 @@ body {
   pointer-events: none;
 }
 
+/* json preview */
+.jk-pre {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  background: #1c1710;
+  color: #ede4cc;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  line-height: 1.75;
+}
+.dark .jk-pre {
+  background: #120d08;
+}
+.jk-key {
+  color: #e8ae3e;
+}
+.jk-str {
+  color: #a9c08c;
+}
+.jk-num {
+  color: #e0956b;
+}
+.jk-bool {
+  color: #c58fd6;
+}
+.jk-null {
+  color: #8a7c5e;
+}
+
 @theme inline {
   --font-heading: var(--font-mono);
   --font-sans: "Public Sans Variable", sans-serif;

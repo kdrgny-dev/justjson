@@ -43,8 +43,10 @@ import type { Collection, Field, Schema, Singleton } from '@justjson/core'
 import {
   AlertTriangle,
   Boxes,
+  Braces,
   ChevronRight,
   ChevronsUpDown,
+  Copy,
   Download,
   FileCog,
   FolderGit2,
@@ -82,6 +84,7 @@ import { FIELD_META } from './field-types'
 
 type Selection =
   | { kind: 'schema' }
+  | { kind: 'json' }
   | { kind: 'collection'; name: string }
   | { kind: 'entry'; collection: string; slug: string }
   | { kind: 'newEntry'; collection: string }
@@ -217,6 +220,7 @@ function crumbsFor(
 ): Crumb[] {
   if (!selection) return []
   if (selection.kind === 'schema') return [{ label: 'Şema' }]
+  if (selection.kind === 'json') return [{ label: 'Ham JSON' }]
   if (selection.kind === 'collection') {
     const col = schema.collections.find((c) => c.name === selection.name)
     return [{ label: col?.label ?? selection.name }]
@@ -318,6 +322,13 @@ function Sidebar({
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 pt-3 pb-4">
         <SchemaNavItem active={selection?.kind === 'schema'} onClick={() => onOpenSchema()} />
+        <NavItem
+          icon={<Braces className="h-4 w-4" />}
+          active={selection?.kind === 'json'}
+          onClick={() => onSelect({ kind: 'json' })}
+        >
+          Ham JSON
+        </NavItem>
 
         <NavSection label="Koleksiyonlar" onAdd={() => onOpenSchema('collection')}>
           {schema.collections.length === 0 ? (
@@ -587,6 +598,10 @@ function MainArea({
     )
   }
 
+  if (selection.kind === 'json') {
+    return <ProjectJsonView schema={schema} />
+  }
+
   if (selection.kind === 'collection') {
     const col = schema.collections.find((c) => c.name === selection.name)
     if (!col) return <Centered>Bu koleksiyon bulunamadı.</Centered>
@@ -648,11 +663,157 @@ function FormCard({ children }: { children: React.ReactNode }) {
   return <div className="rounded-xl border bg-card p-6 shadow-sm">{children}</div>
 }
 
+function highlightJson(json: string): string {
+  const esc = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return esc.replace(
+    /("(?:\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(?:\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
+    (m) => {
+      let cls = 'jk-num'
+      if (/^"/.test(m)) cls = /:\s*$/.test(m) ? 'jk-key' : 'jk-str'
+      else if (m === 'true' || m === 'false') cls = 'jk-bool'
+      else if (m === 'null') cls = 'jk-null'
+      return `<span class="${cls}">${m}</span>`
+    },
+  )
+}
+
+function JsonPreview({ path, data }: { path: string; data: Record<string, unknown> }) {
+  const json = useMemo(() => JSON.stringify(data, null, 2), [data])
+  const empty = json === '{}'
+
+  const copy = () => {
+    if (navigator.clipboard) navigator.clipboard.writeText(json)
+    toast.success('JSON kopyalandı')
+  }
+
+  return (
+    <div className="overflow-hidden rounded-xl border shadow-sm">
+      <div className="flex items-center gap-2 border-b bg-muted/60 px-3 py-2">
+        <Braces className="h-3.5 w-3.5 shrink-0 text-primary" />
+        <span className="truncate font-mono text-xs text-muted-foreground">{path}</span>
+        <Button
+          variant="ghost"
+          size="xs"
+          onClick={copy}
+          disabled={empty}
+          className="ml-auto text-muted-foreground hover:text-primary"
+        >
+          <Copy /> Kopyala
+        </Button>
+      </div>
+      {empty ? (
+        <p className="jk-pre text-muted-foreground/70">Henüz alan doldurulmadı.</p>
+      ) : (
+        <pre className="jk-pre overflow-x-auto">
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: içerik JSON.stringify çıktısı, HTML kaçışından geçiriliyor */}
+          <code dangerouslySetInnerHTML={{ __html: highlightJson(json) }} />
+        </pre>
+      )}
+    </div>
+  )
+}
+
 function EditorLayout({ children }: { children: React.ReactNode }) {
   return (
     <PageBody>
       <div className="mx-auto max-w-3xl space-y-5 px-8 py-6">{children}</div>
     </PageBody>
+  )
+}
+
+function JsonFile({
+  path,
+  data,
+  defaultOpen,
+}: {
+  path: string
+  data: Record<string, unknown>
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen ?? false)
+  const json = useMemo(() => JSON.stringify(data, null, 2), [data])
+  return (
+    <div className="overflow-hidden rounded-lg border">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-2 bg-muted/50 px-3 py-2 text-left transition-colors hover:bg-muted"
+      >
+        <ChevronRight
+          className={cn(
+            'h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform',
+            open && 'rotate-90',
+          )}
+        />
+        <Braces className="h-3.5 w-3.5 shrink-0 text-primary" />
+        <span className="truncate font-mono text-xs text-foreground/80">{path}</span>
+      </button>
+      {open && (
+        <pre className="jk-pre overflow-x-auto border-t">
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: içerik JSON.stringify çıktısı, HTML kaçışından geçiriliyor */}
+          <code dangerouslySetInnerHTML={{ __html: highlightJson(json) }} />
+        </pre>
+      )}
+    </div>
+  )
+}
+
+function ProjectJsonView({ schema }: { schema: Schema }) {
+  const [files, setFiles] = useState<{ path: string; data: Record<string, unknown> }[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const out: { path: string; data: Record<string, unknown> }[] = [
+          { path: '_schema.json', data: schema as unknown as Record<string, unknown> },
+        ]
+        for (const col of schema.collections) {
+          const rows = await api.listRows(col.name)
+          const entries = await Promise.all(
+            rows.map((r) => api.getEntry(col.name, r.slug).then((d) => ({ slug: r.slug, d }))),
+          )
+          for (const e of entries) {
+            if (e.d) out.push({ path: `${col.name}/${e.slug}.json`, data: e.d })
+          }
+        }
+        for (const s of schema.singletons) {
+          const d = await api.getSingleton(s.name)
+          out.push({ path: `${s.name}.json`, data: d })
+        }
+        if (!cancelled) setFiles(out)
+      } catch (e) {
+        if (!cancelled) setError((e as Error).message)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [schema])
+
+  return (
+    <PageShell>
+      <PageHeader
+        title="Ham JSON"
+        subtitle={
+          files
+            ? `content/ • ${files.length} dosya`
+            : 'content/ klasöründeki her dosya, diske yazıldığı hâliyle'
+        }
+      />
+      <PageBody>
+        <div className="mx-auto max-w-3xl space-y-2 px-8 py-6">
+          {error && <AlertPanel title="Yüklenemedi">{error}</AlertPanel>}
+          {files === null && !error && (
+            <p className="px-1 text-sm text-muted-foreground">Yükleniyor…</p>
+          )}
+          {files?.map((f, i) => (
+            <JsonFile key={f.path} path={f.path} data={f.data} defaultOpen={i === 0} />
+          ))}
+        </div>
+      </PageBody>
+    </PageShell>
   )
 }
 
@@ -908,6 +1069,7 @@ function EntryEditor({
   const [newSlug, setNewSlug] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [showJson, setShowJson] = useState(false)
 
   const setField = (key: string, value: unknown) =>
     setData((prev) => {
@@ -986,6 +1148,12 @@ function EntryEditor({
         subtitle={<PathChip>{`${collection.name}/${effectiveSlug}.json`}</PathChip>}
         actions={
           <>
+            <Button
+              variant={showJson ? 'secondary' : 'outline'}
+              onClick={() => setShowJson((v) => !v)}
+            >
+              <Braces /> JSON
+            </Button>
             {!isNew && (
               <Button variant="destructive" onClick={remove}>
                 <Trash2 /> Sil
@@ -999,6 +1167,7 @@ function EntryEditor({
       />
       <EditorLayout>
         {saveError && <AlertPanel title="Kaydedilemedi">{saveError}</AlertPanel>}
+        {showJson && <JsonPreview path={`${collection.name}/${effectiveSlug}.json`} data={data} />}
         <FormCard>
           {isNew && (
             <div className="mb-6 rounded-lg border bg-muted/40 p-4">
@@ -1038,6 +1207,7 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
   // tekil dosyası henüz yoksa boş form doğrudur; sadece istek hatasında uyarırız
   const { data, setData, loading, failed, retry } = useEntryData(load, false)
   const [saving, setSaving] = useState(false)
+  const [showJson, setShowJson] = useState(false)
 
   const setField = (key: string, value: unknown) =>
     setData((prev) => {
@@ -1093,12 +1263,21 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
         badge={badge}
         subtitle={<PathChip>{`${singleton.name}.json`}</PathChip>}
         actions={
-          <Button onClick={save} disabled={saving || !result.ok}>
-            {saving ? 'Kaydediliyor…' : 'Kaydet'}
-          </Button>
+          <>
+            <Button
+              variant={showJson ? 'secondary' : 'outline'}
+              onClick={() => setShowJson((v) => !v)}
+            >
+              <Braces /> JSON
+            </Button>
+            <Button onClick={save} disabled={saving || !result.ok}>
+              {saving ? 'Kaydediliyor…' : 'Kaydet'}
+            </Button>
+          </>
         }
       />
       <EditorLayout>
+        {showJson && <JsonPreview path={`${singleton.name}.json`} data={data} />}
         <FormCard>
           <div className="space-y-6">
             {singleton.fields.map((field) => (
