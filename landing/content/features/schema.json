@@ -1,0 +1,6 @@
+{
+  "label": "Schema",
+  "title": "Visual schema builder",
+  "body": "Define collections and fields in the UI — drag to reorder, collapse what you're not editing. No config file to hand-write.",
+  "order": 2
+}

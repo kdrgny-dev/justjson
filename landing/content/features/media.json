@@ -1,0 +1,6 @@
+{
+  "label": "Media",
+  "title": "Image uploads",
+  "body": "Drop an image; it's resized to WebP right in the browser and written under content/media/.",
+  "order": 5
+}

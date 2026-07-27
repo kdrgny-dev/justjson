@@ -1,0 +1,6 @@
+{
+  "eyebrow": "// zero infra",
+  "title": "Nothing to sign up for",
+  "body": "No account, no database, no token, no dashboard. It runs on your machine and sends data nowhere. Start it, use it, close it.",
+  "order": 1
+}

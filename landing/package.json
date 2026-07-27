@@ -1,0 +1,16 @@
+{
+  "name": "justjson-landing",
+  "type": "module",
+  "private": true,
+  "version": "1.2.0",
+  "description": "JustJSON marketing site — an Astro build whose content is a JustJSON project in content/",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "content": "npx @kdrgny/justjson"
+  },
+  "devDependencies": {
+    "astro": "^5.6.1"
+  }
+}

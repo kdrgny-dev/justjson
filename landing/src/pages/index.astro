@@ -1,0 +1,350 @@
+---
+import '../styles/site.css'
+import meta from '../../content/meta.json'
+import hero from '../../content/hero.json'
+import sections from '../../content/sections.json'
+import closing from '../../content/closing.json'
+
+type Row = Record<string, any>
+function collection(glob: Record<string, { default: Row }>): Row[] {
+  return Object.values(glob)
+    .map((m) => m.default)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+}
+
+const nots = collection(import.meta.glob('../../content/nots/*.json', { eager: true }))
+const thesis = collection(import.meta.glob('../../content/thesis/*.json', { eager: true }))
+const features = collection(import.meta.glob('../../content/features/*.json', { eager: true }))
+const comparison = collection(import.meta.glob('../../content/comparison/*.json', { eager: true }))
+const steps = collection(import.meta.glob('../../content/steps/*.json', { eager: true }))
+const showcase = collection(import.meta.glob('../../content/showcase/*.json', { eager: true }))
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{meta.title}</title>
+    <meta name="description" content={meta.description} />
+    <meta name="theme-color" content="#e8ae3e" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Public+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav>
+      <div class="nav-in">
+        <span class="brand">Just<b>JSON</b></span>
+        <div class="nav-r">
+          <button class="icon-btn" id="theme" aria-label="Toggle theme" title="Theme">◐</button>
+          <a class="btn btn-ghost" href="https://github.com/kdrgny-dev/justjson">GitHub</a>
+        </div>
+      </div>
+      <span id="progress" aria-hidden="true"></span>
+    </nav>
+
+    <header class="wrap hero" id="hero">
+      <div class="backdrop" aria-hidden="true">
+        <span class="aurora a1"></span>
+        <span class="aurora a2"></span>
+        <span class="mesh"></span>
+      </div>
+
+      <div>
+        <span class="eyebrow rise" data-d="1">{hero.eyebrow}</span>
+        <h1 class="rise" data-d="2">{hero.title}<br /><span class="u">{hero.titleAccent}</span></h1>
+        <p class="lead rise" data-d="3">{hero.lead}</p>
+
+        <ul class="nots rise" data-d="4" aria-label="What JustJSON does not require">
+          {nots.map((n, i) => <li style={`--i: ${i}`}>{n.label}</li>)}
+        </ul>
+
+        <div class="cmd rise" data-d="4">
+          <span><span class="prompt">$</span> {hero.command}<span class="caret"></span></span>
+          <button data-copy={hero.command} aria-label="Copy command">Copy</button>
+        </div>
+
+        <div class="cta-row rise" data-d="5">
+          <a class="btn btn-primary" href={hero.ctaUrl}
+            >{hero.ctaLabel} <span class="arrow">→</span></a
+          >
+        </div>
+      </div>
+
+      <div class="demo rise" data-d="3">
+        <div class="panel card-editor">
+          <span class="tabflap" aria-hidden="true">file</span>
+          <span class="punch" aria-hidden="true"></span>
+          <div class="panel-top">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span>editor</span><span class="tag">/ <span id="segCollection">posts</span></span>
+          </div>
+          <div class="rows" id="rows"></div>
+        </div>
+
+        <div class="wire" aria-hidden="true">
+          <span class="track rev"></span><span id="wirePath">content/posts/hello-world.json</span
+          ><span class="track"></span>
+        </div>
+
+        <div class="panel card-receipt">
+          <div class="panel-top">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span>disk</span><span class="tag">in your repo</span>
+          </div>
+          <pre class="json" id="json"></pre>
+        </div>
+      </div>
+    </header>
+
+    <section class="wrap segments">
+      <div class="tabs" id="tabs" role="tablist" aria-label="Pick a use case"></div>
+      <div class="seg-meta">
+        <span id="segCaption">Posts with rich text, slugs and dates — one file per entry.</span>
+      </div>
+      <p class="sr-only">
+        Pick a use case to see the schema, the editor fields and the JSON file it produces.
+      </p>
+    </section>
+
+    <div class="band reveal">
+      <div class="wrap thesis stagger">
+        {
+          thesis.map((t) => (
+            <div>
+              <div class="m">{t.eyebrow}</div>
+              <h3>{t.title}</h3>
+              <p>{t.body}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <section class="block wrap reveal" id="where">
+      <div class="head">
+        <span class="eyebrow">{sections.whereEyebrow}</span>
+        <h2>{sections.whereTitle}</h2>
+        <p>{sections.whereSub}</p>
+      </div>
+
+      <div class="flows">
+        <div class="flow them">
+          <div class="flow-head">
+            <h3>Typical headless CMS <span class="stamp">Account required</span></h3>
+            <span class="verdict">5 hops · 4 things to obtain</span>
+          </div>
+          <div class="track-line">
+            <div class="nodes" style="grid-template-columns: repeat(5, 1fr)">
+              <span class="packet" aria-hidden="true"></span>
+              <div class="node">
+                <span class="pin">✍️</span><span class="nm">You</span><span class="gate">sign up</span>
+              </div>
+              <div class="node">
+                <span class="pin">🖥️</span><span class="nm">Their dashboard</span><span class="gate"
+                  >their schema rules</span
+                >
+              </div>
+              <div class="node">
+                <span class="pin">🗄️</span><span class="nm">Their database</span><span class="gate"
+                  >their servers</span
+                >
+              </div>
+              <div class="node">
+                <span class="pin">🔑</span><span class="nm">Their API</span><span class="gate"
+                  >key · quota · plan</span
+                >
+              </div>
+              <div class="node">
+                <span class="pin">🌐</span><span class="nm">Your site</span><span class="gate"
+                  >fetch on every build</span
+                >
+              </div>
+            </div>
+          </div>
+          <p class="flow-note">
+            Your content sits on someone else's disk. Getting it back is an export job — and leaving
+            is a migration project.
+          </p>
+        </div>
+
+        <div class="flow us">
+          <div class="flow-head">
+            <h3>JustJSON</h3>
+            <span class="verdict">2 hops · nothing to obtain</span>
+          </div>
+          <div class="track-line">
+            <div class="nodes" style="grid-template-columns: repeat(3, 1fr)">
+              <span class="packet" aria-hidden="true"></span>
+              <div class="node self">
+                <span class="pin">✍️</span><span class="nm">You + JustJSON</span><span class="gate"
+                  >your machine</span
+                >
+              </div>
+              <div class="node self">
+                <span class="pin">📁</span><span class="nm">content/*.json</span><span class="gate"
+                  >your repo</span
+                >
+              </div>
+              <div class="node self">
+                <span class="pin">🌐</span><span class="nm">Your site</span><span class="gate"
+                  >imports the files</span
+                >
+              </div>
+            </div>
+          </div>
+          <p class="flow-note">
+            Create it, save it, read it back — all on your own disk. Your build imports the files
+            directly. There is no round trip, because there is nowhere to go.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block wrap reveal">
+      <div class="head">
+        <span class="eyebrow">{sections.cmpEyebrow}</span>
+        <h2>{sections.cmpTitle}</h2>
+      </div>
+      <div class="cmp-wrap">
+        <table class="cmp">
+          <thead>
+            <tr>
+              <th scope="col">&nbsp;</th>
+              <th scope="col" class="them">Typical headless CMS</th>
+              <th scope="col" class="us">JustJSON</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              comparison.map((c, i) => (
+                <tr style={`--i: ${i}`}>
+                  <th scope="row">{c.row}</th>
+                  <td class="them">
+                    <span class="mark">{c.them}</span>
+                  </td>
+                  <td class="us">
+                    <span class="mark">{c.us}</span>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block wrap reveal">
+      <div class="head">
+        <span class="eyebrow">{sections.featuresEyebrow}</span>
+        <h2>{sections.featuresTitle}</h2>
+        <p>{sections.featuresSub}</p>
+      </div>
+      <div class="grid stagger">
+        {
+          features.map((f) => (
+            <div class="card">
+              <div class="lbl">{f.label}</div>
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="block wrap reveal">
+      <div class="head">
+        <span class="eyebrow">{sections.stepsEyebrow}</span>
+        <h2>{sections.stepsTitle}</h2>
+      </div>
+      <div class="steps">
+        {
+          steps.map((s, i) => (
+            <div class="step">
+              <span class="num">{i + 1}</span>
+              <div>
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="block wrap reveal">
+      <div class="head">
+        <span class="eyebrow">{sections.showcaseEyebrow}</span>
+        <h2>{sections.showcaseTitle}</h2>
+        <p>{sections.showcaseSub}</p>
+      </div>
+      <div class="builtwith">
+        {
+          showcase.map((s) => (
+            <a class="builtwith-card" href={s.url} target="_blank" rel="noreferrer">
+              <div class="bw-top">
+                <span class="bw-dot" /><span class="bw-dot" /><span class="bw-dot" />
+                <span class="bw-host mono">{s.host}</span>
+              </div>
+              <div class="bw-body">
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+                <span class="bw-go">
+                  Visit <span class="arrow">→</span>
+                </span>
+              </div>
+            </a>
+          ))
+        }
+        <div class="builtwith-note">
+          <p>
+            Made something with JustJSON?
+            <a href="https://github.com/kdrgny-dev/justjson/issues/new">Tell us</a> and we'll add it
+            here.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing wrap reveal">
+      <h2>{closing.title}</h2>
+      <p>{closing.lead}</p>
+      <div class="cta-row" style="justify-content: center">
+        <a class="btn btn-primary" href={closing.ctaUrl}
+          >{closing.ctaLabel} <span class="arrow">→</span></a
+        >
+        <span class="cmd" style="margin-top: 0; font-size: 14px">
+          <span><span class="prompt">$</span> {closing.command}</span>
+          <button data-copy={closing.command} aria-label="Copy command">Copy</button>
+        </span>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap foot-in">
+        <span class="brand" style="font-size: 15px">Just<b>JSON</b></span>
+        <span class="foot-made">
+          This page is built with JustJSON — its words live in
+          <a href="https://github.com/kdrgny-dev/justjson/tree/main/landing/content"
+            ><span class="mono">landing/content/*.json</span></a
+          >.
+        </span>
+        <span>
+          <a href="https://github.com/kdrgny-dev/justjson">GitHub</a> &nbsp;·&nbsp;
+          <a href="https://www.npmjs.com/package/@kdrgny/justjson">npm</a> &nbsp;·&nbsp;
+          <a href="https://github.com/kdrgny-dev/justjson/blob/main/LICENSE">MIT</a> &nbsp;·&nbsp;
+          Kadir Günay
+        </span>
+      </div>
+    </footer>
+
+    <script>
+      import '../scripts/site.js'
+    </script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "label": "Writing",
+  "title": "Rich-text editor",
+  "body": "Headings, bold, lists, quotes — WYSIWYG. But it's saved to disk as clean, diffable Markdown.",
+  "order": 4
+}

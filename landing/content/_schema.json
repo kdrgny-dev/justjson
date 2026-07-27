@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "collections": [
+    {
+      "name": "nots",
+      "label": "Rozetler (no X)",
+      "path": "nots",
+      "fields": [
+        { "key": "label", "label": "Etiket", "type": "text", "required": true },
+        { "key": "order", "label": "Sıra", "type": "number" }
+      ]
+    },
+    {
+      "name": "thesis",
+      "label": "Tez bandı",
+      "path": "thesis",
+      "fields": [
+        { "key": "eyebrow", "label": "Üst etiket", "type": "text" },
+        { "key": "title", "label": "Başlık", "type": "text", "required": true },
+        { "key": "body", "label": "Metin", "type": "text" },
+        { "key": "order", "label": "Sıra", "type": "number" }
+      ]
+    },
+    {
+      "name": "features",
+      "label": "Özellik kartları",
+      "path": "features",
+      "fields": [
+        { "key": "label", "label": "Etiket", "type": "text" },
+        { "key": "title", "label": "Başlık", "type": "text", "required": true },
+        { "key": "body", "label": "Metin", "type": "text" },
+        { "key": "order", "label": "Sıra", "type": "number" }
+      ]
+    },
+    {
+      "name": "comparison",
+      "label": "Karşılaştırma satırları",
+      "path": "comparison",
+      "fields": [
+        { "key": "row", "label": "Satır", "type": "text", "required": true },
+        { "key": "them", "label": "Diğerleri", "type": "text" },
+        { "key": "us", "label": "JustJSON", "type": "text" },
+        { "key": "order", "label": "Sıra", "type": "number" }
+      ]
+    },
+    {
+      "name": "steps",
+      "label": "Adımlar",
+      "path": "steps",
+      "fields": [
+        { "key": "title", "label": "Başlık", "type": "text", "required": true },
+        { "key": "body", "label": "Metin", "type": "text" },
+        { "key": "order", "label": "Sıra", "type": "number" }
+      ]
+    },
+    {
+      "name": "showcase",
+      "label": "Bununla yapıldı",
+      "path": "showcase",
+      "fields": [
+        { "key": "title", "label": "Başlık", "type": "text", "required": true },
+        { "key": "host", "label": "Alan adı", "type": "text" },
+        { "key": "url", "label": "Bağlantı", "type": "text" },
+        { "key": "body", "label": "Metin", "type": "text" },
+        { "key": "order", "label": "Sıra", "type": "number" }
+      ]
+    }
+  ],
+  "singletons": [
+    {
+      "name": "meta",
+      "label": "Sayfa meta",
+      "path": "meta.json",
+      "fields": [
+        { "key": "title", "label": "Başlık", "type": "text" },
+        { "key": "description", "label": "Açıklama", "type": "text" }
+      ]
+    },
+    {
+      "name": "hero",
+      "label": "Hero",
+      "path": "hero.json",
+      "fields": [
+        { "key": "eyebrow", "label": "Üst etiket", "type": "text" },
+        { "key": "title", "label": "Başlık", "type": "text" },
+        { "key": "titleAccent", "label": "Vurgulu başlık", "type": "text" },
+        { "key": "lead", "label": "Alt metin", "type": "text" },
+        { "key": "command", "label": "Komut", "type": "text" },
+        { "key": "ctaLabel", "label": "Buton", "type": "text" },
+        { "key": "ctaUrl", "label": "Buton bağlantısı", "type": "text" }
+      ]
+    },
+    {
+      "name": "sections",
+      "label": "Bölüm başlıkları",
+      "path": "sections.json",
+      "fields": [
+        { "key": "whereEyebrow", "label": "Nerede yaşıyor · üst", "type": "text" },
+        { "key": "whereTitle", "label": "Nerede yaşıyor · başlık", "type": "text" },
+        { "key": "whereSub", "label": "Nerede yaşıyor · alt", "type": "text" },
+        { "key": "cmpEyebrow", "label": "Karşılaştırma · üst", "type": "text" },
+        { "key": "cmpTitle", "label": "Karşılaştırma · başlık", "type": "text" },
+        { "key": "featuresEyebrow", "label": "Özellikler · üst", "type": "text" },
+        { "key": "featuresTitle", "label": "Özellikler · başlık", "type": "text" },
+        { "key": "featuresSub", "label": "Özellikler · alt", "type": "text" },
+        { "key": "stepsEyebrow", "label": "Adımlar · üst", "type": "text" },
+        { "key": "stepsTitle", "label": "Adımlar · başlık", "type": "text" },
+        { "key": "showcaseEyebrow", "label": "Vitrin · üst", "type": "text" },
+        { "key": "showcaseTitle", "label": "Vitrin · başlık", "type": "text" },
+        { "key": "showcaseSub", "label": "Vitrin · alt", "type": "text" }
+      ]
+    },
+    {
+      "name": "closing",
+      "label": "Kapanış",
+      "path": "closing.json",
+      "fields": [
+        { "key": "title", "label": "Başlık", "type": "text" },
+        { "key": "lead", "label": "Alt metin", "type": "text" },
+        { "key": "command", "label": "Komut", "type": "text" },
+        { "key": "ctaLabel", "label": "Buton", "type": "text" },
+        { "key": "ctaUrl", "label": "Buton bağlantısı", "type": "text" }
+      ]
+    }
+  ]
+}

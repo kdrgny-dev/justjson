@@ -1,0 +1,7 @@
+{
+  "title": "Kadir Günay — CV",
+  "host": "cv.kdrgny.com",
+  "url": "https://cv.kdrgny.com",
+  "body": "A personal CV site. Built from the cv template, edited in JustJSON, shipped as content/*.json read straight at build.",
+  "order": 0
+}

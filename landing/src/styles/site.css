@@ -1425,6 +1425,22 @@ footer a {
 footer a:hover {
   color: var(--signal-ink);
 }
+.foot-made {
+  flex: 1 1 260px;
+  min-width: 0;
+  text-align: center;
+  color: var(--faint);
+}
+.foot-made a {
+  color: var(--signal-ink);
+}
+@media (max-width: 700px) {
+  .foot-made {
+    order: 3;
+    text-align: left;
+    flex-basis: 100%;
+  }
+}
 
 /* ---------- motion system ---------- */
 .rise {

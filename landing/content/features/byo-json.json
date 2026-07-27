@@ -1,0 +1,6 @@
+{
+  "label": "Start",
+  "title": "Bring your own JSON",
+  "body": "Paste any content JSON and JustJSON works out the structure: lists become collections, objects become singletons, HTML becomes rich text.",
+  "order": 1
+}

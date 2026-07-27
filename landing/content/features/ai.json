@@ -1,0 +1,6 @@
+{
+  "label": "AI · optional",
+  "title": "Describe it, AI drafts the schema",
+  "body": "Say what you're managing and JustJSON drafts the collections and fields. Bring your own key (Gemini, Groq, OpenRouter or local Ollama) — it goes straight to the provider, never to us.",
+  "order": 0
+}

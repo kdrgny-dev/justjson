@@ -9,8 +9,8 @@
     },
     {
       "name": "landing",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "4322", "--directory", "landing"],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "landing", "run", "dev", "--", "--port", "4322"],
       "port": 4322
     }
   ]

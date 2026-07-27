@@ -1,0 +1,15 @@
+{
+  "whereEyebrow": "Where your data lives",
+  "whereTitle": "Everyone else puts a company between you and your content",
+  "whereSub": "A headless CMS hosts your data and rents you an API to reach it. JustJSON removes the whole middle.",
+  "cmpEyebrow": "Side by side",
+  "cmpTitle": "The list of things we never ask you for",
+  "featuresEyebrow": "What it does",
+  "featuresTitle": "A real CMS experience — backed by plain files",
+  "featuresSub": "From schema to content, without writing a line of config.",
+  "stepsEyebrow": "How it works",
+  "stepsTitle": "Your own backend in three steps",
+  "showcaseEyebrow": "In the wild",
+  "showcaseTitle": "Built with JustJSON",
+  "showcaseSub": "Real sites whose content is nothing but the JSON in their own repo."
+}

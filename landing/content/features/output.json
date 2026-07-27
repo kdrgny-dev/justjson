@@ -1,0 +1,6 @@
+{
+  "label": "Output",
+  "title": "The endpoint is yours",
+  "body": "Wherever you put the JSON becomes your API — repo raw, jsDelivr, your own build. Export the whole project as a ZIP any time.",
+  "order": 7
+}

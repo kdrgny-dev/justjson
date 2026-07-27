@@ -1,0 +1,6 @@
+{
+  "eyebrow": "// portable",
+  "title": "Git-friendly, goes anywhere",
+  "body": "Plain JSON diffs and versions cleanly. Import it in your build, deploy it wherever you like — or walk away with it tomorrow.",
+  "order": 2
+}

@@ -1,0 +1,9 @@
+{
+  "eyebrow": "Local · File-based · Open source",
+  "title": "Own your content.",
+  "titleAccent": "It's just JSON.",
+  "lead": "Every other headless CMS wants something first — an account, a database, an API key, a plan tier. JustJSON wants nothing. Create your content, save it, read it back. It's all files in your own repo.",
+  "command": "npx @kdrgny/justjson",
+  "ctaLabel": "Explore on GitHub",
+  "ctaUrl": "https://github.com/kdrgny-dev/justjson"
+}
