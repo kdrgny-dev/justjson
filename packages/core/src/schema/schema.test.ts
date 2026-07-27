@@ -48,6 +48,60 @@ describe('parseSchema', () => {
     bad.collections[1].fields[0] = { key: 'x', type: 'wysiwyg' } as never
     expect(() => parseSchema(bad)).toThrow()
   })
+
+  it('yeni skaler tipleri kabul eder (url/email/list/color)', () => {
+    const ok = {
+      version: 1,
+      collections: [
+        {
+          name: 'c',
+          path: 'c',
+          fields: [
+            { key: 'site', type: 'url' },
+            { key: 'mail', type: 'email' },
+            { key: 'tags', type: 'list' },
+            { key: 'renk', type: 'color' },
+          ],
+        },
+      ],
+      singletons: [],
+    }
+    expect(() => parseSchema(ok)).not.toThrow()
+  })
+
+  it('group alanı alt alanlarıyla kabul edilir (özyinelemeli)', () => {
+    const ok = {
+      version: 1,
+      collections: [
+        {
+          name: 'c',
+          path: 'c',
+          fields: [
+            {
+              key: 'adres',
+              type: 'group',
+              fields: [
+                { key: 'sokak', type: 'text' },
+                { key: 'sehir', type: 'text', required: true },
+              ],
+            },
+          ],
+        },
+      ],
+      singletons: [],
+    }
+    const schema = parseSchema(ok)
+    expect(schema.collections[0]?.fields[0]?.fields?.[1]?.key).toBe('sehir')
+  })
+
+  it('group alanı fields olmadan reddedilir', () => {
+    const bad = {
+      version: 1,
+      collections: [{ name: 'c', path: 'c', fields: [{ key: 'g', type: 'group' }] }],
+      singletons: [],
+    }
+    expect(() => parseSchema(bad)).toThrow()
+  })
 })
 
 describe('serializeSchema', () => {

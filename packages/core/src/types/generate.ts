@@ -17,7 +17,16 @@ function fieldTsType(field: Field): string {
     case 'select':
       return (field.options ?? []).map((o) => `'${o}'`).join(' | ') || 'string'
     case 'relation':
+    case 'list':
       return 'string[]'
+    case 'group': {
+      const subs = field.fields ?? []
+      if (subs.length === 0) return 'Record<string, unknown>'
+      const inner = subs
+        .map((f) => `${f.key}${f.required ? '' : '?'}: ${fieldTsType(f)}`)
+        .join('; ')
+      return `{ ${inner} }`
+    }
     default:
       return 'string'
   }

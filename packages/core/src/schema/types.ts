@@ -7,6 +7,11 @@ export type FieldType =
   | 'select'
   | 'relation'
   | 'image'
+  | 'url'
+  | 'email'
+  | 'list'
+  | 'color'
+  | 'group'
 
 export interface Field {
   key: string
@@ -17,6 +22,8 @@ export interface Field {
   options?: string[]
   /** type === 'relation' için hedef koleksiyon adı */
   to?: string
+  /** type === 'group' için alt alanlar (özyinelemeli) */
+  fields?: Field[]
 }
 
 export interface Collection {

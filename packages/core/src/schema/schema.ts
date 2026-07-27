@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { Schema } from './types'
+import type { Field, Schema } from './types'
 
 const fieldTypes = [
   'text',
@@ -10,25 +10,36 @@ const fieldTypes = [
   'select',
   'relation',
   'image',
+  'url',
+  'email',
+  'list',
+  'color',
+  'group',
 ] as const
 
-const zField = z
-  .object({
-    key: z.string().min(1),
-    label: z.string().optional(),
-    type: z.enum(fieldTypes),
-    required: z.boolean().optional(),
-    options: z.array(z.string()).optional(),
-    to: z.string().optional(),
-  })
-  .superRefine((field, ctx) => {
-    if (field.type === 'select' && (!field.options || field.options.length === 0)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'select alanı options gerektirir' })
-    }
-    if (field.type === 'relation' && !field.to) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'relation alanı "to" gerektirir' })
-    }
-  })
+const zField: z.ZodType<Field> = z.lazy(() =>
+  z
+    .object({
+      key: z.string().min(1),
+      label: z.string().optional(),
+      type: z.enum(fieldTypes),
+      required: z.boolean().optional(),
+      options: z.array(z.string()).optional(),
+      to: z.string().optional(),
+      fields: z.array(zField).optional(),
+    })
+    .superRefine((field, ctx) => {
+      if (field.type === 'select' && (!field.options || field.options.length === 0)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'select alanı options gerektirir' })
+      }
+      if (field.type === 'relation' && !field.to) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'relation alanı "to" gerektirir' })
+      }
+      if (field.type === 'group' && (!field.fields || field.fields.length === 0)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'group alanı fields gerektirir' })
+      }
+    }),
+)
 
 const zCollection = z.object({
   name: z.string().min(1),

@@ -18,6 +18,10 @@ function isEmpty(value: unknown): boolean {
   return value === undefined || value === null || value === ''
 }
 
+const URL_RE = /^[a-z][a-z0-9+.-]*:\/\/.+/i
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+const COLOR_RE = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
+
 function typeError(field: Field, value: unknown): string | null {
   switch (field.type) {
     case 'text':
@@ -25,9 +29,28 @@ function typeError(field: Field, value: unknown): string | null {
     case 'date':
     case 'image':
       return typeof value === 'string' ? null : 'metin bekleniyor'
+    case 'url':
+      if (typeof value !== 'string') return 'metin bekleniyor'
+      return URL_RE.test(value) ? null : 'geçerli bir URL bekleniyor'
+    case 'email':
+      if (typeof value !== 'string') return 'metin bekleniyor'
+      return EMAIL_RE.test(value) ? null : 'geçerli bir e-posta bekleniyor'
+    case 'color':
+      if (typeof value !== 'string') return 'metin bekleniyor'
+      return COLOR_RE.test(value) ? null : 'hex renk bekleniyor (ör. #ff0000)'
+    case 'list':
+      if (!Array.isArray(value) || value.some((v) => typeof v !== 'string')) {
+        return 'metin dizisi bekleniyor'
+      }
+      return null
     case 'relation':
       if (!Array.isArray(value) || value.some((v) => typeof v !== 'string')) {
         return 'slug dizisi bekleniyor'
+      }
+      return null
+    case 'group':
+      if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        return 'nesne bekleniyor'
       }
       return null
     case 'number':

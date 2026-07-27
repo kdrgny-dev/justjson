@@ -81,3 +81,47 @@ describe('validateEntry', () => {
     expect(r.issues.some((i) => i.key === 'tags' && i.level === 'error')).toBe(true)
   })
 })
+
+describe('validateEntry yeni tipler', () => {
+  const fields: Field[] = [
+    { key: 'site', type: 'url' },
+    { key: 'mail', type: 'email' },
+    { key: 'renk', type: 'color' },
+    { key: 'etiketler', type: 'list' },
+    { key: 'adres', type: 'group', fields: [{ key: 'sehir', type: 'text' }] },
+  ]
+
+  it('geçerli değerler → ok', () => {
+    const r = validateEntry(fields, {
+      site: 'https://ornek.com',
+      mail: 'a@b.com',
+      renk: '#ff0000',
+      etiketler: ['x', 'y'],
+      adres: { sehir: 'İstanbul' },
+    })
+    expect(r.ok).toBe(true)
+  })
+
+  it('geçersiz url → error', () => {
+    expect(validateEntry(fields, { site: 'url-değil' }).ok).toBe(false)
+  })
+
+  it('geçersiz email → error', () => {
+    expect(validateEntry(fields, { mail: 'hatalı' }).ok).toBe(false)
+  })
+
+  it('geçersiz color (hex değil) → error', () => {
+    expect(validateEntry(fields, { renk: 'kırmızı' }).ok).toBe(false)
+    expect(validateEntry(fields, { renk: '#fff' }).ok).toBe(true)
+  })
+
+  it('list string dizisi değilse → error', () => {
+    expect(validateEntry(fields, { etiketler: 'x' }).ok).toBe(false)
+    expect(validateEntry(fields, { etiketler: [1] }).ok).toBe(false)
+  })
+
+  it('group nesne değilse → error', () => {
+    expect(validateEntry(fields, { adres: 'metin' }).ok).toBe(false)
+    expect(validateEntry(fields, { adres: ['a'] }).ok).toBe(false)
+  })
+})

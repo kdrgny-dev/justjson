@@ -52,3 +52,47 @@ describe('generateTypes', () => {
     expect(out).toContain('site?: string')
   })
 })
+
+describe('generateTypes yeni tipler', () => {
+  const out = generateTypes(
+    parseSchema({
+      version: 1,
+      collections: [
+        {
+          name: 'c',
+          path: 'c',
+          fields: [
+            { key: 'site', type: 'url' },
+            { key: 'mail', type: 'email' },
+            { key: 'renk', type: 'color' },
+            { key: 'etiketler', type: 'list' },
+            {
+              key: 'adres',
+              type: 'group',
+              fields: [
+                { key: 'sokak', type: 'text' },
+                { key: 'sehir', type: 'text', required: true },
+                { key: 'no', type: 'number' },
+              ],
+            },
+          ],
+        },
+      ],
+      singletons: [],
+    }),
+  )
+
+  it('url/email/color → string', () => {
+    expect(out).toContain('site?: string')
+    expect(out).toContain('mail?: string')
+    expect(out).toContain('renk?: string')
+  })
+
+  it('list → string[]', () => {
+    expect(out).toContain('etiketler?: string[]')
+  })
+
+  it('group → iç içe nesne tipi (özyinelemeli, required yansır)', () => {
+    expect(out).toContain('adres?: { sokak?: string; sehir: string; no?: number }')
+  })
+})
