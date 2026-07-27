@@ -34,6 +34,7 @@ export type {
 export { validateProject } from './validate/project'
 
 export { generateTypes } from './types/generate'
+export { generateLoader } from './types/loader'
 
 export type { ExportInput } from './export/bundle'
 export { buildExportManifest } from './export/bundle'

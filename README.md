@@ -51,7 +51,7 @@ Design your schema, enter content, upload images. Everything is written to `cont
 | **Searchable content table** | Entries listed by title, slug and date. Search and edit instantly — content, not a pile of slugs. |
 | **Rich-text editor** | Headings, bold, lists, quotes — WYSIWYG, saved to disk as clean, diffable Markdown. |
 | **Image uploads** | Drop an image; it's resized to WebP in the browser and written under `content/media/`. |
-| **Type-safe output** | Generates `types.ts` from your schema, so your content is fully typed in your project. |
+| **Type-safe output** | Generates `types.ts` **and** a zero-dependency `content.ts` loader from your schema — `loadPosts()`, `loadSettings()` — so your content is fully typed in your build, no glue code. |
 | **Export any time** | One click downloads schema + content + types as a ZIP. Nothing is ever locked in. |
 | **The endpoint is yours** | Wherever you put the JSON becomes your API — repo raw, jsDelivr, your build. |
 
@@ -63,7 +63,7 @@ Field types: `text` · `richtext` · `number` · `boolean` · `date` · `select`
 |---|---|
 | `npx @kdrgny/justjson` (or `serve`) | Starts the local editor and opens it in your browser |
 | `npx @kdrgny/justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`, `portfolio`, `docs`, `changelog`, `recipe`, `event`, `catalog`) |
-| `npx @kdrgny/justjson types` | Generates `types.ts` from your schema |
+| `npx @kdrgny/justjson types` | Generates `types.ts` + a typed `content.ts` loader from your schema |
 | `npx @kdrgny/justjson export` | Exports a ZIP snapshot (schema + content + types) |
 | `npx @kdrgny/justjson validate` | Checks your content against the schema (great for CI) |
 
@@ -79,6 +79,27 @@ npx @kdrgny/justjson validate            # human-readable report
 npx @kdrgny/justjson validate --json     # machine-readable, for CI annotations
 npx @kdrgny/justjson validate --strict   # warnings fail too (e.g. keys not in schema)
 ```
+
+### Using your content in a build
+
+`types` writes a `content.ts` next to `types.ts` — a **zero-dependency** typed
+loader. No glue code to read files, no `import` boilerplate:
+
+```ts
+import { loadPosts, loadSettings } from './content'
+
+const posts = await loadPosts()          // Array<Posts & { slug: string }>
+const settings = await loadSettings()    // Settings | null
+
+for (const post of posts) {
+  console.log(post.slug, post.title)     // fully typed, slug included
+}
+```
+
+Each collection entry comes back with its `slug` (the filename) merged in, ready
+for routing. It reads straight from disk, so it works in any Node-based build —
+including **Astro** and **Next.js** server code. In Astro, call the loaders from a
+page's frontmatter (or an endpoint) exactly as above.
 
 ## How it works
 
