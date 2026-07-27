@@ -39,19 +39,22 @@ Design your schema, enter content, upload images. Everything is written to `cont
 | **Searchable content table** | Entries listed by title, slug and date. Search and edit instantly — content, not a pile of slugs. |
 | **Rich-text editor** | Headings, bold, lists, quotes — WYSIWYG, saved to disk as clean, diffable Markdown. |
 | **Image uploads** | Drop an image; it's resized to WebP in the browser and written under `content/media/`. |
-| **Type-safe output** | Generates `types.ts` from your schema, so your content is fully typed in your project. |
+| **Type-safe output** | Generates `types.ts` **and** a zero-dependency `content.ts` loader — `loadPosts()`, `loadSettings()` — so your content is typed in your build. |
+| **Validate in CI** | `justjson validate` checks content against the schema — broken relations, duplicate slugs, missing media, type errors. Exits non-zero on failure. |
+| **Draft / published** | Toggle an entry's status; the generated loader returns published entries by default. |
 | **Export any time** | One click downloads schema + content + types as a ZIP. Nothing is ever locked in. |
 | **The endpoint is yours** | Wherever you put the JSON becomes your API — repo raw, jsDelivr, your build. |
 
-Field types: `text` · `richtext` · `number` · `boolean` · `date` · `select` · `relation` (multi) · `image`.
+Field types: `text` · `richtext` · `number` · `boolean` · `date` · `select` · `relation` (multi) · `image` · `url` · `email` · `list` · `color` · `group` (nested).
 
 ## Commands
 
 | Command | What it does |
 |---|---|
 | `npx @kdrgny/justjson` (or `serve`) | Starts the local editor and opens it in your browser |
-| `npx @kdrgny/justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`, `portfolio`, `docs`, `changelog`) |
-| `npx @kdrgny/justjson types` | Generates `types.ts` from your schema |
+| `npx @kdrgny/justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`, `portfolio`, `docs`, `changelog`, `recipe`, `event`, `catalog`) |
+| `npx @kdrgny/justjson types` | Generates `types.ts` + a typed `content.ts` loader from your schema |
+| `npx @kdrgny/justjson validate` | Checks content against the schema (`--json`, `--strict`) — great for CI |
 | `npx @kdrgny/justjson export` | Exports a ZIP snapshot (schema + content + types) |
 
 ## How it works

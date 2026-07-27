@@ -142,12 +142,19 @@ pnpm test
 
 ## Roadmap
 
-Small, need-driven improvements shipped as releases. Recently landed in `1.2.0`:
-eight ready-made templates, prompt-assisted (bring-your-own-key) schema
-scaffolding, and a live/raw JSON view. Next up:
+Small, need-driven improvements shipped as releases. Landed in `1.3.0`:
 
-- Draft / published status
-- More field types
+- **`justjson validate`** — check content against the schema in CI (broken
+  relations, duplicate slugs, missing media, type errors).
+- **Typed `content.ts` loader** — zero-dependency `loadPosts()` / `loadSettings()`
+  generated alongside `types.ts`.
+- **Draft / published status** — per-entry `_status`; the loader returns published
+  entries by default.
+- **More field types** — `url`, `email`, `list`, `color`, and nested `group`.
+
+Next up:
+
+- English-first UI (the editor is currently Turkish)
 
 Ideas and issues welcome.
 
