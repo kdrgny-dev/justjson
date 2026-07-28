@@ -22,6 +22,8 @@ No database · no account · no lock-in.
 npx @kdrgny/justjson
 ```
 
+**No install?** [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/kdrgny-dev/justjson/tree/main/examples/playground) — runs the editor in your browser.
+
 <br>
 
 <img src=".github/media/demo.gif" alt="JustJSON in action — edit a post, save it to disk, then restyle the generated site with a live preview" width="860">
