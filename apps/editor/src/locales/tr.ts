@@ -217,33 +217,32 @@ export const tr: Record<string, string> = {
 
   // --- Şablon galerisi ---
   'Pick a template': 'Bir şablon seç',
+  'Template catalog': 'Şablon kataloğu',
+  'Previous templates': 'Önceki şablonlar',
+  'Next templates': 'Sonraki şablonlar',
+  '+{n} more': '+{n} daha',
   'Edit your content visually; everything stays in your folder as plain JSON — no server, no account.':
     'İçeriğini görsel olarak düzenle; her şey klasöründe düz JSON olarak kalır — sunucu yok, hesap yok.',
-  'The template you pick creates your schema and content files — you can change all of it later.':
-    'Seçtiğin şablon, içerik dosyalarını ve şemanı senin için oluşturur — hepsini sonra değiştirebilirsin.',
   'Could not load the template list.': 'Şablon listesi yüklenemedi.',
-  'What it creates': 'Oluşturulacak yapı',
-  'Use this template': 'Bu şablonu kullan',
   'Applying…': 'Uygulanıyor…',
   'Start from scratch': 'Sıfırdan başla',
   'Begin with an empty schema and define your own collections and fields.':
     'Boş bir şemayla başla, koleksiyonlarını ve alanlarını kendin tanımla.',
-  'Nothing here yet — you build the structure from the ground up.':
-    'Henüz içerik yok — yapıyı baştan sen kurarsın.',
   'Continue with an empty project': 'Boş projeyle devam et',
 
   // --- İçe aktarma ---
-  'Import — your own JSON': 'İçe aktar — kendi JSON’un',
+  'Or start on your own': 'Ya da kendin başla',
   'Import your own JSON': 'Kendi JSON’unu içe aktar',
+  'Drop a JSON file here, or': 'Bir JSON dosyasını buraya bırak ya da',
+  'Release to read this file': 'Dosyayı okumak için bırak',
+  'Browse files': 'Dosyalara göz at',
+  'That file is not JSON — drop a .json file instead.':
+    'Bu dosya JSON değil — bir .json dosyası bırak.',
+  'Paste your content JSON or choose a file, and JustJSON works out the collections and singletons for you.':
+    'İçerik JSON’unu yapıştır ya da bir dosya seç; JustJSON koleksiyon ve tekil yapısını senin için çıkarsın.',
+  'An exported schema file works too:': 'Dışa aktarılmış bir şema dosyası da olur:',
   Import: 'İçe aktar',
   'Importing…': 'İçe aktarılıyor…',
-  'Bring the JSON you already have; JustJSON infers the structure and sets your project up.':
-    'Elindeki JSON’u getir; JustJSON yapıyı çıkarıp projeni kurar.',
-  'Your content JSON, or an existing': 'İçerik JSON’un ya da hazır bir',
-  '— the structure is inferred automatically.': '— yapı otomatik çıkarılır.',
-  'Paste or pick your content JSON, or an existing': 'İçerik JSON’unu ya da hazır bir',
-  '— JustJSON works out the collections and singletons for you.':
-    '— JustJSON koleksiyon ve tekil yapısını otomatik çıkarır.',
   'Choose a file': 'Dosya seç',
   'Could not read the file.': 'Dosya okunamadı.',
   'Invalid JSON': 'Geçersiz JSON',

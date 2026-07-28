@@ -1,93 +1,13 @@
-import { Badge } from '@/components/ui/badge'
-import { Button, buttonVariants } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { cn } from '@/lib/utils'
-import {
-  AlertCircle,
-  BookOpen,
-  Braces,
-  CalendarDays,
-  ChefHat,
-  FileJson,
-  FileStack,
-  FileText,
-  History,
-  LayoutGrid,
-  Loader2,
-  Newspaper,
-  PenLine,
-  Rows3,
-  ShoppingBag,
-  Sparkles,
-  Upload,
-  User,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { AlertCircle, Braces, Loader2, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useAiSettings } from './ai/AiSettingsContext'
 import * as api from './api'
 import type { TemplateMeta } from './api'
-import { getLang, t, tp } from './i18n'
-
-const ICONS: Record<string, LucideIcon> = {
-  blog: Newspaper,
-  cv: User,
-  portfolio: LayoutGrid,
-  docs: BookOpen,
-  changelog: History,
-  recipe: ChefHat,
-  event: CalendarDays,
-  catalog: ShoppingBag,
-}
-
-function structureSummary(tpl: TemplateMeta) {
-  const parts: string[] = []
-  if (tpl.collections.length)
-    parts.push(tp(tpl.collections.length, '{n} collection', '{n} collections'))
-  if (tpl.singletons.length)
-    parts.push(tp(tpl.singletons.length, '{n} singleton', '{n} singletons'))
-  return parts.join(' · ')
-}
-
-function SkeletonCard() {
-  return (
-    <Card className="h-full">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="size-10 shrink-0 animate-pulse rounded-lg bg-muted" />
-          <div className="h-4 w-28 animate-pulse rounded bg-muted" />
-        </div>
-        <div className="mt-2 h-3 w-full animate-pulse rounded bg-muted" />
-        <div className="mt-1.5 h-3 w-2/3 animate-pulse rounded bg-muted" />
-      </CardHeader>
-      <CardContent className="flex-1 space-y-1.5">
-        <div className="h-8 animate-pulse rounded-md bg-muted" />
-        <div className="h-8 animate-pulse rounded-md bg-muted" />
-      </CardContent>
-      <CardFooter>
-        <div className="h-9 w-full animate-pulse rounded-lg bg-muted" />
-      </CardFooter>
-    </Card>
-  )
-}
+import { StartOptions } from './components/StartOptions'
+import { TemplateCarousel } from './components/TemplateCarousel'
+import { getLang, t } from './i18n'
 
 const LABEL_LANGUAGE: Record<string, string> = { en: 'English', tr: 'Turkish' }
 
@@ -214,169 +134,6 @@ function AiScaffoldPanel({ onApplied, disabled }: { onApplied: () => void; disab
   )
 }
 
-function ImportCard({ onApplied, disabled }: { onApplied: () => void; disabled: boolean }) {
-  const [open, setOpen] = useState(false)
-  const [raw, setRaw] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [importing, setImporting] = useState(false)
-
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file) return
-    setError(null)
-    try {
-      setRaw(await file.text())
-    } catch {
-      setError(t('Could not read the file.'))
-    }
-  }
-
-  const runImport = async () => {
-    let parsed: unknown
-    try {
-      parsed = JSON.parse(raw)
-    } catch {
-      setError(t('Invalid JSON'))
-      return
-    }
-    const schema =
-      parsed && typeof parsed === 'object' && 'schema' in parsed
-        ? (parsed as { schema: unknown }).schema
-        : parsed
-    setError(null)
-    setImporting(true)
-    try {
-      await api.importProject(schema)
-      setOpen(false)
-      onApplied()
-    } catch (e) {
-      setError((e as Error).message)
-      setImporting(false)
-    }
-  }
-
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next)
-        if (!next && !importing) {
-          setRaw('')
-          setError(null)
-        }
-      }}
-    >
-      <Card
-        className="h-full border border-dashed border-border bg-transparent ring-0 transition-colors hover:border-foreground/25 data-[busy=true]:opacity-60"
-        data-busy={disabled}
-      >
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-              <FileJson className="size-5" />
-            </span>
-            <CardTitle className="text-base">{t('Import — your own JSON')}</CardTitle>
-          </div>
-          <CardDescription className="mt-2 leading-relaxed">
-            {t(
-              'Bring the JSON you already have; JustJSON infers the structure and sets your project up.',
-            )}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="flex-1">
-          <div className="flex h-full items-center rounded-md border border-dashed border-border/70 px-3 py-4 text-sm text-muted-foreground">
-            {t('Your content JSON, or an existing')}
-            <code className="mx-1 font-mono text-xs text-foreground">_schema.json</code>
-            {t('— the structure is inferred automatically.')}
-          </div>
-        </CardContent>
-
-        <CardFooter>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="h-9 w-full" disabled={disabled}>
-              {t('Import your own JSON')}
-            </Button>
-          </DialogTrigger>
-        </CardFooter>
-      </Card>
-
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t('Import your own JSON')}</DialogTitle>
-          <DialogDescription>
-            {t('Paste or pick your content JSON, or an existing')}{' '}
-            <code className="font-mono text-xs">_schema.json</code>{' '}
-            {t('— JustJSON works out the collections and singletons for you.')}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-medium text-foreground">JSON</span>
-            <label
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'sm' }),
-                'cursor-pointer',
-                importing && 'pointer-events-none opacity-50',
-              )}
-            >
-              <Upload />
-              {t('Choose a file')}
-              <input
-                type="file"
-                accept=".json,application/json"
-                className="sr-only"
-                disabled={importing}
-                onChange={handleFile}
-              />
-            </label>
-          </div>
-
-          <Textarea
-            value={raw}
-            onChange={(e) => {
-              setRaw(e.target.value)
-              if (error) setError(null)
-            }}
-            disabled={importing}
-            spellCheck={false}
-            rows={10}
-            placeholder='{ "collections": { ... }, "singletons": { ... } }'
-            className="max-h-72 resize-y font-mono text-xs leading-relaxed"
-          />
-
-          {error && (
-            <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
-              <AlertCircle className="mt-0.5 size-4 shrink-0" />
-              <span className="break-words">{error}</span>
-            </div>
-          )}
-        </div>
-
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="ghost" disabled={importing}>
-              {t('Cancel')}
-            </Button>
-          </DialogClose>
-          <Button disabled={importing || !raw.trim()} onClick={runImport}>
-            {importing ? (
-              <>
-                <Loader2 className="animate-spin" />
-                {t('Importing…')}
-              </>
-            ) : (
-              t('Import')
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
 const FRAMEWORK_LABEL: Record<string, string> = {
   astro: 'Astro',
   next: 'Next.js',
@@ -443,7 +200,7 @@ export function TemplateGallery({
   return (
     <div className="h-full overflow-y-auto bg-muted/30">
       <div className="mx-auto max-w-5xl px-6 py-12 sm:px-8">
-        <header className="mb-9 max-w-2xl">
+        <header className="mb-8 max-w-2xl">
           <div className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <span className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <Braces className="size-3.5" />
@@ -459,11 +216,6 @@ export function TemplateGallery({
               'Edit your content visually; everything stays in your folder as plain JSON — no server, no account.',
             )}
           </p>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            {t(
-              'The template you pick creates your schema and content files — you can change all of it later.',
-            )}
-          </p>
         </header>
 
         {error && (
@@ -475,124 +227,9 @@ export function TemplateGallery({
 
         <AiScaffoldPanel onApplied={onApplied} disabled={busy} />
 
-        <div className="mb-5 flex items-center gap-3 text-xs font-medium text-muted-foreground">
-          <span className="h-px flex-1 bg-border" />
-          {t('or start from a template')}
-          <span className="h-px flex-1 bg-border" />
-        </div>
+        <TemplateCarousel templates={templates} applying={applying} onPick={apply} />
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {templates === null && !error && [0, 1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
-
-          {templates?.map((tpl) => {
-            const Icon = ICONS[tpl.id] ?? FileStack
-            const active = applying === tpl.id
-            return (
-              <Card
-                key={tpl.id}
-                className="h-full transition-shadow hover:shadow-md data-[busy=true]:opacity-60"
-                data-busy={busy && !active}
-              >
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-                      <Icon className="size-5" />
-                    </span>
-                    <CardTitle className="text-base">{tpl.title}</CardTitle>
-                  </div>
-                  <CardDescription className="mt-2 leading-relaxed">
-                    {tpl.description}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="flex-1">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {t('What it creates')}
-                    </span>
-                    <span className="text-xs text-muted-foreground/80">
-                      {structureSummary(tpl)}
-                    </span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {tpl.collections.map((c) => (
-                      <div
-                        key={c.label}
-                        className="flex items-center gap-2 rounded-md bg-muted/60 px-2.5 py-1.5"
-                      >
-                        <Rows3 className="size-3.5 shrink-0 text-muted-foreground" />
-                        <span className="truncate text-sm font-medium text-foreground">
-                          {c.label}
-                        </span>
-                        <Badge variant="secondary" className="ml-auto shrink-0 font-normal">
-                          {tp(c.fields, '{n} field', '{n} fields')}
-                        </Badge>
-                      </div>
-                    ))}
-                    {tpl.singletons.map((s) => (
-                      <div
-                        key={s.label}
-                        className="flex items-center gap-2 rounded-md bg-muted/60 px-2.5 py-1.5"
-                      >
-                        <FileText className="size-3.5 shrink-0 text-muted-foreground" />
-                        <span className="truncate text-sm font-medium text-foreground">
-                          {s.label}
-                        </span>
-                        <Badge variant="outline" className="ml-auto shrink-0 font-normal">
-                          {t('singleton')}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-
-                <CardFooter>
-                  <Button className="h-9 w-full" disabled={busy} onClick={() => apply(tpl.id)}>
-                    {active ? (
-                      <>
-                        <Loader2 className="animate-spin" />
-                        {t('Applying…')}
-                      </>
-                    ) : (
-                      t('Use this template')
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            )
-          })}
-
-          <Card
-            className="h-full border border-dashed border-border bg-transparent ring-0 transition-colors hover:border-foreground/25 data-[busy=true]:opacity-60"
-            data-busy={busy}
-          >
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <PenLine className="size-5" />
-                </span>
-                <CardTitle className="text-base">{t('Start from scratch')}</CardTitle>
-              </div>
-              <CardDescription className="mt-2 leading-relaxed">
-                {t('Begin with an empty schema and define your own collections and fields.')}
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="flex-1">
-              <div className="flex h-full items-center rounded-md border border-dashed border-border/70 px-3 py-4 text-sm text-muted-foreground">
-                {t('Nothing here yet — you build the structure from the ground up.')}
-              </div>
-            </CardContent>
-
-            <CardFooter>
-              <Button variant="outline" className="h-9 w-full" disabled={busy} onClick={onScratch}>
-                {t('Continue with an empty project')}
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <ImportCard onApplied={onApplied} disabled={busy} />
-        </div>
+        <StartOptions onImported={onApplied} onScratch={onScratch} disabled={busy} />
       </div>
     </div>
   )
