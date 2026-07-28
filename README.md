@@ -101,8 +101,28 @@ for (const post of posts) {
 
 Each collection entry comes back with its `slug` (the filename) merged in, ready
 for routing. It reads straight from disk, so it works in any Node-based build —
-including **Astro** and **Next.js** server code. In Astro, call the loaders from a
-page's frontmatter (or an endpoint) exactly as above.
+including **Astro** and **Next.js** server code.
+
+### Astro content collections
+
+For Astro there is a dedicated loader — your content becomes real content
+collections, typed from your schema:
+
+```bash
+npm install @kdrgny/justjson-astro
+```
+
+```ts
+// src/content.config.ts
+import { justjsonCollections } from '@kdrgny/justjson-astro'
+
+export const collections = await justjsonCollections()
+```
+
+That's the whole setup. Every collection and singleton in your schema shows up in
+`getCollection()` / `getEntry()`, drafts are skipped, and saving in the editor
+updates the dev server without a restart. See
+[the package README](packages/astro/README.md) for details.
 
 ## How it works
 
