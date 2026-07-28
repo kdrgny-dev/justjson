@@ -261,6 +261,48 @@ const stats = collection(import.meta.glob('../../content/stats/*.json', { eager:
 
     <section class="block wrap reveal">
       <div class="head">
+        <span class="eyebrow">The editor</span>
+        <h2>Not a config file — a real editor</h2>
+        <p>
+          This is the actual app that opens on <span class="mono">npx @kdrgny/justjson</span>: a
+          visual schema builder, and a theme panel that previews your generated site as you style
+          it.
+        </p>
+      </div>
+      <div class="shots">
+        <figure class="shotframe">
+          <div class="panel-top">
+            <span class="dot" /><span class="dot" /><span class="dot" />
+            <span>schema</span>
+          </div>
+          <img
+            src="/shots/editor-schema.png"
+            width="1400"
+            height="875"
+            loading="lazy"
+            decoding="async"
+            alt="Visual schema builder — collections, fields and required flags, no config file"
+          />
+        </figure>
+        <figure class="shotframe">
+          <div class="panel-top">
+            <span class="dot" /><span class="dot" /><span class="dot" />
+            <span>design</span>
+          </div>
+          <img
+            src="/shots/editor-design.png"
+            width="1400"
+            height="875"
+            loading="lazy"
+            decoding="async"
+            alt="Theme editor with a live preview of the generated site"
+          />
+        </figure>
+      </div>
+    </section>
+
+    <section class="block wrap reveal">
+      <div class="head">
         <span class="eyebrow">{sections.stepsEyebrow}</span>
         <h2>{sections.stepsTitle}</h2>
       </div>

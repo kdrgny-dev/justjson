@@ -1353,6 +1353,31 @@ tbody tr {
 }
 
 /* ---------- steps ---------- */
+.shots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.shotframe {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--raised);
+  box-shadow: var(--shadow);
+}
+.shotframe img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 940px) {
+  .shots {
+    grid-template-columns: 1fr;
+  }
+}
+
 .steps {
   position: relative;
   display: grid;
