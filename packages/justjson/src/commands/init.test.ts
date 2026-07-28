@@ -45,3 +45,16 @@ describe('initProject', () => {
     await expect(initProject(root, 'yok')).rejects.toThrow()
   })
 })
+
+describe('tekil örnekleri', () => {
+  it('şablondaki tekil örneğini diske yazar', async () => {
+    await initProject(root, 'blog')
+    const settings = JSON.parse(await readFile(join(root, 'content/settings.json'), 'utf8'))
+    expect(settings.title).toBeTruthy()
+  })
+
+  it('tekili olmayan şablonda dosya üretmez', async () => {
+    await initProject(root, 'changelog')
+    await expect(readFile(join(root, 'content/changelog.json'), 'utf8')).rejects.toThrow()
+  })
+})

@@ -3,7 +3,16 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import type { Schema } from '@justjson/core'
-import { AlertTriangle, Check, Copy, GitBranch, Loader2, Terminal, Upload } from 'lucide-react'
+import {
+  AlertTriangle,
+  Check,
+  Copy,
+  GitBranch,
+  Loader2,
+  Sparkles,
+  Terminal,
+  Upload,
+} from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import * as api from './api'
@@ -123,6 +132,7 @@ export function Ship({ schema }: { schema: Schema }) {
   const [message, setMessage] = useState('content: update')
   const [repoName, setRepoName] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
+  const [scaffolded, setScaffolded] = useState(false)
 
   const refresh = useCallback(async () => {
     try {
@@ -161,6 +171,14 @@ export function Ship({ schema }: { schema: Schema }) {
     return t('Pushed {branch} to origin.', { branch })
   }
 
+  const scaffold = async () => {
+    const { written, skipped } = await api.shipScaffold()
+    setScaffolded(true)
+    return skipped.length > 0
+      ? t('Created {n} file(s); kept {k} of your own.', { n: written.length, k: skipped.length })
+      : t('Created {n} file(s).', { n: written.length })
+  }
+
   const createRepo = async () => {
     const created = await api.shipCreateRepo(repoName, true)
     return t('Created {name} on GitHub and pushed it.', { name: created.name })
@@ -169,6 +187,8 @@ export function Ship({ schema }: { schema: Schema }) {
   const git = info?.git
   const snippet = snippetFor(info?.framework ?? 'unknown', schema)
   const pending = git?.pendingFiles ?? 0
+  // Framework yoksa ortada bir site de yok; kod parçası yerine kurulum sunarız.
+  const noSite = info !== null && (info.framework === 'unknown' || scaffolded)
 
   return (
     <PageShell>
@@ -178,16 +198,39 @@ export function Ship({ schema }: { schema: Schema }) {
       />
       <PageBody>
         <div className="mx-auto max-w-2xl space-y-4 px-8 py-6">
-          <Step
-            index={1}
-            title={t('Use it in {framework}', {
-              framework: FRAMEWORK_LABEL[info?.framework ?? 'unknown'],
-            })}
-          >
-            {snippet.install && <CodeBlock code={snippet.install} />}
-            <p className="text-xs text-muted-foreground">{snippet.file}</p>
-            <CodeBlock code={snippet.code} />
-          </Step>
+          {noSite ? (
+            <Step index={1} title={t('Give your content a site')} done={scaffolded}>
+              <p className="text-sm text-muted-foreground">
+                {t(
+                  'There is no site in this folder yet. JustJSON can generate a small Astro site wired to your content — a home page listing every collection, and a page per entry.',
+                )}
+              </p>
+              <Button onClick={() => act('scaffold', scaffold)} disabled={busy !== null}>
+                {busy === 'scaffold' ? <Loader2 className="animate-spin" /> : <Sparkles />}
+                {t('Create an Astro site')}
+              </Button>
+              {scaffolded && (
+                <>
+                  <p className="text-sm text-muted-foreground">{t('Now start it:')}</p>
+                  <CodeBlock code={'npm install\nnpm run dev'} />
+                </>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {t('Nothing you already have is overwritten.')}
+              </p>
+            </Step>
+          ) : (
+            <Step
+              index={1}
+              title={t('Use it in {framework}', {
+                framework: FRAMEWORK_LABEL[info?.framework ?? 'unknown'],
+              })}
+            >
+              {snippet.install && <CodeBlock code={snippet.install} />}
+              <p className="text-xs text-muted-foreground">{snippet.file}</p>
+              <CodeBlock code={snippet.code} />
+            </Step>
+          )}
 
           <Step index={2} title={t('Commit your content')} done={!!git?.isRepo && pending === 0}>
             {!git?.isRepo ? (

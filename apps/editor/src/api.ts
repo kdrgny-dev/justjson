@@ -221,6 +221,9 @@ async function shipAction<T>(path: string, body: unknown): Promise<T> {
   return data
 }
 
+export const shipScaffold = () =>
+  shipAction<{ written: string[]; skipped: string[] }>('scaffold', {})
+
 export const shipCommit = (message: string) =>
   shipAction<{ committed: boolean; count: number }>('commit', { message })
 export const shipPush = () => shipAction<{ branch: string }>('push', {})

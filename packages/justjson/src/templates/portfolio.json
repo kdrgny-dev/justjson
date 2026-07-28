@@ -90,6 +90,10 @@
         "kind": "Web",
         "body": "Project details go here."
       }
-    ]
+    ],
+    "about": {
+      "name": "Ada Lovelace",
+      "bio": "I build things for the web."
+    }
   }
 }

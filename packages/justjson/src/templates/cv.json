@@ -57,6 +57,10 @@
         "company": "Acme Inc.",
         "summary": "..."
       }
-    ]
+    ],
+    "profile": {
+      "name": "Ada Lovelace",
+      "headline": "Software engineer"
+    }
   }
 }

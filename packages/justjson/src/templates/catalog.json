@@ -74,6 +74,10 @@
         "category": "Home",
         "description": "Hand-made ceramic mug."
       }
-    ]
+    ],
+    "store": {
+      "title": "My store",
+      "tagline": "Small batch, made well"
+    }
   }
 }

@@ -301,6 +301,15 @@ export const tr: Record<string, string> = {
   'Ship it': 'Yayına al',
   'Your content is on disk. Here is what comes next.': 'İçeriğin diskte. Sıradaki adımlar şunlar.',
   'Use it in {framework}': '{framework} içinde kullan',
+  'Give your content a site': 'İçeriğine bir site ver',
+  'There is no site in this folder yet. JustJSON can generate a small Astro site wired to your content — a home page listing every collection, and a page per entry.':
+    'Bu klasörde henüz bir site yok. JustJSON, içeriğine bağlı küçük bir Astro sitesi üretebilir — koleksiyonları listeleyen bir ana sayfa ve her kayıt için bir sayfa.',
+  'Create an Astro site': 'Astro sitesi oluştur',
+  'Created {n} file(s).': '{n} dosya oluşturuldu.',
+  'Created {n} file(s); kept {k} of your own.':
+    '{n} dosya oluşturuldu; senin {k} dosyana dokunulmadı.',
+  'Now start it:': 'Şimdi başlat:',
+  'Nothing you already have is overwritten.': 'Var olan hiçbir dosyanın üzerine yazılmaz.',
   '{framework} project detected': '{framework} projesi algılandı',
   Project: 'Proje',
   Copied: 'Kopyalandı',

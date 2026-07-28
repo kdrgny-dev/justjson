@@ -15,7 +15,8 @@ export interface Template {
   title: string
   description: string
   schema: unknown
-  samples: Record<string, Record<string, unknown>[]>
+  /** Koleksiyon adı → satırlar, ya da tekil adı → tek kayıt. */
+  samples: Record<string, Record<string, unknown>[] | Record<string, unknown>>
 }
 
 export interface TemplateMeta {
@@ -70,10 +71,16 @@ export async function applyTemplate(
   await saveSchema(adapter, schema, contentDir)
 
   const store = new ContentStore(adapter, schema, contentDir)
-  for (const [collection, rows] of Object.entries(template.samples)) {
-    for (const row of rows) {
+  const singletonNames = new Set(schema.singletons.map((s) => s.name))
+  for (const [name, sample] of Object.entries(template.samples)) {
+    // Dizi olmayan örnek bir tekil kaydıdır; dosyası olmadan Astro koleksiyonu boş görünür.
+    if (!Array.isArray(sample)) {
+      if (singletonNames.has(name)) await store.writeSingleton(name, sample)
+      continue
+    }
+    for (const row of sample) {
       const slug = slugify(typeof row.slug === 'string' ? row.slug : String(row.title ?? 'content'))
-      await store.writeEntry(collection, slug, row)
+      await store.writeEntry(name, slug, row)
     }
   }
   return schema

@@ -79,6 +79,10 @@
         "room": "Main hall",
         "description": "Welcome to the event."
       }
-    ]
+    ],
+    "event": {
+      "title": "My event",
+      "tagline": "One day, one track"
+    }
   }
 }

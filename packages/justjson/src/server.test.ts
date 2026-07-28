@@ -451,3 +451,30 @@ describe('ship API', () => {
     expect(data.framework).toBe('astro')
   })
 })
+
+describe('scaffold API', () => {
+  it('POST /api/_scaffold Astro sitesi üretir', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_ship/scaffold', { method: 'POST' })
+    expect(res.status).toBe(200)
+    const data = (await res.json()) as { written: string[] }
+    expect(data.written).toContain('src/pages/index.astro')
+    expect(data.written).toContain('src/pages/posts/[slug].astro')
+  })
+
+  it('var olan dosyaları ezmez', async () => {
+    await writeFile(join(root, 'package.json'), '{"name":"mine"}')
+    const app = await createServer(root)
+    const res = await app.request('/api/_ship/scaffold', { method: 'POST' })
+    const data = (await res.json()) as { skipped: string[] }
+    expect(data.skipped).toContain('package.json')
+  })
+
+  it('şema yoksa 400 döner', async () => {
+    const empty = await mkdtemp(join(tmpdir(), 'justjson-empty-'))
+    const app = await createServer(empty)
+    const res = await app.request('/api/_ship/scaffold', { method: 'POST' })
+    expect(res.status).toBe(400)
+    await rm(empty, { recursive: true, force: true })
+  })
+})

@@ -74,6 +74,9 @@
         "ingredients": "- 200g pasta\n- 2 cloves garlic\n- Olive oil",
         "steps": "Boil the pasta. Fry the garlic in olive oil. Toss together."
       }
-    ]
+    ],
+    "kitchen": {
+      "title": "My recipe box"
+    }
   }
 }

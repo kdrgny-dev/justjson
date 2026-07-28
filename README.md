@@ -54,7 +54,8 @@ Design your schema, enter content, upload images. Everything is written to `cont
 | **Type-safe output** | Generates `types.ts` **and** a zero-dependency `content.ts` loader from your schema — `loadPosts()`, `loadSettings()` — so your content is fully typed in your build, no glue code. |
 | **Validate in CI** | `justjson validate` checks content against the schema — broken relations, duplicate slugs, missing media, type errors. Exits non-zero on failure. |
 | **Draft / published** | Toggle an entry's status; the generated loader returns published entries by default. |
-| **Ship it** | A last step that closes the loop: the setup snippet for your framework, a one-click content commit, and push to GitHub. |
+| **Ship it** | A last step that closes the loop: generate a working site, or get the setup snippet for the framework you already use, then commit and push — all from the editor. |
+| **One-click site** | No site in the folder yet? JustJSON generates a small Astro site wired to your content — home page, a page per entry, nothing you already have overwritten. |
 | **English or Turkish** | The editor ships in English; switch to Turkish from the project menu any time. |
 | **Export any time** | One click downloads schema + content + types as a ZIP. Nothing is ever locked in. |
 | **The endpoint is yours** | Wherever you put the JSON becomes your API — repo raw, jsDelivr, your build. |
@@ -66,7 +67,7 @@ Field types: `text` · `richtext` · `number` · `boolean` · `date` · `select`
 | Command | What it does |
 |---|---|
 | `npx @kdrgny/justjson` (or `serve`) | Starts the local editor and opens it in your browser |
-| `npx @kdrgny/justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`, `portfolio`, `docs`, `changelog`, `recipe`, `event`, `catalog`) |
+| `npx @kdrgny/justjson init [template]` | Scaffolds a schema from a template (`blog`, `cv`, `portfolio`, `docs`, `changelog`, `recipe`, `event`, `catalog`). Add `--astro` to generate a working site too |
 | `npx @kdrgny/justjson types` | Generates `types.ts` + a typed `content.ts` loader from your schema |
 | `npx @kdrgny/justjson export` | Exports a ZIP snapshot (schema + content + types) |
 | `npx @kdrgny/justjson validate` | Checks your content against the schema (great for CI) |
@@ -142,9 +143,23 @@ The editor is served locally by the CLI; it talks only to your disk. Delete `nod
 
 ## After you write content
 
-The **Ship it** tab closes the loop. It detects your framework from
-`package.json` and shows exactly what to paste — the Astro loader for Astro
-projects, the generated `content.ts` loader everywhere else.
+The **Ship it** tab closes the loop.
+
+If there is no site in the folder yet, it offers to generate one:
+
+```bash
+npx @kdrgny/justjson init blog --astro
+npm install && npm run dev
+```
+
+You get a working Astro site built from your schema — a home page listing every
+collection and a page per entry — already wired to `content/`. It is a starting
+point to design over, not a finished theme. Nothing you already have is
+overwritten.
+
+If you already have a project, it detects the framework from `package.json` and
+shows exactly what to paste — the Astro loader for Astro projects, the generated
+`content.ts` loader everywhere else.
 
 From the same screen you can commit just your `content/` folder and push it. It
 shells out to the `git` and `gh` you already have, so there is no OAuth app, no
@@ -178,6 +193,11 @@ pnpm test
 ## Roadmap
 
 Small, need-driven improvements shipped as releases.
+
+Landed in `1.6.0`:
+
+- **One-click site** — `--astro`, or a button in the editor, generates a working
+  Astro site around your content.
 
 Landed in `1.5.0`:
 

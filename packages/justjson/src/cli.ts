@@ -1,9 +1,14 @@
 #!/usr/bin/env node
+import { basename } from 'node:path'
+import { loadSchema } from '@justjson/core'
 import { Command } from 'commander'
 import { exportZip } from './commands/export'
 import { initProject, listTemplates } from './commands/init'
 import { generateTypesFile } from './commands/types'
 import { formatJson, formatText, shouldFail, validateProjectAt } from './commands/validate'
+import { resolveContentDir } from './config'
+import { FsAdapter } from './fs-adapter'
+import { writeAstroSite } from './scaffold'
 import { startServer } from './server'
 import { readVersion } from './version'
 
@@ -19,9 +24,18 @@ program
   .command('init')
   .description('Scaffold a project from a template')
   .argument('[template]', `template name (${listTemplates().join(', ')})`, 'blog')
-  .action(async (template: string) => {
+  .option('--astro', 'also generate a working Astro site around the content')
+  .action(async (template: string, opts: { astro?: boolean }) => {
     await initProject(root, template)
     console.log(`Scaffolded from the '${template}' template.`)
+    if (!opts.astro) return
+
+    const schema = await loadSchema(new FsAdapter(root), await resolveContentDir(root))
+    if (!schema) return
+    const { written, skipped } = await writeAstroSite(root, schema, basename(root) || 'my-site')
+    console.log(`Wrote ${written.length} site file(s).`)
+    if (skipped.length > 0) console.log(`Kept your existing: ${skipped.join(', ')}`)
+    console.log('\nNext:\n  npm install\n  npm run dev')
   })
 
 program

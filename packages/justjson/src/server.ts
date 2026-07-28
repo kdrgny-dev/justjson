@@ -22,6 +22,7 @@ import { resolveContentDir } from './config'
 import { detectFramework } from './detect'
 import { FsAdapter } from './fs-adapter'
 import { commitContent, createGitHubRepo, gitStatus, pushContent } from './git'
+import { writeAstroSite } from './scaffold'
 
 const editorDir = fileURLToPath(new URL('./editor', import.meta.url))
 
@@ -176,6 +177,13 @@ export async function createServer(root: string): Promise<Hono> {
       singletons: schema.singletons.length,
     }),
   )
+
+  app.post('/api/_ship/scaffold', async (c) => {
+    if (schema.collections.length === 0 && schema.singletons.length === 0) {
+      return c.json({ error: 'Pick a template or build a schema first.' }, 400)
+    }
+    return c.json(await writeAstroSite(root, schema, basename(root) || 'my-site'))
+  })
 
   // Ship: içeriği yazdıktan sonraki adım — kurulum kodu, commit, GitHub.
   app.get('/api/_ship', async (c) =>

@@ -1,6 +1,6 @@
 {
   "name": "@justjson/editor",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "JustJSON editör arayüzü (Vite + React SPA)",
   "type": "module",
   "private": true,

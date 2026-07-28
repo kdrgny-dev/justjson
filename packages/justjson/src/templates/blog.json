@@ -56,6 +56,9 @@
         "slug": "first-post",
         "body": "Hello."
       }
-    ]
+    ],
+    "settings": {
+      "title": "My blog"
+    }
   }
 }
