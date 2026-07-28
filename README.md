@@ -22,6 +22,10 @@ No database · no account · no lock-in.
 npx @kdrgny/justjson
 ```
 
+<br>
+
+<img src=".github/media/editor-entry.png" alt="The JustJSON editor — editing a post that lives on disk as content/posts/hello-justjson.json" width="860">
+
 </div>
 
 ---
@@ -29,6 +33,10 @@ npx @kdrgny/justjson
 JustJSON is the cleanest way to manage structured content **without writing config**. Design collections and fields by clicking, fill them in a real editor, and get plain JSON files you own — in your own repo, ready for your build.
 
 It runs entirely on your machine. Nothing is uploaded anywhere; your content is just files on disk.
+
+| Build the schema by clicking | Style it, preview it live |
+|:---:|:---:|
+| <img src=".github/media/editor-schema.png" alt="Visual schema builder — collections, fields and required flags" width="420"> | <img src=".github/media/editor-design.png" alt="Theme editor with a live preview of the generated site" width="420"> |
 
 ## Quick start
 
