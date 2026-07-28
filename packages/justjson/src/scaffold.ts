@@ -1,28 +1,60 @@
 import { access, mkdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import { type Collection, type Field, type Schema, slugify } from '@justjson/core'
+import { type Collection, type Field, type Schema, defaultTheme, slugify } from '@justjson/core'
 
 /** Üretilen sitenin sabitlediği sürümler; kullanıcı sonra kendi günceller. */
 const ASTRO_VERSION = '^5.18.0'
-const LOADER_VERSION = '^1.7.0'
+const LOADER_VERSION = '^1.8.0'
 
-const STYLE = `  <style is:global>
-    :root { color-scheme: light dark; }
-    body {
-      margin: 0 auto;
-      max-width: 44rem;
-      padding: 3rem 1.25rem 6rem;
-      font: 16px/1.65 ui-sans-serif, system-ui, sans-serif;
-    }
-    h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 0.35rem; }
-    h2 { font-size: 1.05rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.6; margin: 2.75rem 0 0.75rem; }
-    ul { list-style: none; margin: 0; padding: 0; }
-    li + li { margin-top: 0.6rem; }
-    a { color: inherit; }
-    time { opacity: 0.6; font-size: 0.9rem; }
-    img { max-width: 100%; height: auto; border-radius: 8px; }
-    .body { white-space: pre-wrap; }
-  </style>`
+const LAYOUT = `---
+import { parseTheme, themeCss } from '@kdrgny/justjson-astro/theme'
+import theme from '../../content/_theme.json'
+
+// Görünüm content/_theme.json'dan gelir — JustJSON'da değiştirince burası da değişir.
+const css = themeCss(parseTheme(theme))
+const { title } = Astro.props
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <style is:global set:html={css} />
+    <style is:global>
+      body {
+        margin: 0 auto;
+        max-width: 44rem;
+        padding: var(--jj-page) 1.25rem calc(var(--jj-page) * 2);
+        background: var(--jj-bg);
+        color: var(--jj-text);
+        font-family: var(--jj-font);
+        font-size: 16px;
+        line-height: var(--jj-lead);
+      }
+      h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 0.35rem; }
+      h2 {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--jj-muted);
+        margin: calc(var(--jj-page) * 0.8) 0 var(--jj-gap);
+      }
+      ul { list-style: none; margin: 0; padding: 0; }
+      li + li { margin-top: var(--jj-gap); }
+      a { color: var(--jj-accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      time { color: var(--jj-muted); font-size: 0.9rem; }
+      img { max-width: 100%; height: auto; border-radius: var(--jj-radius); }
+      code { background: color-mix(in oklab, var(--jj-text) 8%, transparent); padding: 0.1em 0.35em; border-radius: calc(var(--jj-radius) / 2); }
+      .body { white-space: pre-wrap; }
+      .back { color: var(--jj-muted); font-size: 0.9rem; }
+    </style>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+`
 
 function titleFieldOf(fields: Field[]): string {
   const preferred = fields.find((f) =>
@@ -51,6 +83,7 @@ function detailPage(collection: Collection): string {
 
   return `---
 import { getCollection } from 'astro:content'
+import Layout from '../../layouts/Base.astro'
 
 export async function getStaticPaths() {
   const entries = await getCollection('${collection.name}')
@@ -59,18 +92,10 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props
 ---
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{entry.data.${titleKey} ?? entry.id}</title>
-${STYLE}
-  </head>
-  <body>
-    <p><a href="/">&larr; Back</a></p>
-${parts.map((p) => `    ${p}`).join('\n')}
-  </body>
-</html>
+<Layout title={entry.data.${titleKey} ?? entry.id}>
+  <p class="back"><a href="/">&larr; Back</a></p>
+${parts.map((p) => `  ${p}`).join('\n')}
+</Layout>
 `
 }
 
@@ -103,23 +128,20 @@ function indexPage(schema: Schema, projectName: string): string {
 
   const empty = `    <p>No content yet — run <code>npx @kdrgny/justjson</code> and add some.</p>`
 
+  const pageTitle = singleton
+    ? `{site?.data.${titleFieldOf(singleton.fields)} ?? '${projectName}'}`
+    : `"${projectName}"`
+
   return `---
 import { ${imports} } from 'astro:content'
+import Layout from '../layouts/Base.astro'
 
 ${loads.join('\n')}
 ---
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${singleton ? `{site?.data.${titleFieldOf(singleton.fields)} ?? '${projectName}'}` : projectName}</title>
-${STYLE}
-  </head>
-  <body>
-    <h1>${heading}</h1>
-${sections.length ? sections.join('\n') : empty}
-  </body>
-</html>
+<Layout title={${pageTitle.startsWith('{') ? pageTitle.slice(1, -1) : pageTitle}}>
+  <h1>${heading}</h1>
+${(sections.length ? sections.join('\n') : empty).replace(/^ {4}/gm, '  ')}
+</Layout>
 `
 }
 
@@ -170,6 +192,8 @@ dist
 export const collections = await justjsonCollections()
 `,
 
+    'content/_theme.json': `${JSON.stringify(defaultTheme(), null, 2)}\n`,
+    'src/layouts/Base.astro': LAYOUT,
     'src/pages/index.astro': indexPage(schema, projectName),
   }
 

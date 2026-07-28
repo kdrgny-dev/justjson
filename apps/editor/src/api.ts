@@ -233,3 +233,48 @@ export const shipCommit = (message: string) =>
 export const shipPush = () => shipAction<{ branch: string }>('push', {})
 export const shipCreateRepo = (name: string, isPrivate: boolean) =>
   shipAction<{ name: string }>('repo', { name, private: isPrivate })
+
+export interface Theme {
+  palette: string
+  accent: string
+  font: string
+  radius: number
+  density: 'tight' | 'normal' | 'roomy'
+}
+
+export async function getTheme(): Promise<Theme> {
+  const res = await ok(await fetch('/api/_theme'))
+  return res.json() as Promise<Theme>
+}
+
+export async function putTheme(theme: Theme): Promise<Theme> {
+  const res = await ok(
+    await fetch('/api/_theme', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(theme),
+    }),
+  )
+  return res.json() as Promise<Theme>
+}
+
+export type PreviewState =
+  | { status: 'idle' }
+  | { status: 'starting' }
+  | { status: 'running'; url: string }
+  | { status: 'error'; message: string }
+
+export async function getPreview(): Promise<PreviewState> {
+  const res = await ok(await fetch('/api/_preview'))
+  return res.json() as Promise<PreviewState>
+}
+
+export async function startPreview(): Promise<PreviewState> {
+  const res = await ok(await fetch('/api/_preview/start', { method: 'POST' }))
+  return res.json() as Promise<PreviewState>
+}
+
+export async function stopPreview(): Promise<PreviewState> {
+  const res = await ok(await fetch('/api/_preview/stop', { method: 'POST' }))
+  return res.json() as Promise<PreviewState>
+}

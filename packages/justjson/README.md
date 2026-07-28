@@ -43,6 +43,7 @@ Design your schema, enter content, upload images. Everything is written to `cont
 | **Validate in CI** | `justjson validate` checks content against the schema — broken relations, duplicate slugs, missing media, type errors. Exits non-zero on failure. |
 | **Draft / published** | Toggle an entry's status; the generated loader returns published entries by default. |
 | **One-click site** | No site yet? `init --astro` (or a button in the editor) generates a working Astro site around your content. |
+| **Design & Preview** | Theme your generated site (palette, accent, font, corners) with a live sample, and run it inside the editor to watch changes land. |
 | **Ship it** | Setup snippet for your framework, one-click content commit, push to GitHub, then deploy links for Vercel and Netlify — using the `git`/`gh` already on your machine. No tokens stored. |
 | **Astro collections** | [`@kdrgny/justjson-astro`](https://www.npmjs.com/package/@kdrgny/justjson-astro) turns your content into typed Astro content collections in one line. |
 | **English or Turkish** | The editor ships in English; switch to Turkish from the project menu any time. |

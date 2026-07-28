@@ -1,29 +1,43 @@
 {
   "name": "@kdrgny/justjson-astro",
-  "version": "1.7.0",
-  "description": "Astro content loader for JustJSON — turn your content/ folder into typed Astro content collections.",
+  "version": "1.8.0",
+  "description": "Astro content loader for JustJSON \u2014 turn your content/ folder into typed Astro content collections.",
   "type": "module",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
-  "author": "Kadir Günay",
+  "author": "Kadir G\u00fcnay",
   "homepage": "https://github.com/kdrgny-dev/justjson",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kdrgny-dev/justjson.git",
     "directory": "packages/astro"
   },
-  "keywords": ["astro", "astro-loader", "astro-integration", "cms", "json", "content", "justjson"],
+  "keywords": [
+    "astro",
+    "astro-loader",
+    "astro-integration",
+    "cms",
+    "json",
+    "content",
+    "justjson"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./theme": {
+      "types": "./dist/theme.d.ts",
+      "import": "./dist/theme.js"
     }
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

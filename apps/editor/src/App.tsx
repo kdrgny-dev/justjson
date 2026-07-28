@@ -48,10 +48,12 @@ import {
   ChevronsUpDown,
   Copy,
   Download,
+  Eye,
   FileCog,
   FolderGit2,
   Image as ImageIcon,
   Link2,
+  Palette,
   PencilRuler,
   Plus,
   Rocket,
@@ -65,10 +67,12 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { Preview } from './Preview'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
 import { Ship } from './Ship'
 import { TemplateGallery } from './TemplateGallery'
+import { Theme } from './Theme'
 import { AIAssist } from './ai/AIAssist'
 import { AiSettingsProvider, useAiSettings } from './ai/AiSettingsContext'
 import * as api from './api'
@@ -88,6 +92,8 @@ import { LANGS, getLang, setLang, t, tp, useLang } from './i18n'
 type Selection =
   | { kind: 'schema' }
   | { kind: 'json' }
+  | { kind: 'theme' }
+  | { kind: 'preview' }
   | { kind: 'ship' }
   | { kind: 'collection'; name: string }
   | { kind: 'entry'; collection: string; slug: string }
@@ -227,6 +233,8 @@ function crumbsFor(
   if (selection.kind === 'schema') return [{ label: t('Schema') }]
   if (selection.kind === 'json') return [{ label: t('Raw JSON') }]
   if (selection.kind === 'ship') return [{ label: t('Ship it') }]
+  if (selection.kind === 'theme') return [{ label: t('Design') }]
+  if (selection.kind === 'preview') return [{ label: t('Preview') }]
   if (selection.kind === 'collection') {
     const col = schema.collections.find((c) => c.name === selection.name)
     return [{ label: col?.label ?? selection.name }]
@@ -334,6 +342,20 @@ function Sidebar({
           onClick={() => onSelect({ kind: 'json' })}
         >
           {t('Raw JSON')}
+        </NavItem>
+        <NavItem
+          icon={<Palette className="h-4 w-4" />}
+          active={selection?.kind === 'theme'}
+          onClick={() => onSelect({ kind: 'theme' })}
+        >
+          {t('Design')}
+        </NavItem>
+        <NavItem
+          icon={<Eye className="h-4 w-4" />}
+          active={selection?.kind === 'preview'}
+          onClick={() => onSelect({ kind: 'preview' })}
+        >
+          {t('Preview')}
         </NavItem>
         <NavItem
           icon={<Rocket className="h-4 w-4" />}
@@ -649,6 +671,14 @@ function MainArea({
 
   if (selection.kind === 'ship') {
     return <Ship schema={schema} />
+  }
+
+  if (selection.kind === 'theme') {
+    return <Theme />
+  }
+
+  if (selection.kind === 'preview') {
+    return <Preview />
   }
 
   if (selection.kind === 'collection') {

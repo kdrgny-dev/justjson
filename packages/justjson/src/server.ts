@@ -10,8 +10,11 @@ import {
   UnsafeSlugError,
   inferProject,
   loadSchema,
+  loadTheme,
   parseSchema,
+  parseTheme,
   saveSchema,
+  saveTheme,
   slugify,
 } from '@justjson/core'
 import type { Schema } from '@justjson/core'
@@ -22,6 +25,7 @@ import { resolveContentDir } from './config'
 import { detectFramework } from './detect'
 import { FsAdapter } from './fs-adapter'
 import { commitContent, createGitHubRepo, gitStatus, pushContent } from './git'
+import { PreviewProcess } from './preview'
 import { writeAstroSite } from './scaffold'
 
 const editorDir = fileURLToPath(new URL('./editor', import.meta.url))
@@ -158,6 +162,8 @@ export async function createServer(root: string): Promise<Hono> {
   let schema = (await loadSchema(adapter, contentDir)) ?? empty
   let store = new ContentStore(adapter, schema, contentDir)
 
+  const preview = new PreviewProcess(root)
+
   const app = new Hono()
 
   app.onError((err, c) => {
@@ -183,6 +189,14 @@ export async function createServer(root: string): Promise<Hono> {
       return c.json({ error: 'Pick a template or build a schema first.' }, 400)
     }
     return c.json(await writeAstroSite(root, schema, basename(root) || 'my-site'))
+  })
+
+  // Preview: kullanıcının kendi dev sunucusunu çalıştırıp iframe'e URL verir.
+  app.get('/api/_preview', (c) => c.json(preview.getState()))
+  app.post('/api/_preview/start', async (c) => c.json(await preview.start()))
+  app.post('/api/_preview/stop', (c) => {
+    preview.stop()
+    return c.json(preview.getState())
   })
 
   // Ship: içeriği yazdıktan sonraki adım — kurulum kodu, commit, GitHub.
@@ -235,6 +249,15 @@ export async function createServer(root: string): Promise<Hono> {
     } catch (e) {
       return c.json({ error: (e as Error).message }, 400)
     }
+  })
+
+  // Tema yalnızca görünümü sürer; sayfa yapısına dokunmaz, o yüzden ne zaman
+  // değiştirilse kullanıcının kendi sayfaları güvende kalır.
+  app.get('/api/_theme', async (c) => c.json(await loadTheme(adapter, contentDir)))
+
+  app.put('/api/_theme', async (c) => {
+    await saveTheme(adapter, parseTheme(await c.req.json()), contentDir)
+    return c.json(await loadTheme(adapter, contentDir))
   })
 
   app.get('/api/_templates', (c) => c.json({ items: templateList() }))

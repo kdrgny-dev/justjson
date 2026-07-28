@@ -44,3 +44,15 @@ export { buildExportManifest } from './export/bundle'
 
 export type { InferredProject } from './import/infer'
 export { inferProject } from './import/infer'
+
+export type { Theme, Palette, ThemeFont, Density } from './theme/theme'
+export {
+  PALETTES,
+  THEME_FONTS,
+  defaultTheme,
+  parseTheme,
+  themeCss,
+  paletteOf,
+  fontOf,
+} from './theme/theme'
+export { loadTheme, saveTheme } from './theme/store'

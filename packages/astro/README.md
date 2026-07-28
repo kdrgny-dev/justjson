@@ -97,6 +97,18 @@ export const collections = {
 Format checks (is this a real URL?) are left to `justjson validate` on purpose,
 so a typo in one entry never breaks your build in a surprising place.
 
+## Theming
+
+The generated site reads `content/_theme.json` through a small helper:
+
+```ts
+import { parseTheme, themeCss } from '@kdrgny/justjson-astro/theme'
+```
+
+`themeCss(parseTheme(theme))` returns a `:root` block of CSS variables
+(`--jj-bg`, `--jj-accent`, `--jj-font`, `--jj-radius`…). Edit the theme in the
+JustJSON **Design** tab; the site updates on the next reload.
+
 ## License
 
 [MIT](https://github.com/kdrgny-dev/justjson/blob/main/LICENSE) © Kadir Günay

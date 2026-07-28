@@ -341,4 +341,52 @@ export const tr: Record<string, string> = {
     'Bu makinede zaten giriş yapılmış GitHub CLI kullanılır — hiçbir token saklanmaz.',
   'Add a remote yourself, then come back to push:':
     'Uzak sunucuyu kendin ekle, sonra göndermek için buraya dön:',
+
+  // --- Tema / Design ---
+  Design: 'Tasarım',
+  Theme: 'Tema',
+  'Style your generated site. Changes preview live and save to _theme.json.':
+    'Üretilen siteni biçimlendir. Değişiklikler anında önizlenir ve _theme.json’a kaydedilir.',
+  'Unsaved changes': 'Kaydedilmemiş değişiklikler',
+  'Save theme': 'Temayı kaydet',
+  'Theme saved.': 'Tema kaydedildi.',
+  Palette: 'Palet',
+  Accent: 'Vurgu',
+  'Pick an accent color': 'Bir vurgu rengi seç',
+  Font: 'Yazı tipi',
+  'Corners: {n}px': 'Köşeler: {n}px',
+  'Corner radius in pixels': 'Köşe yarıçapı (piksel)',
+  Density: 'Yoğunluk',
+  Tight: 'Sıkı',
+  Cozy: 'Rahat',
+  Roomy: 'Ferah',
+  'Live preview': 'Canlı önizleme',
+  // Önizlemedeki örnek sayfa metni
+  'The Quiet Ledger': 'Sessiz Defter',
+  'A small journal of things worth keeping. This is exactly how your generated site renders — same colors, type, spacing and corners.':
+    'Saklamaya değer şeylerin küçük bir güncesi. Üretilen siten tam da böyle görünür — aynı renkler, yazı, boşluk ve köşeler.',
+  'Recent entries': 'Son kayıtlar',
+  'On keeping notes in plain files': 'Notları düz dosyalarda tutmak üzerine',
+  'A field guide to small tools': 'Küçük araçlar için bir saha kılavuzu',
+  'Why JSON, and nothing more': 'Neden JSON, fazlası değil',
+  'Built from': 'Şununla kuruldu:',
+  'Read the latest': 'Sonuncuyu oku',
+  Subscribe: 'Abone ol',
+
+  // --- Preview ---
+  Preview: 'Önizleme',
+  'Your site, running live. Edit content and refresh to see it change.':
+    'Siten canlı çalışıyor. İçeriği düzenle, yenile ve değişikliği gör.',
+  Refresh: 'Yenile',
+  'Open in a tab': 'Sekmede aç',
+  Stop: 'Durdur',
+  'Site preview': 'Site önizlemesi',
+  'Starting your dev server…': 'Dev sunucun başlatılıyor…',
+  'The first start can take a moment while it warms up.':
+    'İlk başlatma, ısınırken biraz sürebilir.',
+  'Could not start the preview': 'Önizleme başlatılamadı',
+  'See your site as you build it': 'Siteni kurarken gör',
+  'Runs the site in this folder and shows it here. Content and theme changes appear as you make them.':
+    'Bu klasördeki siteyi çalıştırıp burada gösterir. İçerik ve tema değişiklikleri yaptıkça görünür.',
+  'Start preview': 'Önizlemeyi başlat',
 }

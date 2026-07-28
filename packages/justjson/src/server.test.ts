@@ -498,3 +498,61 @@ describe('publish API', () => {
     expect(data.git.remoteWebUrl).toBeNull()
   })
 })
+
+describe('theme API', () => {
+  it('GET /api/_theme varsayılan temayı verir', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_theme')
+    expect(res.status).toBe(200)
+    const theme = (await res.json()) as { palette: string; accent: string }
+    expect(theme.palette).toBeTruthy()
+    expect(theme.accent).toMatch(/^#/)
+  })
+
+  it('PUT /api/_theme kaydeder ve GET yansıtır', async () => {
+    const app = await createServer(root)
+    const put = await app.request('/api/_theme', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accent: '#ff0000', density: 'roomy' }),
+    })
+    expect(put.status).toBe(200)
+    const theme = (await (await app.request('/api/_theme')).json()) as {
+      accent: string
+      density: string
+    }
+    expect(theme.accent).toBe('#ff0000')
+    expect(theme.density).toBe('roomy')
+  })
+
+  it('geçersiz değerleri sessizce düzeltir', async () => {
+    const app = await createServer(root)
+    await app.request('/api/_theme', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ accent: 'mavi', radius: 9999 }),
+    })
+    const theme = (await (await app.request('/api/_theme')).json()) as {
+      accent: string
+      radius: number
+    }
+    expect(theme.accent).toMatch(/^#/)
+    expect(theme.radius).toBeLessThanOrEqual(24)
+  })
+})
+
+describe('preview API', () => {
+  it('GET /api/_preview başlangıçta idle döner', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_preview')
+    expect(res.status).toBe(200)
+    expect(((await res.json()) as { status: string }).status).toBe('idle')
+  })
+
+  it('site olmayan klasörde başlatınca error döner', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_preview/start', { method: 'POST' })
+    const data = (await res.json()) as { status: string }
+    expect(data.status).toBe('error')
+  })
+})

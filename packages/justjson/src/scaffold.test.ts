@@ -43,8 +43,10 @@ describe('astroSiteFiles', () => {
       [
         '.gitignore',
         'astro.config.mjs',
+        'content/_theme.json',
         'package.json',
         'src/content.config.ts',
+        'src/layouts/Base.astro',
         'src/pages/blog-tags/[slug].astro',
         'src/pages/index.astro',
         'src/pages/posts/[slug].astro',

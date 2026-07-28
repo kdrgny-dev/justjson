@@ -56,6 +56,8 @@ Design your schema, enter content, upload images. Everything is written to `cont
 | **Draft / published** | Toggle an entry's status; the generated loader returns published entries by default. |
 | **Ship it** | A last step that closes the loop: generate a working site, or get the setup snippet for the framework you already use, then commit and push — all from the editor. |
 | **One-click site** | No site in the folder yet? JustJSON generates a small Astro site wired to your content — home page, a page per entry, nothing you already have overwritten. |
+| **Design** | Pick a palette, accent, font, corners and density; a live sample shows exactly how the generated site will look. Saved to `content/_theme.json`. |
+| **Preview** | Run your site inside the editor and watch content and theme changes appear as you make them. |
 | **Put it online** | Hand the repo to Vercel or Netlify from the editor. After that, publishing is one button — they rebuild on every push. |
 | **English or Turkish** | The editor ships in English; switch to Turkish from the project menu any time. |
 | **Export any time** | One click downloads schema + content + types as a ZIP. Nothing is ever locked in. |
@@ -200,6 +202,12 @@ pnpm test
 ## Roadmap
 
 Small, need-driven improvements shipped as releases.
+
+Landed in `1.8.0`:
+
+- **Design** — a small theme editor (palette, accent, font, corners, density)
+  with a live sample; the generated site reads it from `content/_theme.json`.
+- **Preview** — the editor runs your dev server and shows the real site in a pane.
 
 Landed in `1.7.0`:
 
