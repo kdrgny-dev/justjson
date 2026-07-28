@@ -1,0 +1,6 @@
+{
+  "title": "Owning your content",
+  "slug": "owning-your-content",
+  "date": "2026-07-24",
+  "body": "## Your files, your rules\n\nEvery entry you write here lands in your repo as **plain JSON** — no database, no API key, nothing to cancel later.\n\n- Diffs cleanly in git\n- Reads straight into your build\n- Yours to take anywhere"
+}

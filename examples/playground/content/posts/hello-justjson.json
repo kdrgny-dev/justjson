@@ -1,0 +1,6 @@
+{
+  "title": "Hello, JustJSON — a file on disk",
+  "slug": "hello-justjson",
+  "date": "2026-07-27",
+  "body": "## Welcome\n\nThis post is a file on your disk — `content/posts/hello-justjson.json`. Edit it here, commit it, ship it.\n\nWrite with **bold**, _italics_, headings and lists; it saves as clean, diffable Markdown."
+}

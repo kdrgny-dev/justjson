@@ -1,0 +1,6 @@
+{
+  "title": "From a schema to a live site",
+  "slug": "from-schema-to-site",
+  "date": "2026-07-20",
+  "body": "Design the schema by clicking, fill it in, then let JustJSON generate a working Astro site and hand it to Vercel — all from the editor."
+}
