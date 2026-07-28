@@ -12,12 +12,56 @@
         ><span class="mono">landing/content/*.json</span></a
       >.
     </span>
-    <span>
-      <a href="/docs/getting-started">Docs</a> &nbsp;·&nbsp;
-      <a href="/roadmap">Roadmap</a> &nbsp;·&nbsp;
-      <a href="/vs">Compare</a> &nbsp;·&nbsp;
-      <a href="https://github.com/kdrgny-dev/justjson">GitHub</a> &nbsp;·&nbsp;
+    <span class="foot-links">
+      <a href="/docs/getting-started">Docs</a>
+      <a href="/roadmap">Roadmap</a>
+      <a href="/vs">Compare</a>
+      <a href="https://github.com/kdrgny-dev/justjson">GitHub</a>
       <a href="https://www.npmjs.com/package/@kdrgny/justjson">npm</a>
+      <button class="theme-toggle" id="theme" type="button" aria-label="Toggle theme">
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 18a6 6 0 0 0 0-12z"></path>
+        </svg>
+        Theme
+      </button>
     </span>
   </div>
 </footer>
+
+<style>
+  .foot-links {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+  .foot-links a {
+    text-decoration: none;
+  }
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--muted);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  .theme-toggle:hover {
+    color: var(--signal-ink);
+  }
+</style>
