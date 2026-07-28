@@ -1,0 +1,45 @@
+---
+interface Props {
+  progress?: boolean
+  active?: string
+}
+const { progress = false, active } = Astro.props
+const links = [
+  { href: '/docs/getting-started', label: 'Docs', key: 'docs' },
+  { href: '/roadmap', label: 'Roadmap', key: 'roadmap' },
+]
+---
+
+<nav>
+  <div class="nav-in">
+    <a class="brand" href="/" style="text-decoration: none">Just<b>JSON</b></a>
+    <div class="nav-r">
+      <button class="icon-btn" id="theme" aria-label="Toggle theme" title="Theme">◐</button>
+      {
+        links.map((l) => (
+          <a class="btn btn-ghost" href={l.href} aria-current={active === l.key ? 'page' : undefined}>
+            {l.label}
+          </a>
+        ))
+      }
+      <a class="btn btn-ghost" href="https://github.com/kdrgny-dev/justjson">GitHub</a>
+    </div>
+  </div>
+  {progress && <span id="progress" aria-hidden="true" />}
+</nav>
+
+<style>
+  .nav-r .btn[aria-current='page'] {
+    color: var(--signal-ink);
+    border-color: var(--signal-ink);
+  }
+  @media (max-width: 560px) {
+    .nav-r {
+      gap: 6px;
+    }
+    .nav-r .btn {
+      padding: 8px 11px;
+      font-size: 13px;
+    }
+  }
+</style>

@@ -1,0 +1,1 @@
+{ "title": "One-click site + deploy", "status": "shipped", "order": 2, "body": "Generate an Astro site from your content and hand it to Vercel or Netlify." }

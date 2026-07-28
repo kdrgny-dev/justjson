@@ -1,0 +1,2 @@
+{ "version": "1.4.0", "date": "2026-07-27", "title": "English-first editor, Turkish switch", "order": 4,
+  "body": "- The editor now ships in **English**, with a one-click switch to **Turkish**.\n- Core and CLI output standardised on English." }

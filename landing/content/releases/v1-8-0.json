@@ -1,0 +1,2 @@
+{ "version": "1.8.0", "date": "2026-07-28", "title": "Design + Preview", "order": 0,
+  "body": "- **Design** tab: pick a palette, accent, font, corners and density; saved as `content/_theme.json`.\n- **Preview**: run your site inside the editor and watch content and theme changes live.\n- The generated Astro site reads the theme through a tiny helper." }

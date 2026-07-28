@@ -1,0 +1,3 @@
+{ "title": "Validate in CI", "slug": "validate", "category": "Build", "order": 5,
+  "summary": "Fail a build on bad content before it ships.",
+  "body": "`justjson validate` walks your `content/` and reports anything that would break your build: missing required fields, type mismatches, broken relations, duplicate slugs, and images pointing at missing media. It exits non-zero on errors:\n\n```bash\nnpx @kdrgny/justjson validate          # human-readable\nnpx @kdrgny/justjson validate --json   # machine-readable, for CI\nnpx @kdrgny/justjson validate --strict # warnings fail too\n```" }

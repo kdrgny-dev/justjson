@@ -1,0 +1,3 @@
+{ "title": "Getting started", "slug": "getting-started", "category": "Getting started", "order": 0,
+  "summary": "One command opens the editor in your browser.",
+  "body": "JustJSON runs entirely on your machine — no account, no server, no API key. In any folder, run:\n\n```bash\nnpx @kdrgny/justjson\n```\n\nThe editor opens in your browser. On an empty folder it greets you with a picker: start from a **template**, from **scratch**, or **import your own JSON**.\n\nEverything you create is written to `content/*.json` in that folder. Commit it, deploy it, import it in your build — it's yours.\n\nPrefer to look first? [Try it in your browser](https://stackblitz.com/github/kdrgny-dev/justjson/tree/main/examples/playground) — no install." }

@@ -1,0 +1,3 @@
+{ "title": "Typed output", "slug": "typed-output", "category": "Build", "order": 3,
+  "summary": "A zero-dependency, typed loader generated from your schema.",
+  "body": "`justjson types` writes `types.ts` and a zero-dependency `content.ts` loader — no glue code to read files:\n\n```ts\nimport { loadPosts, loadSettings } from './content'\n\nconst posts = await loadPosts()       // typed, slug merged in\nconst settings = await loadSettings()  // Settings | null\n```\n\nEach entry comes back with its `slug` (the filename), ready for routing. It reads straight from disk, so it works in any Node-based build — including Astro and Next.js server code." }

@@ -1,0 +1,2 @@
+{ "version": "1.3.0", "date": "2026-07-27", "title": "Validate, types & drafts", "order": 5,
+  "body": "- `justjson validate` for CI: broken relations, duplicate slugs, missing media, type errors.\n- Typed `content.ts` loader generated from your schema.\n- **Draft / published** status, plus `url`, `email`, `list`, `group` and `color` fields." }

@@ -1,0 +1,3 @@
+{ "title": "Schema & fields", "slug": "schema-and-fields", "category": "Content", "order": 2,
+  "summary": "Collections, singletons and the field types you can use.",
+  "body": "A **collection** holds many entries (posts, products). A **singleton** is a single record (site settings, a profile). Build both in the **Schema** tab — drag to reorder, collapse what you're not editing.\n\nField types:\n\n`text` · `richtext` · `number` · `boolean` · `date` · `select` · `relation` (multi) · `image` · `url` · `email` · `list` · `color` · `group` (nested).\n\nEach entry is one file: `content/<collection>/<slug>.json`. A singleton is `content/<name>.json`." }

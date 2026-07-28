@@ -63,6 +63,47 @@
       ]
     },
     {
+      "name": "docs",
+      "label": "Docs sayfaları",
+      "path": "docs",
+      "fields": [
+        { "key": "title", "label": "Başlık", "type": "text", "required": true },
+        { "key": "slug", "label": "Slug", "type": "text", "required": true },
+        { "key": "category", "label": "Bölüm", "type": "text" },
+        { "key": "summary", "label": "Özet", "type": "text" },
+        { "key": "body", "label": "İçerik (Markdown)", "type": "richtext" },
+        { "key": "order", "label": "Sıra", "type": "number" }
+      ]
+    },
+    {
+      "name": "roadmap",
+      "label": "Yol haritası",
+      "path": "roadmap",
+      "fields": [
+        { "key": "title", "label": "Başlık", "type": "text", "required": true },
+        { "key": "body", "label": "Açıklama", "type": "text" },
+        {
+          "key": "status",
+          "label": "Durum",
+          "type": "select",
+          "options": ["shipped", "in-progress", "planned", "exploring"]
+        },
+        { "key": "order", "label": "Sıra", "type": "number" }
+      ]
+    },
+    {
+      "name": "releases",
+      "label": "Sürümler",
+      "path": "releases",
+      "fields": [
+        { "key": "version", "label": "Sürüm", "type": "text", "required": true },
+        { "key": "date", "label": "Tarih", "type": "date" },
+        { "key": "title", "label": "Başlık", "type": "text" },
+        { "key": "body", "label": "Notlar (Markdown)", "type": "richtext" },
+        { "key": "order", "label": "Sıra", "type": "number" }
+      ]
+    },
+    {
       "name": "steps",
       "label": "Adımlar",
       "path": "steps",

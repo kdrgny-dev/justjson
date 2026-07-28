@@ -1,0 +1,1 @@
+{ "title": "Validate in CI", "status": "shipped", "order": 4, "body": "justjson validate gates a deploy on broken relations, duplicate slugs and type errors." }

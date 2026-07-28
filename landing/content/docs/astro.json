@@ -1,0 +1,3 @@
+{ "title": "Astro collections", "slug": "astro", "category": "Build", "order": 4,
+  "summary": "Your content as real Astro content collections, in one line.",
+  "body": "Install the loader:\n\n```bash\nnpm install @kdrgny/justjson-astro\n```\n\nThen:\n\n```ts\n// src/content.config.ts\nimport { justjsonCollections } from '@kdrgny/justjson-astro'\n\nexport const collections = await justjsonCollections()\n```\n\nThat's the whole setup. Every collection and singleton shows up in `getCollection()` / `getEntry()`, drafts are skipped, and saving in the editor updates the dev server without a restart." }

@@ -1,0 +1,3 @@
+{ "title": "Publish", "slug": "publish", "category": "Build", "order": 6,
+  "summary": "Generate a site and hand it to a host — from the editor.",
+  "body": "No site in the folder yet? JustJSON generates a small **Astro site** wired to your content — a home page and a page per entry, nothing you already have overwritten.\n\nFrom the **Ship it** tab you can commit, push to GitHub, and hand the repo to **Vercel or Netlify**. After that, publishing is one button — they rebuild on every push. Still no account with us; the files stay yours.\n\nThe endpoint is yours too: wherever you put the JSON becomes your API — repo raw, jsDelivr, your own build." }

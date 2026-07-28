@@ -1,0 +1,2 @@
+{ "version": "1.0.0", "date": "2026-07-26", "title": "First release", "order": 8,
+  "body": "- Visual schema builder, content table and rich-text editor.\n- Everything written to `content/*.json` in your own repo. No account, no server." }

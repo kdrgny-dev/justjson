@@ -1,0 +1,2 @@
+{ "version": "1.7.0", "date": "2026-07-28", "title": "Put it online", "order": 1,
+  "body": "- Hand the repo to **Vercel or Netlify** straight from the editor.\n- After that, publishing is one button — they rebuild on every push." }

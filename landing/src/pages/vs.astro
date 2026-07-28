@@ -1,5 +1,8 @@
 ---
 import Analytics from '@vercel/analytics/astro'
+import Foot from '../components/Foot.astro'
+import Nav from '../components/Nav.astro'
+import SiteScript from '../components/SiteScript.astro'
 import '../styles/site.css'
 
 type Row = Record<string, any>
@@ -98,16 +101,7 @@ const description =
     </style>
   </head>
   <body>
-    <nav>
-      <div class="nav-in">
-        <a class="brand" href="/" style="text-decoration: none">Just<b>JSON</b></a>
-        <div class="nav-r">
-          <button class="icon-btn" id="theme" aria-label="Toggle theme" title="Theme">◐</button>
-          <a class="btn btn-ghost" href="/">Home</a>
-          <a class="btn btn-ghost" href="https://github.com/kdrgny-dev/justjson">GitHub</a>
-        </div>
-      </div>
-    </nav>
+    <Nav />
 
     <header class="wrap vs-head">
       <span class="eyebrow">Honest comparison</span>
@@ -175,52 +169,8 @@ const description =
       </div>
     </section>
 
-    <footer>
-      <div class="wrap foot-in">
-        <a class="brand" href="/" style="font-size: 15px; text-decoration: none">Just<b>JSON</b></a>
-        <span class="foot-made">
-          This page is built with JustJSON — its rows live in
-          <a href="https://github.com/kdrgny-dev/justjson/tree/main/landing/content/vs"
-            ><span class="mono">landing/content/vs/*.json</span></a
-          >.
-        </span>
-        <span>
-          <a href="https://github.com/kdrgny-dev/justjson">GitHub</a> &nbsp;·&nbsp;
-          <a href="https://www.npmjs.com/package/@kdrgny/justjson">npm</a> &nbsp;·&nbsp;
-          <a href="https://github.com/kdrgny-dev/justjson/blob/main/LICENSE">MIT</a>
-        </span>
-      </div>
-    </footer>
-
+    <Foot />
     <Analytics />
-
-    <script>
-      const root = document.documentElement
-      document.getElementById('theme')?.addEventListener('click', () => {
-        const cur = root.getAttribute('data-theme')
-        const dark = cur === 'dark' || (!cur && matchMedia('(prefers-color-scheme: dark)').matches)
-        const next = dark ? 'light' : 'dark'
-        root.setAttribute('data-theme', next)
-        try {
-          localStorage.setItem('jj-theme', next)
-        } catch {}
-      })
-      try {
-        const saved = localStorage.getItem('jj-theme')
-        if (saved) root.setAttribute('data-theme', saved)
-      } catch {}
-
-      document.querySelectorAll('[data-copy]').forEach((el) => {
-        el.addEventListener('click', () => {
-          const v = el.getAttribute('data-copy') || ''
-          navigator.clipboard?.writeText(v)
-          const t = el.textContent
-          el.textContent = 'Copied'
-          setTimeout(() => {
-            el.textContent = t
-          }, 1400)
-        })
-      })
-    </script>
+    <SiteScript />
   </body>
 </html>

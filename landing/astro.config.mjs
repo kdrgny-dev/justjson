@@ -4,4 +4,7 @@ import { defineConfig } from 'astro/config'
 // project in ./content (schema + content/*.json), imported at build time.
 export default defineConfig({
   site: 'https://justjson.vercel.app',
+  redirects: {
+    '/docs': '/docs/getting-started',
+  },
 })

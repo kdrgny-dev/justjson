@@ -1,0 +1,2 @@
+{ "version": "1.1.0", "date": "2026-07-26", "title": "Templates, import & export", "order": 7,
+  "body": "- Start from a **template**, or **bring your own JSON** and let JustJSON infer the structure.\n- Export the whole project as a ZIP.\n- Drag & drop, shadcn redesign." }

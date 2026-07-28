@@ -1,0 +1,1 @@
+{ "title": "JustJSON Cloud (for teams)", "status": "exploring", "order": 11, "body": "An optional hosted mode with auth and automatic commit/push — for people who never want to touch a terminal. Only if there is real demand, and never at the cost of the local-first core." }

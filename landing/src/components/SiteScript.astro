@@ -1,0 +1,31 @@
+---
+---
+
+<script>
+  const root = document.documentElement
+  try {
+    const s = localStorage.getItem('jj-theme')
+    if (s) root.setAttribute('data-theme', s)
+  } catch {}
+  document.getElementById('theme')?.addEventListener('click', () => {
+    const cur = root.getAttribute('data-theme')
+    const dark = cur === 'dark' || (!cur && matchMedia('(prefers-color-scheme: dark)').matches)
+    const next = dark ? 'light' : 'dark'
+    root.setAttribute('data-theme', next)
+    try {
+      localStorage.setItem('jj-theme', next)
+    } catch {}
+  })
+  // Sub-pages don't run the homepage's reveal observer; show everything up front.
+  document.querySelectorAll('.reveal').forEach((e) => e.classList.add('shown'))
+  document.querySelectorAll('[data-copy]').forEach((el) => {
+    el.addEventListener('click', () => {
+      navigator.clipboard?.writeText(el.getAttribute('data-copy') || '')
+      const t = el.textContent
+      el.textContent = 'Copied'
+      setTimeout(() => {
+        el.textContent = t
+      }, 1400)
+    })
+  })
+</script>

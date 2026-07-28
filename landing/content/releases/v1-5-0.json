@@ -1,0 +1,2 @@
+{ "version": "1.5.0", "date": "2026-07-28", "title": "Astro collections + Ship it", "order": 3,
+  "body": "- `@kdrgny/justjson-astro` loader: your content becomes real Astro content collections in one line.\n- **Ship it** panel: framework detection, commit and push from the editor.\n- Redesigned start gallery." }

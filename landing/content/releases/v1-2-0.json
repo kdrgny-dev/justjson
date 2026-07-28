@@ -1,0 +1,2 @@
+{ "version": "1.2.0", "date": "2026-07-27", "title": "AI schema, JSON preview", "order": 6,
+  "body": "- Describe what you're managing and let **AI draft the schema** (bring your own key).\n- Live JSON preview of the file each entry produces.\n- Landing rebuilt as an Astro site sourced from a JustJSON project." }
