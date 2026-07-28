@@ -4,7 +4,7 @@ import { type Collection, type Field, type Schema, slugify } from '@justjson/cor
 
 /** Üretilen sitenin sabitlediği sürümler; kullanıcı sonra kendi günceller. */
 const ASTRO_VERSION = '^5.18.0'
-const LOADER_VERSION = '^1.6.0'
+const LOADER_VERSION = '^1.7.0'
 
 const STYLE = `  <style is:global>
     :root { color-scheme: light dark; }

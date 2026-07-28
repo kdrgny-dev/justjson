@@ -56,6 +56,7 @@ Design your schema, enter content, upload images. Everything is written to `cont
 | **Draft / published** | Toggle an entry's status; the generated loader returns published entries by default. |
 | **Ship it** | A last step that closes the loop: generate a working site, or get the setup snippet for the framework you already use, then commit and push — all from the editor. |
 | **One-click site** | No site in the folder yet? JustJSON generates a small Astro site wired to your content — home page, a page per entry, nothing you already have overwritten. |
+| **Put it online** | Hand the repo to Vercel or Netlify from the editor. After that, publishing is one button — they rebuild on every push. |
 | **English or Turkish** | The editor ships in English; switch to Turkish from the project menu any time. |
 | **Export any time** | One click downloads schema + content + types as a ZIP. Nothing is ever locked in. |
 | **The endpoint is yours** | Wherever you put the JSON becomes your API — repo raw, jsDelivr, your build. |
@@ -161,6 +162,12 @@ If you already have a project, it detects the framework from `package.json` and
 shows exactly what to paste — the Astro loader for Astro projects, the generated
 `content.ts` loader everywhere else.
 
+Then it takes you the rest of the way: commit your content, push it to GitHub,
+and hand the repository to Vercel or Netlify. Those hosts run their own import
+flow, so JustJSON never asks for an access token and never talks to them on your
+behalf. Once a host is connected, publishing is a single button — it commits,
+pushes, and the host rebuilds.
+
 From the same screen you can commit just your `content/` folder and push it. It
 shells out to the `git` and `gh` you already have, so there is no OAuth app, no
 access token stored anywhere, and nothing leaves your machine that you did not
@@ -193,6 +200,11 @@ pnpm test
 ## Roadmap
 
 Small, need-driven improvements shipped as releases.
+
+Landed in `1.7.0`:
+
+- **Put it online** — deploy links for Vercel and Netlify, plus one-button
+  publishing once a host is connected.
 
 Landed in `1.6.0`:
 

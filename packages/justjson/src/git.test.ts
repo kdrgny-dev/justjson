@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { commitContent, gitStatus } from './git'
+import { commitContent, gitStatus, remoteWebUrl } from './git'
 
 const run = promisify(execFile)
 
@@ -93,5 +93,34 @@ describe('commitContent', () => {
 
   it('git deposu yoksa anlaşılır hata verir', async () => {
     await expect(commitContent(root, 'content', 'x')).rejects.toThrow(/not a git repository/i)
+  })
+})
+
+describe('remoteWebUrl', () => {
+  it('SSH remote adresini web adresine çevirir', () => {
+    expect(remoteWebUrl('git@github.com:kdrgny/my-site.git')).toBe(
+      'https://github.com/kdrgny/my-site',
+    )
+  })
+
+  it('HTTPS remote adresinden .git ekini atar', () => {
+    expect(remoteWebUrl('https://github.com/kdrgny/my-site.git')).toBe(
+      'https://github.com/kdrgny/my-site',
+    )
+  })
+
+  it('zaten temiz olan adresi olduğu gibi bırakır', () => {
+    expect(remoteWebUrl('https://github.com/kdrgny/my-site')).toBe(
+      'https://github.com/kdrgny/my-site',
+    )
+  })
+
+  it('GitHub dışı sağlayıcıları da çevirir', () => {
+    expect(remoteWebUrl('git@gitlab.com:team/site.git')).toBe('https://gitlab.com/team/site')
+  })
+
+  it('adres yoksa null döner', () => {
+    expect(remoteWebUrl(null)).toBeNull()
+    expect(remoteWebUrl('')).toBeNull()
   })
 })

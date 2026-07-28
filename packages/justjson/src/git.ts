@@ -3,6 +3,19 @@ import { promisify } from 'node:util'
 
 const run = promisify(execFile)
 
+/**
+ * Uzak sunucu adresini tarayıcıda açılabilir bir adrese çevirir — Vercel ve
+ * Netlify'ın "deploy" bağlantıları repo'nun web adresini ister.
+ */
+export function remoteWebUrl(remote: string | null): string | null {
+  if (!remote) return null
+  const ssh = remote.match(/^(?:ssh:\/\/)?git@([^:/]+)[:/](.+?)(?:\.git)?$/)
+  if (ssh) return `https://${ssh[1]}/${ssh[2]}`
+  const https = remote.match(/^https?:\/\/(?:[^@]+@)?(.+?)(?:\.git)?$/)
+  if (https) return `https://${https[1]}`
+  return null
+}
+
 export interface GitStatus {
   isRepo: boolean
   branch: string | null
@@ -10,6 +23,8 @@ export interface GitStatus {
   remoteUrl: string | null
   /** content klasöründe commit bekleyen dosya sayısı. */
   pendingFiles: number
+  /** Uzak sunucunun tarayıcıda açılabilir adresi (deploy bağlantıları için). */
+  remoteWebUrl: string | null
   /** GitHub CLI kurulu mu — repo oluşturma yalnızca varsa sunulur. */
   hasGh: boolean
 }
@@ -44,6 +59,7 @@ export async function gitStatus(root: string, contentDir: string): Promise<GitSt
       branch: null,
       hasRemote: false,
       remoteUrl: null,
+      remoteWebUrl: null,
       pendingFiles: 0,
       hasGh: await hasGh(),
     }
@@ -58,6 +74,7 @@ export async function gitStatus(root: string, contentDir: string): Promise<GitSt
     branch: branch || null,
     hasRemote: remoteUrl !== null,
     remoteUrl,
+    remoteWebUrl: remoteWebUrl(remoteUrl),
     pendingFiles: porcelain ? porcelain.split('\n').filter(Boolean).length : 0,
     hasGh: await hasGh(),
   }

@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
@@ -7,8 +7,10 @@ import {
   AlertTriangle,
   Check,
   Copy,
+  ExternalLink,
   GitBranch,
   Loader2,
+  Rocket,
   Sparkles,
   Terminal,
   Upload,
@@ -62,6 +64,20 @@ function snippetFor(framework: api.Framework, schema: Schema): Snippet {
     ].join('\n'),
   }
 }
+
+/** Barındırıcıların kendi "deploy" akışları; bizden token ya da sunucu istemez. */
+const HOSTS = [
+  {
+    name: 'Vercel',
+    url: (repo: string) =>
+      `https://vercel.com/new/clone?repository-url=${encodeURIComponent(repo)}`,
+  },
+  {
+    name: 'Netlify',
+    url: (repo: string) =>
+      `https://app.netlify.com/start/deploy?repository=${encodeURIComponent(repo)}`,
+  },
+]
 
 const FRAMEWORK_LABEL: Record<api.Framework, string> = {
   astro: 'Astro',
@@ -179,6 +195,13 @@ export function Ship({ schema }: { schema: Schema }) {
       : t('Created {n} file(s).', { n: written.length })
   }
 
+  const publish = async () => {
+    const { committed, count, branch } = await api.shipPublish(message)
+    return committed
+      ? t('Published {n} change(s) to {branch}.', { n: count, branch })
+      : t('Nothing new to publish — {branch} is up to date.', { branch })
+  }
+
   const createRepo = async () => {
     const created = await api.shipCreateRepo(repoName, true)
     return t('Created {name} on GitHub and pushed it.', { name: created.name })
@@ -187,6 +210,7 @@ export function Ship({ schema }: { schema: Schema }) {
   const git = info?.git
   const snippet = snippetFor(info?.framework ?? 'unknown', schema)
   const pending = git?.pendingFiles ?? 0
+  const webUrl = git?.remoteWebUrl ?? null
   // Framework yoksa ortada bir site de yok; kod parçası yerine kurulum sunarız.
   const noSite = info !== null && (info.framework === 'unknown' || scaffolded)
 
@@ -309,6 +333,46 @@ export function Ship({ schema }: { schema: Schema }) {
                 </p>
                 <CodeBlock code={'git remote add origin <url>\ngit push -u origin main'} />
               </>
+            )}
+          </Step>
+
+          <Step index={4} title={t('Put it online')}>
+            {webUrl ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  {t(
+                    'Hand the repository to a host once. After that, publishing is one button — they rebuild your site on every push.',
+                  )}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {HOSTS.map((host) => (
+                    <a
+                      key={host.name}
+                      href={host.url(webUrl)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={cn(buttonVariants({ variant: 'outline' }))}
+                    >
+                      <ExternalLink />
+                      {t('Deploy to {host}', { host: host.name })}
+                    </a>
+                  ))}
+                </div>
+
+                <div className="mt-1 rounded-lg border bg-muted/40 p-3">
+                  <p className="mb-2.5 text-sm text-muted-foreground">
+                    {t('Already online? Send your latest changes:')}
+                  </p>
+                  <Button onClick={() => act('publish', publish)} disabled={busy !== null}>
+                    {busy === 'publish' ? <Loader2 className="animate-spin" /> : <Rocket />}
+                    {t('Publish changes')}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {t('Send your project to GitHub first — hosts deploy straight from a repository.')}
+              </p>
             )}
           </Step>
         </div>

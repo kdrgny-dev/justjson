@@ -1,6 +1,6 @@
 {
   "name": "@justjson/core",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "JustJSON çekirdeği: şema, doğrulama, export, tip üretimi (saf, I/O bağımsız)",
   "type": "module",
   "license": "MIT",

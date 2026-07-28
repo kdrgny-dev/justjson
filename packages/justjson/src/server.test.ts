@@ -478,3 +478,23 @@ describe('scaffold API', () => {
     await rm(empty, { recursive: true, force: true })
   })
 })
+
+describe('publish API', () => {
+  it('git deposu yoksa 400 döner', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_ship/publish', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('GET /api/_ship uzak sunucunun web adresini de verir', async () => {
+    const app = await createServer(root)
+    const data = (await (await app.request('/api/_ship')).json()) as {
+      git: { remoteWebUrl: string | null }
+    }
+    expect(data.git.remoteWebUrl).toBeNull()
+  })
+})

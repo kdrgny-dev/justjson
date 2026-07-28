@@ -323,6 +323,17 @@ export const tr: Record<string, string> = {
   'Pushed {branch} to origin.': "{branch} dalı origin'e gönderildi.",
   'Created {name} on GitHub and pushed it.': "{name} GitHub'da oluşturuldu ve gönderildi.",
   'Send it to GitHub': "GitHub'a gönder",
+  'Put it online': 'Siteyi yayına al',
+  'Hand the repository to a host once. After that, publishing is one button — they rebuild your site on every push.':
+    'Depoyu bir barındırıcıya bir kez tanıt. Sonrası tek düğme — her göndermede siteni yeniden kurarlar.',
+  'Deploy to {host}': "{host}'a yükle",
+  'Already online? Send your latest changes:': 'Zaten yayında mı? Son değişikliklerini gönder:',
+  'Publish changes': 'Değişiklikleri yayınla',
+  'Published {n} change(s) to {branch}.': '{n} değişiklik {branch} dalına yayınlandı.',
+  'Nothing new to publish — {branch} is up to date.':
+    'Yayınlanacak yeni bir şey yok — {branch} güncel.',
+  'Send your project to GitHub first — hosts deploy straight from a repository.':
+    "Önce projeni GitHub'a gönder — barındırıcılar doğrudan depodan yayına alır.",
   Push: 'Gönder',
   'Create a private repository': 'Gizli bir depo oluştur',
   'Create & push': 'Oluştur ve gönder',

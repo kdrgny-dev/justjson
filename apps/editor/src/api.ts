@@ -197,6 +197,7 @@ export interface GitStatus {
   hasRemote: boolean
   remoteUrl: string | null
   pendingFiles: number
+  remoteWebUrl: string | null
   hasGh: boolean
 }
 
@@ -223,6 +224,9 @@ async function shipAction<T>(path: string, body: unknown): Promise<T> {
 
 export const shipScaffold = () =>
   shipAction<{ written: string[]; skipped: string[] }>('scaffold', {})
+
+export const shipPublish = (message: string) =>
+  shipAction<{ committed: boolean; count: number; branch: string }>('publish', { message })
 
 export const shipCommit = (message: string) =>
   shipAction<{ committed: boolean; count: number }>('commit', { message })

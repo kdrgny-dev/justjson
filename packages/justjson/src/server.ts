@@ -202,6 +202,18 @@ export async function createServer(root: string): Promise<Hono> {
     }
   })
 
+  // Tek tuşla yayın: commit + push. Vercel/Netlify push'u görüp kendi deploy'unu yapar.
+  app.post('/api/_ship/publish', async (c) => {
+    const { message } = (await c.req.json().catch(() => ({}))) as { message?: string }
+    try {
+      const commit = await commitContent(root, contentDir, message?.trim() || 'content: update')
+      const { branch } = await pushContent(root)
+      return c.json({ committed: commit.committed, count: commit.count, branch })
+    } catch (e) {
+      return c.json({ error: (e as Error).message }, 400)
+    }
+  })
+
   app.post('/api/_ship/push', async (c) => {
     try {
       return c.json(await pushContent(root))
