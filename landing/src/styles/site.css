@@ -200,6 +200,10 @@ nav {
 .brand b {
   color: var(--signal-ink);
 }
+.brand .br {
+  color: var(--faint);
+  font-weight: 400;
+}
 .nav-r {
   display: flex;
   align-items: center;

@@ -3,6 +3,7 @@ import { marked } from 'marked'
 import Analytics from '@vercel/analytics/astro'
 import Foot from '../components/Foot.astro'
 import Nav from '../components/Nav.astro'
+import Seo from '../components/Seo.astro'
 import SiteScript from '../components/SiteScript.astro'
 import '../styles/site.css'
 
@@ -36,10 +37,7 @@ const description =
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <meta name="theme-color" content="#e8ae3e" />
-    <link rel="canonical" href="https://justjson.vercel.app/roadmap" />
+    <Seo title={title} description={description} url="https://justjson.vercel.app/roadmap" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
