@@ -24,7 +24,7 @@ npx @kdrgny/justjson
 
 <br>
 
-<img src=".github/media/editor-entry.png" alt="The JustJSON editor — editing a post that lives on disk as content/posts/hello-justjson.json" width="860">
+<img src=".github/media/demo.gif" alt="JustJSON in action — edit a post, save it to disk, then restyle the generated site with a live preview" width="860">
 
 </div>
 
