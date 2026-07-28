@@ -54,6 +54,7 @@ Design your schema, enter content, upload images. Everything is written to `cont
 | **Type-safe output** | Generates `types.ts` **and** a zero-dependency `content.ts` loader from your schema — `loadPosts()`, `loadSettings()` — so your content is fully typed in your build, no glue code. |
 | **Validate in CI** | `justjson validate` checks content against the schema — broken relations, duplicate slugs, missing media, type errors. Exits non-zero on failure. |
 | **Draft / published** | Toggle an entry's status; the generated loader returns published entries by default. |
+| **Ship it** | A last step that closes the loop: the setup snippet for your framework, a one-click content commit, and push to GitHub. |
 | **English or Turkish** | The editor ships in English; switch to Turkish from the project menu any time. |
 | **Export any time** | One click downloads schema + content + types as a ZIP. Nothing is ever locked in. |
 | **The endpoint is yours** | Wherever you put the JSON becomes your API — repo raw, jsDelivr, your build. |
@@ -139,6 +140,17 @@ content/
 
 The editor is served locally by the CLI; it talks only to your disk. Delete `node_modules`, keep the JSON — your content is never trapped in a tool.
 
+## After you write content
+
+The **Ship it** tab closes the loop. It detects your framework from
+`package.json` and shows exactly what to paste — the Astro loader for Astro
+projects, the generated `content.ts` loader everywhere else.
+
+From the same screen you can commit just your `content/` folder and push it. It
+shells out to the `git` and `gh` you already have, so there is no OAuth app, no
+access token stored anywhere, and nothing leaves your machine that you did not
+push yourself.
+
 ## Why local & file-based
 
 - **Yours, not rented.** Content never touches anyone's servers. The files are already in your repo.
@@ -166,6 +178,13 @@ pnpm test
 ## Roadmap
 
 Small, need-driven improvements shipped as releases.
+
+Landed in `1.5.0`:
+
+- **Astro content collections** — `@kdrgny/justjson-astro` turns `content/` into
+  typed Astro collections in one line, drafts filtered, live in dev.
+- **Ship it** — the editor detects your framework, shows the setup snippet,
+  commits your content and pushes it to GitHub (via `git`/`gh`, no tokens stored).
 
 Landed in `1.4.0`:
 

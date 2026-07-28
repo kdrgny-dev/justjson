@@ -188,3 +188,41 @@ export async function aiListModels(config: {
     throw new Error(data.error || `Could not fetch models (${res.status})`)
   return data.models
 }
+
+export type Framework = 'astro' | 'next' | 'nuxt' | 'sveltekit' | 'vite' | 'node' | 'unknown'
+
+export interface GitStatus {
+  isRepo: boolean
+  branch: string | null
+  hasRemote: boolean
+  remoteUrl: string | null
+  pendingFiles: number
+  hasGh: boolean
+}
+
+export interface ShipInfo {
+  framework: Framework
+  git: GitStatus
+}
+
+export async function getShip(): Promise<ShipInfo> {
+  const res = await ok(await fetch('/api/_ship'))
+  return res.json() as Promise<ShipInfo>
+}
+
+async function shipAction<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`/api/_ship/${path}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  const data = (await res.json()) as T & { error?: string }
+  if (!res.ok) throw new Error(data.error ?? `Request failed: ${res.status}`)
+  return data
+}
+
+export const shipCommit = (message: string) =>
+  shipAction<{ committed: boolean; count: number }>('commit', { message })
+export const shipPush = () => shipAction<{ branch: string }>('push', {})
+export const shipCreateRepo = (name: string, isPrivate: boolean) =>
+  shipAction<{ name: string }>('repo', { name, private: isPrivate })

@@ -377,6 +377,37 @@ function ImportCard({ onApplied, disabled }: { onApplied: () => void; disabled: 
   )
 }
 
+const FRAMEWORK_LABEL: Record<string, string> = {
+  astro: 'Astro',
+  next: 'Next.js',
+  nuxt: 'Nuxt',
+  sveltekit: 'SvelteKit',
+  vite: 'Vite',
+}
+
+function DetectedLine() {
+  const [detected, setDetected] = useState<{ project: string; framework: string } | null>(null)
+
+  useEffect(() => {
+    Promise.all([api.getProject(), api.getShip()])
+      .then(([project, ship]) =>
+        setDetected({ project: project.name, framework: FRAMEWORK_LABEL[ship.framework] ?? '' }),
+      )
+      .catch(() => setDetected(null))
+  }, [])
+
+  if (!detected) return null
+  return (
+    <p className="mb-5 text-sm text-muted-foreground">
+      {detected.framework
+        ? t('{framework} project detected', { framework: detected.framework })
+        : t('Project')}
+      {' · '}
+      <span className="font-mono text-foreground/80">{detected.project}</span>
+    </p>
+  )
+}
+
 export function TemplateGallery({
   onApplied,
   onScratch,
@@ -419,6 +450,7 @@ export function TemplateGallery({
             </span>
             JustJSON
           </div>
+          <DetectedLine />
           <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             {t('Pick a template')}
           </h1>

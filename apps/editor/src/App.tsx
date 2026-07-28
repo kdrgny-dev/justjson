@@ -54,6 +54,7 @@ import {
   Link2,
   PencilRuler,
   Plus,
+  Rocket,
   RotateCcw,
   Search,
   SearchX,
@@ -66,6 +67,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
+import { Ship } from './Ship'
 import { TemplateGallery } from './TemplateGallery'
 import { AIAssist } from './ai/AIAssist'
 import { AiSettingsProvider, useAiSettings } from './ai/AiSettingsContext'
@@ -86,6 +88,7 @@ import { LANGS, getLang, setLang, t, tp, useLang } from './i18n'
 type Selection =
   | { kind: 'schema' }
   | { kind: 'json' }
+  | { kind: 'ship' }
   | { kind: 'collection'; name: string }
   | { kind: 'entry'; collection: string; slug: string }
   | { kind: 'newEntry'; collection: string }
@@ -223,6 +226,7 @@ function crumbsFor(
   if (!selection) return []
   if (selection.kind === 'schema') return [{ label: t('Schema') }]
   if (selection.kind === 'json') return [{ label: t('Raw JSON') }]
+  if (selection.kind === 'ship') return [{ label: t('Ship it') }]
   if (selection.kind === 'collection') {
     const col = schema.collections.find((c) => c.name === selection.name)
     return [{ label: col?.label ?? selection.name }]
@@ -330,6 +334,13 @@ function Sidebar({
           onClick={() => onSelect({ kind: 'json' })}
         >
           {t('Raw JSON')}
+        </NavItem>
+        <NavItem
+          icon={<Rocket className="h-4 w-4" />}
+          active={selection?.kind === 'ship'}
+          onClick={() => onSelect({ kind: 'ship' })}
+        >
+          {t('Ship it')}
         </NavItem>
 
         <NavSection
@@ -634,6 +645,10 @@ function MainArea({
 
   if (selection.kind === 'json') {
     return <ProjectJsonView schema={schema} />
+  }
+
+  if (selection.kind === 'ship') {
+    return <Ship schema={schema} />
   }
 
   if (selection.kind === 'collection') {

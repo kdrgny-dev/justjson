@@ -42,6 +42,8 @@ Design your schema, enter content, upload images. Everything is written to `cont
 | **Type-safe output** | Generates `types.ts` **and** a zero-dependency `content.ts` loader — `loadPosts()`, `loadSettings()` — so your content is typed in your build. |
 | **Validate in CI** | `justjson validate` checks content against the schema — broken relations, duplicate slugs, missing media, type errors. Exits non-zero on failure. |
 | **Draft / published** | Toggle an entry's status; the generated loader returns published entries by default. |
+| **Ship it** | Setup snippet for your framework, one-click content commit, push to GitHub — using the `git`/`gh` already on your machine. |
+| **Astro collections** | [`@kdrgny/justjson-astro`](https://www.npmjs.com/package/@kdrgny/justjson-astro) turns your content into typed Astro content collections in one line. |
 | **English or Turkish** | The editor ships in English; switch to Turkish from the project menu any time. |
 | **Export any time** | One click downloads schema + content + types as a ZIP. Nothing is ever locked in. |
 | **The endpoint is yours** | Wherever you put the JSON becomes your API — repo raw, jsDelivr, your build. |

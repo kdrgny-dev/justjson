@@ -297,4 +297,29 @@ export const tr: Record<string, string> = {
     'Birçok ücretsiz model (isimleri :free ile biter).',
   'Your own server, or a local service like Ollama.':
     'Kendi sunucun ya da Ollama gibi yerel bir servis.',
+
+  // --- Ship it ---
+  'Ship it': 'Yayına al',
+  'Your content is on disk. Here is what comes next.': 'İçeriğin diskte. Sıradaki adımlar şunlar.',
+  'Use it in {framework}': '{framework} içinde kullan',
+  '{framework} project detected': '{framework} projesi algılandı',
+  Project: 'Proje',
+  Copied: 'Kopyalandı',
+  'Commit your content': 'İçeriğini commit et',
+  'This folder is not a git repository yet.': 'Bu klasör henüz bir git deposu değil.',
+  '{n} file(s) waiting on branch {branch}.': '{branch} dalında {n} dosya bekliyor.',
+  'Everything is committed.': 'Her şey commit edilmiş.',
+  Commit: 'Commit et',
+  'Committed {n} file(s).': '{n} dosya commit edildi.',
+  'Nothing to commit — content is up to date.': 'Commit edilecek bir şey yok — içerik güncel.',
+  'Pushed {branch} to origin.': "{branch} dalı origin'e gönderildi.",
+  'Created {name} on GitHub and pushed it.': "{name} GitHub'da oluşturuldu ve gönderildi.",
+  'Send it to GitHub': "GitHub'a gönder",
+  Push: 'Gönder',
+  'Create a private repository': 'Gizli bir depo oluştur',
+  'Create & push': 'Oluştur ve gönder',
+  'Uses the GitHub CLI already signed in on this machine — no token is stored.':
+    'Bu makinede zaten giriş yapılmış GitHub CLI kullanılır — hiçbir token saklanmaz.',
+  'Add a remote yourself, then come back to push:':
+    'Uzak sunucuyu kendin ekle, sonra göndermek için buraya dön:',
 }

@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -420,5 +420,34 @@ describe('/api/_ai/models', () => {
       body: JSON.stringify({}),
     })
     expect(res.status).toBe(400)
+  })
+})
+
+describe('ship API', () => {
+  it('GET /api/_ship framework ve git durumunu verir', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_ship')
+    expect(res.status).toBe(200)
+    const data = (await res.json()) as { framework: string; git: { isRepo: boolean } }
+    expect(data.framework).toBe('unknown')
+    expect(data.git.isRepo).toBe(false)
+  })
+
+  it('git deposu olmayan klasörde commit 400 döner', async () => {
+    const app = await createServer(root)
+    const res = await app.request('/api/_ship/commit', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ message: 'content: update' }),
+    })
+    expect(res.status).toBe(400)
+    expect(((await res.json()) as { error: string }).error).toMatch(/git repository/i)
+  })
+
+  it('astro projesini tanır', async () => {
+    await writeFile(join(root, 'package.json'), JSON.stringify({ dependencies: { astro: '^5' } }))
+    const app = await createServer(root)
+    const data = (await (await app.request('/api/_ship')).json()) as { framework: string }
+    expect(data.framework).toBe('astro')
   })
 })

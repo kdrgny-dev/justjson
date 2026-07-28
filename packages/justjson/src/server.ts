@@ -19,7 +19,9 @@ import { Hono } from 'hono'
 import { collectExportZip } from './commands/export'
 import { applyTemplate, getTemplate, templateList } from './commands/init'
 import { resolveContentDir } from './config'
+import { detectFramework } from './detect'
 import { FsAdapter } from './fs-adapter'
+import { commitContent, createGitHubRepo, gitStatus, pushContent } from './git'
 
 const editorDir = fileURLToPath(new URL('./editor', import.meta.url))
 
@@ -174,6 +176,46 @@ export async function createServer(root: string): Promise<Hono> {
       singletons: schema.singletons.length,
     }),
   )
+
+  // Ship: içeriği yazdıktan sonraki adım — kurulum kodu, commit, GitHub.
+  app.get('/api/_ship', async (c) =>
+    c.json({
+      framework: await detectFramework(root),
+      git: await gitStatus(root, contentDir),
+    }),
+  )
+
+  app.post('/api/_ship/commit', async (c) => {
+    const { message } = (await c.req.json()) as { message?: string }
+    try {
+      return c.json(await commitContent(root, contentDir, message?.trim() || 'content: update'))
+    } catch (e) {
+      return c.json({ error: (e as Error).message }, 400)
+    }
+  })
+
+  app.post('/api/_ship/push', async (c) => {
+    try {
+      return c.json(await pushContent(root))
+    } catch (e) {
+      return c.json({ error: (e as Error).message }, 400)
+    }
+  })
+
+  app.post('/api/_ship/repo', async (c) => {
+    const { name, private: isPrivate } = (await c.req.json()) as {
+      name?: string
+      private?: boolean
+    }
+    if (!name?.trim()) return c.json({ error: 'A repository name is required.' }, 400)
+    try {
+      return c.json(
+        await createGitHubRepo(root, { name: name.trim(), private: isPrivate !== false }),
+      )
+    } catch (e) {
+      return c.json({ error: (e as Error).message }, 400)
+    }
+  })
 
   app.get('/api/_templates', (c) => c.json({ items: templateList() }))
 
