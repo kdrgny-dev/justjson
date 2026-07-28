@@ -1,0 +1,14 @@
+{
+  "name": "JustJSON",
+  "tagline": "Local, file-based — needs no backend at all.",
+  "account": "None",
+  "server": "None — files on disk",
+  "apiKey": "None",
+  "localFirst": "Always (fully local)",
+  "typed": "types.ts + Astro collections",
+  "deploy": "One-click site + Vercel/Netlify",
+  "oss": "MIT",
+  "bestFor": "Devs who want content with zero backend",
+  "isUs": true,
+  "order": 0
+}

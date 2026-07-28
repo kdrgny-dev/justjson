@@ -1,0 +1,14 @@
+{
+  "name": "Hosted headless (Contentful, Sanity…)",
+  "tagline": "Cloud CMSs that host your content and rent you an API.",
+  "account": "Required",
+  "server": "Theirs — hosted database",
+  "apiKey": "Required to read",
+  "localFirst": "No",
+  "typed": "Via codegen",
+  "deploy": "Out of scope",
+  "oss": "No (proprietary)",
+  "bestFor": "Large teams and scale",
+  "isUs": false,
+  "order": 4
+}

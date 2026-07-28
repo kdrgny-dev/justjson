@@ -44,6 +44,25 @@
       ]
     },
     {
+      "name": "vs",
+      "label": "Karşılaştırma (rakipler)",
+      "path": "vs",
+      "fields": [
+        { "key": "name", "label": "Ürün", "type": "text", "required": true },
+        { "key": "tagline", "label": "Kısa tanım", "type": "text" },
+        { "key": "account", "label": "Hesap", "type": "text" },
+        { "key": "server", "label": "Sunucu / DB", "type": "text" },
+        { "key": "apiKey", "label": "API anahtarı", "type": "text" },
+        { "key": "localFirst", "label": "Yerel-önce / çevrimdışı", "type": "text" },
+        { "key": "typed", "label": "Tipli çıktı", "type": "text" },
+        { "key": "deploy", "label": "Site + deploy", "type": "text" },
+        { "key": "oss", "label": "Lisans", "type": "text" },
+        { "key": "bestFor", "label": "En uygun", "type": "text" },
+        { "key": "isUs", "label": "Bu JustJSON mı", "type": "boolean" },
+        { "key": "order", "label": "Sıra", "type": "number" }
+      ]
+    },
+    {
       "name": "steps",
       "label": "Adımlar",
       "path": "steps",

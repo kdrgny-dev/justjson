@@ -1,0 +1,14 @@
+{
+  "name": "Tina",
+  "tagline": "Git + optional cloud; visual editing.",
+  "account": "Required for cloud",
+  "server": "Optional (Tina Cloud)",
+  "apiKey": "Required for cloud",
+  "localFirst": "Partial",
+  "typed": "Yes",
+  "deploy": "Manual setup",
+  "oss": "OSS + paid cloud",
+  "bestFor": "Visual editing on top of git",
+  "isUs": false,
+  "order": 3
+}

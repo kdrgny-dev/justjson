@@ -1,0 +1,14 @@
+{
+  "name": "Decap (Netlify CMS)",
+  "tagline": "Mature, git-based; heavier setup, dated DX.",
+  "account": "None (git) — needs auth setup",
+  "server": "None, but an OAuth broker is required",
+  "apiKey": "Git provider auth",
+  "localFirst": "Partial",
+  "typed": "No",
+  "deploy": "Manual setup",
+  "oss": "MIT",
+  "bestFor": "Existing Netlify / git sites",
+  "isUs": false,
+  "order": 2
+}

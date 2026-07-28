@@ -1,0 +1,14 @@
+{
+  "name": "Keystatic",
+  "tagline": "Git-based, typed content; React/Astro friendly (Thinkmill).",
+  "account": "None (git)",
+  "server": "None (git-based)",
+  "apiKey": "None",
+  "localFirst": "Yes",
+  "typed": "Yes",
+  "deploy": "Manual setup",
+  "oss": "MIT",
+  "bestFor": "Git-based teams happy to write config",
+  "isUs": false,
+  "order": 1
+}
