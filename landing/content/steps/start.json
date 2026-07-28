@@ -1,5 +1,5 @@
 {
   "title": "Start",
-  "body": "Begin from one of eight templates (blog, CV, portfolio, docs, changelog, recipe box, event schedule, product catalog), from JSON you already have, or just describe it and let AI draft the schema.",
+  "body": "Begin from one of eight templates, from JSON you already have, or just describe what you're managing and let AI draft the schema. No config file to write.",
   "order": 0
 }

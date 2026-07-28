@@ -1,0 +1,6 @@
+{
+  "label": "Workflow",
+  "title": "Draft or published",
+  "body": "Flip an entry's status while you work on it. The generated loader returns only published entries by default, so drafts stay off your live site.",
+  "order": 9
+}

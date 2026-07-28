@@ -1,6 +1,6 @@
 {
   "label": "Types",
-  "title": "Type-safe output",
-  "body": "Generates types.ts from your schema, so your content is fully typed in your own project.",
+  "title": "Typed output, wired in",
+  "body": "Generates types.ts and a zero-dependency content.ts loader — or drops straight into Astro content collections with one line. Your content is fully typed in your build.",
   "order": 6
 }

@@ -1,5 +1,0 @@
-{
-  "title": "Ship",
-  "body": "content/*.json is ready on disk. Commit, deploy, import it in your build — your flow, your repo, your call.",
-  "order": 2
-}

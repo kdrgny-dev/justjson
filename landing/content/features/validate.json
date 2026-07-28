@@ -1,0 +1,6 @@
+{
+  "label": "CI",
+  "title": "Validate before you deploy",
+  "body": "justjson validate checks content against the schema — broken relations, duplicate slugs, missing media, wrong types — and exits non-zero, so a bad entry never ships.",
+  "order": 8
+}
