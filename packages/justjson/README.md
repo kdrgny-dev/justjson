@@ -6,9 +6,13 @@
 
 No database · no account · no lock-in.
 
-[Website](https://justjson-site.vercel.app) ·
+[Website](https://justjson.vercel.app) ·
 [GitHub](https://github.com/kdrgny-dev/justjson) ·
 MIT
+
+<br>
+
+<img src="https://raw.githubusercontent.com/kdrgny-dev/justjson/main/.github/media/demo.gif" alt="JustJSON in action — edit a post, save it to disk, then restyle the generated site with a live preview" width="820">
 
 </div>
 
