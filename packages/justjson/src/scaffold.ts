@@ -48,10 +48,12 @@ const { title } = Astro.props
       code { background: color-mix(in oklab, var(--jj-text) 8%, transparent); padding: 0.1em 0.35em; border-radius: calc(var(--jj-radius) / 2); }
       .body { white-space: pre-wrap; }
       .back { color: var(--jj-muted); font-size: 0.9rem; }
+      .jj-badge { margin-top: calc(var(--jj-page) * 1.5); padding-top: var(--jj-gap); border-top: 1px solid color-mix(in oklab, var(--jj-text) 10%, transparent); color: var(--jj-muted); font-size: 0.85rem; }
     </style>
   </head>
   <body>
     <slot />
+    <footer class="jj-badge">Made with <a href="https://justjson.vercel.app">Just{JSON}</a></footer>
   </body>
 </html>
 `

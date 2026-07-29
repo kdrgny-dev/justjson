@@ -1,0 +1,173 @@
+---
+import Analytics from '@vercel/analytics/astro'
+import Foot from '../../components/Foot.astro'
+import Nav from '../../components/Nav.astro'
+import Seo from '../../components/Seo.astro'
+import SiteScript from '../../components/SiteScript.astro'
+import '../../styles/site.css'
+
+const title = 'JSON to TypeScript + Astro collection — free generator'
+const description =
+  'Paste JSON and get a typed TypeScript interface and an Astro content collection schema. Free, runs in your browser. From the makers of JustJSON.'
+
+const sample = `[
+  { "title": "Hello world", "slug": "hello", "date": "2026-07-27", "draft": false, "tags": ["intro","news"] }
+]`
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <Seo title={title} description={description} url="https://justjson.vercel.app/tools/json-to-types" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Public+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .tool { max-width: var(--maxw); margin: 0 auto; padding: 56px 24px 80px; }
+      .tool h1 { font-family: var(--mono); font-size: clamp(1.7rem, 4vw, 2.1rem); letter-spacing: -0.015em; margin: 12px 0 0; }
+      .tool .lead { color: var(--muted); margin: 12px 0 0; max-width: 60ch; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 28px; }
+      .panel { border: 1px solid var(--line); border-radius: 10px; background: var(--raised); overflow: hidden; }
+      .panel .bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 14px; border-bottom: 1px solid var(--line); background: var(--sunk); font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--faint); }
+      .panel .bar button { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 5px; padding: 3px 9px; cursor: pointer; }
+      .panel .bar button:hover { color: var(--signal-ink); border-color: var(--signal-ink); }
+      textarea { width: 100%; min-height: 320px; resize: vertical; border: none; background: var(--code-bg); color: var(--code-ink); font-family: var(--mono); font-size: 13px; line-height: 1.6; padding: 14px; }
+      textarea:focus { outline: none; }
+      pre { margin: 0; min-height: 150px; background: var(--code-bg); color: var(--code-ink); font-family: var(--mono); font-size: 13px; line-height: 1.6; padding: 14px; overflow-x: auto; white-space: pre; }
+      .out { display: grid; gap: 18px; }
+      .err { color: var(--rust); font-family: var(--mono); font-size: 12px; padding: 10px 14px; }
+      .cta { margin-top: 30px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; color: var(--muted); }
+      .cta .cmd { margin-top: 0; }
+      @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <Nav />
+
+    <div class="tool">
+      <span class="eyebrow">Free tool</span>
+      <h1>JSON → TypeScript + Astro collection</h1>
+      <p class="lead">
+        Paste JSON, get a typed <span class="mono">interface</span> and an Astro content collection
+        schema. Runs entirely in your browser — nothing is uploaded.
+      </p>
+
+      <div class="grid">
+        <div class="panel">
+          <div class="bar"><span>JSON in</span></div>
+          <textarea id="in" spellcheck="false" placeholder="Paste JSON here…">{sample}</textarea>
+        </div>
+        <div class="out">
+          <div class="panel">
+            <div class="bar"><span>TypeScript</span><button data-copy-target="ts" type="button">Copy</button></div>
+            <pre id="ts"></pre>
+          </div>
+          <div class="panel">
+            <div class="bar"><span>Astro collection</span><button data-copy-target="astro" type="button">Copy</button></div>
+            <pre id="astro"></pre>
+          </div>
+        </div>
+      </div>
+      <div id="err" class="err"></div>
+
+      <div class="cta">
+        <span>Want to <strong>edit</strong> this content in a real UI and own it as files?</span>
+        <div class="cmd">
+          <span><span class="prompt">$</span> npx @kdrgny/justjson</span>
+          <button data-copy="npx @kdrgny/justjson" aria-label="Copy command">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <Foot />
+    <Analytics />
+    <SiteScript />
+
+    <script>
+      const $ = (id: string) => document.getElementById(id) as HTMLElement
+      const inEl = $('in') as HTMLTextAreaElement
+
+      const isDate = (s: string) => /^\d{4}-\d{2}-\d{2}([T ]\d{2}:\d{2})?/.test(s)
+
+      // Infer a type node from a value. Returns {ts, zod}.
+      function infer(v: any): { ts: string; zod: string } {
+        if (v === null || v === undefined) return { ts: 'string', zod: 'z.string()' }
+        if (Array.isArray(v)) {
+          const el = v.length ? infer(v[0]) : { ts: 'string', zod: 'z.string()' }
+          return { ts: `${el.ts}[]`, zod: `z.array(${el.zod})` }
+        }
+        const t = typeof v
+        if (t === 'number') return { ts: 'number', zod: 'z.number()' }
+        if (t === 'boolean') return { ts: 'boolean', zod: 'z.boolean()' }
+        if (t === 'string') return isDate(v) ? { ts: 'string', zod: 'z.string()' } : { ts: 'string', zod: 'z.string()' }
+        if (t === 'object') return shape(v)
+        return { ts: 'string', zod: 'z.string()' }
+      }
+
+      // Object -> merged shape (union of keys across items handled by caller).
+      function shape(obj: Record<string, any>, indent = 1): { ts: string; zod: string } {
+        const pad = '  '.repeat(indent)
+        const tsLines: string[] = []
+        const zodLines: string[] = []
+        for (const [k, val] of Object.entries(obj)) {
+          const n = infer(val)
+          const key = /^[a-zA-Z_$][\w$]*$/.test(k) ? k : JSON.stringify(k)
+          tsLines.push(`${pad}${key}: ${n.ts}`)
+          zodLines.push(`${pad}${key}: ${n.zod}`)
+        }
+        return {
+          ts: `{\n${tsLines.join('\n')}\n${'  '.repeat(indent - 1)}}`,
+          zod: `z.object({\n${zodLines.join(',\n')}\n${'  '.repeat(indent - 1)}})`,
+        }
+      }
+
+      // Merge keys across an array of objects so optional/extra fields are captured.
+      function merge(items: any[]): Record<string, any> {
+        const out: Record<string, any> = {}
+        for (const it of items) {
+          if (it && typeof it === 'object' && !Array.isArray(it))
+            for (const [k, v] of Object.entries(it)) if (!(k in out) || out[k] == null) out[k] = v
+        }
+        return out
+      }
+
+      function run() {
+        const raw = inEl.value.trim()
+        $('err').textContent = ''
+        if (!raw) { $('ts').textContent = ''; $('astro').textContent = ''; return }
+        let data: any
+        try { data = JSON.parse(raw) } catch (e: any) { $('err').textContent = 'Invalid JSON: ' + e.message; return }
+
+        const isColl = Array.isArray(data)
+        const source = isColl ? merge(data) : data
+        if (!source || typeof source !== 'object' || Array.isArray(source)) {
+          $('err').textContent = 'Give a JSON object, or an array of objects.'
+          return
+        }
+        const s = shape(source, 1)
+        const name = isColl ? 'Entry' : 'Content'
+        $('ts').textContent = `export interface ${name} ${s.ts}`
+
+        const coll = isColl
+          ? `import { z, defineCollection } from 'astro:content'\n\nconst content = defineCollection({\n  type: 'content',\n  schema: ${s.zod.replace(/\n/g, '\n  ')},\n})\n\nexport const collections = { content }`
+          : `import { z } from 'astro:content'\n\nexport const schema = ${s.zod}`
+        $('astro').textContent = coll
+      }
+
+      inEl.addEventListener('input', run)
+      document.querySelectorAll('[data-copy-target]').forEach((b) =>
+        b.addEventListener('click', () => {
+          const t = $((b as HTMLElement).dataset.copyTarget as string)
+          navigator.clipboard?.writeText(t.textContent || '')
+          const o = b.textContent; b.textContent = 'Copied'; setTimeout(() => (b.textContent = o), 1400)
+        }),
+      )
+      run()
+    </script>
+  </body>
+</html>

@@ -1,0 +1,121 @@
+---
+import Analytics from '@vercel/analytics/astro'
+import Foot from '../../components/Foot.astro'
+import Nav from '../../components/Nav.astro'
+import Seo from '../../components/Seo.astro'
+import SiteScript from '../../components/SiteScript.astro'
+import '../../styles/site.css'
+
+type P = Record<string, any>
+
+export async function getStaticPaths() {
+  const g = import.meta.glob('../../../content/vs/*.json', { eager: true }) as Record<
+    string,
+    { default: P }
+  >
+  const items: P[] = Object.entries(g).map(([path, m]) => ({
+    slug: path.split('/').pop()!.replace('.json', ''),
+    ...m.default,
+  }))
+  const us = items.find((p) => p.isUs)
+  return items.filter((p) => !p.isUs).map((p) => ({ params: { slug: p.slug }, props: { competitor: p, us } }))
+}
+
+const { competitor, us } = Astro.props
+const rows = [us, competitor]
+const criteria = [
+  { k: 'account', label: 'Account' },
+  { k: 'server', label: 'Server / DB' },
+  { k: 'apiKey', label: 'API key' },
+  { k: 'localFirst', label: 'Local-first' },
+  { k: 'typed', label: 'Typed output' },
+  { k: 'bestFor', label: 'Best for' },
+]
+const title = `JustJSON vs ${competitor.name} — a plain-files CMS comparison`
+const description = `JustJSON vs ${competitor.name}: ${competitor.tagline} JustJSON keeps your content as plain JSON in your own repo — no account, no server, no API key.`
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <Seo title={title} description={description} url={`https://justjson.vercel.app/vs/${competitor.slug}`} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Public+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .vs-head { padding: 60px 24px 0; }
+      .vs-head h1 { margin: 14px 0 0; }
+      .vs-head .lead { max-width: 62ch; margin: 16px 0 0; }
+      .vs-block { padding: 28px 0 0; }
+      table.cmp .ptag { display: block; margin-top: 5px; font-family: var(--sans); font-size: 11.5px; line-height: 1.4; letter-spacing: 0; text-transform: none; color: var(--faint); font-weight: 400; max-width: 30ch; }
+      table.cmp tbody tr { opacity: 1; transform: none; }
+      table.cmp tbody tr.us-row th, table.cmp tbody tr.us-row td { background: color-mix(in srgb, var(--signal) 8%, transparent); }
+      table.cmp tbody tr.us-row th { color: var(--signal-ink); }
+      .vs-note { margin: 18px 2px 0; color: var(--faint); font-size: 0.9rem; max-width: 70ch; }
+      .vs-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 26px 0 80px; }
+      .vs-cta .cmd { margin-top: 0; }
+    </style>
+  </head>
+  <body>
+    <Nav active="vs" />
+
+    <header class="wrap vs-head">
+      <span class="eyebrow">Honest comparison</span>
+      <h1>JustJSON vs {competitor.name}</h1>
+      <p class="lead">
+        {competitor.tagline} JustJSON takes a different path: your content is plain JSON in your own
+        repo — <strong>no account, no server, no API key</strong> — and you start in one command.
+      </p>
+    </header>
+
+    <section class="wrap vs-block">
+      <div class="cmp-wrap">
+        <table class="cmp" style="min-width: 760px">
+          <thead>
+            <tr>
+              <th scope="col">Tool</th>
+              {criteria.map((c) => <th scope="col">{c.label}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {
+              rows.map((p) => (
+                <tr class={p.isUs ? 'us-row' : ''}>
+                  <th scope="row">
+                    {p.name}
+                    <span class="ptag">{p.tagline}</span>
+                  </th>
+                  {criteria.map((c) => <td>{p[c.k]}</td>)}
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <p class="vs-note">
+        A fair-use summary of publicly documented behaviour, compiled {new Date().getFullYear()}.
+        {competitor.name} is a solid project — <a href="https://github.com/kdrgny-dev/justjson/issues/new">tell us</a>
+        if anything reads wrong. See the <a href="/vs">full comparison</a> across all of them.
+      </p>
+
+      <div class="vs-cta">
+        <div class="cmd">
+          <span><span class="prompt">$</span> npx @kdrgny/justjson</span>
+          <button data-copy="npx @kdrgny/justjson" aria-label="Copy command">Copy</button>
+        </div>
+        <a class="btn btn-ghost" href="https://stackblitz.com/github/kdrgny-dev/justjson/tree/main/examples/playground" target="_blank" rel="noreferrer">Try in your browser</a>
+        <a class="btn btn-ghost" href="/vs">All comparisons</a>
+      </div>
+    </section>
+
+    <Foot />
+    <Analytics />
+    <SiteScript />
+  </body>
+</html>
