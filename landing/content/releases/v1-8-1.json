@@ -1,0 +1,2 @@
+{ "version": "1.8.1", "date": "2026-07-29", "title": "Made with JustJSON", "order": -1,
+  "body": "- Generated sites now carry a small **Made with Just{JSON}** footer badge (remove it any time — it's your file).\n- npm README shows the editor demo." }
