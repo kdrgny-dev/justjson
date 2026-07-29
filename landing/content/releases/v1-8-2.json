@@ -1,0 +1,2 @@
+{ "version": "1.8.2", "date": "2026-07-29", "title": "Designed presets", "order": -2,
+  "body": "- `init portfolio|cv|event --astro` now generates a styled, content-driven site — not the generic layout.\n- Each preset ships its own design and a matching theme; your content stays plain JSON." }
