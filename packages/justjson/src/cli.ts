@@ -32,7 +32,12 @@ program
 
     const schema = await loadSchema(new FsAdapter(root), await resolveContentDir(root))
     if (!schema) return
-    const { written, skipped } = await writeAstroSite(root, schema, basename(root) || 'my-site')
+    const { written, skipped } = await writeAstroSite(
+      root,
+      schema,
+      basename(root) || 'my-site',
+      template,
+    )
     console.log(`Wrote ${written.length} site file(s).`)
     if (skipped.length > 0) console.log(`Kept your existing: ${skipped.join(', ')}`)
     console.log('\nNext:\n  npm install\n  npm run dev')

@@ -97,7 +97,7 @@ const description =
                 <h3>{t.name}</h3>
                 <p>{t.blurb}</p>
                 <div class="tpl-foot">
-                  <span class="cmd">{t.preset}</span>
+                  <span class="cmd">init {t.preset}</span>
                   <a class="tpl-live" href={`/templates/${t.id}.html`} target="_blank" rel="noreferrer">
                     Live demo ↗
                   </a>
@@ -108,9 +108,10 @@ const description =
         }
       </div>
       <p class="tpl-note">
-        Live demos use sample content. Wiring these in as one-command presets
-        (<span class="mono">npx @kdrgny/justjson init &lt;preset&gt; --astro</span>) is in progress —
-        see the <a href="/roadmap">roadmap</a>.
+        Each is a one-command preset — run
+        <span class="mono">npx @kdrgny/justjson init &lt;preset&gt; --astro</span> to generate the design
+        around your own content. The live demos above use sample content; everything stays yours as
+        plain JSON.
       </p>
     </section>
 

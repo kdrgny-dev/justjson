@@ -1,6 +1,7 @@
 import { access, mkdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { type Collection, type Field, type Schema, defaultTheme, slugify } from '@justjson/core'
+import { siteTemplateFiles } from './site-templates'
 
 /** Üretilen sitenin sabitlediği sürümler; kullanıcı sonra kendi günceller. */
 const ASTRO_VERSION = '^5.18.0'
@@ -128,7 +129,7 @@ function indexPage(schema: Schema, projectName: string): string {
     </ul>`
   })
 
-  const empty = `    <p>No content yet — run <code>npx @kdrgny/justjson</code> and add some.</p>`
+  const empty = '    <p>No content yet — run <code>npx @kdrgny/justjson</code> and add some.</p>'
 
   const pageTitle = singleton
     ? `{site?.data.${titleFieldOf(singleton.fields)} ?? '${projectName}'}`
@@ -158,7 +159,11 @@ function varFor(name: string): string {
  * listeler, her koleksiyon için bir detay sayfası açılır. Kullanıcı buradan
  * kendi tasarımına devam eder.
  */
-export function astroSiteFiles(schema: Schema, projectName: string): Record<string, string> {
+export function astroSiteFiles(
+  schema: Schema,
+  projectName: string,
+  preset?: string,
+): Record<string, string> {
   const files: Record<string, string> = {
     'package.json': `${JSON.stringify(
       {
@@ -193,11 +198,19 @@ dist
 // Every collection and singleton in content/_schema.json, typed from your fields.
 export const collections = await justjsonCollections()
 `,
-
-    'content/_theme.json': `${JSON.stringify(defaultTheme(), null, 2)}\n`,
-    'src/layouts/Base.astro': LAYOUT,
-    'src/pages/index.astro': indexPage(schema, projectName),
   }
+
+  // Preset'e özel styled tasarım varsa onu kullan; tek sayfa, kendi CSS'i,
+  // içerik-sürücülü. Base/detay/jenerik index üretmeyiz.
+  const styled = preset ? siteTemplateFiles(preset, projectName) : null
+  if (styled) {
+    Object.assign(files, styled)
+    return files
+  }
+
+  files['content/_theme.json'] = `${JSON.stringify(defaultTheme(), null, 2)}\n`
+  files['src/layouts/Base.astro'] = LAYOUT
+  files['src/pages/index.astro'] = indexPage(schema, projectName)
 
   for (const collection of schema.collections) {
     files[`src/pages/${collection.name}/[slug].astro`] = detailPage(collection)
@@ -228,8 +241,9 @@ export async function writeAstroSite(
   root: string,
   schema: Schema,
   projectName: string,
+  preset?: string,
 ): Promise<ScaffoldResult> {
-  const files = astroSiteFiles(schema, projectName)
+  const files = astroSiteFiles(schema, projectName, preset)
   const result: ScaffoldResult = { written: [], skipped: [] }
 
   for (const [relative, contents] of Object.entries(files)) {
