@@ -24,3 +24,8 @@ pnpm-debug.log*
 # superpowers SDD scratch (root docs only — NOT landing/**/docs)
 .superpowers/
 /docs/
+
+# installed skills (local only)
+.claude/skills/
+.agents/
+skills-lock.json
