@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StackConf 2026 — One day, one track</title>
+<style>
+  :root{
+    --plum:#2A0A3C;
+    --plum-800:#360F4C;
+    --plum-700:#451763;
+    --plum-line:#5A2B7A;
+    --tangerine:#FF6A1A;
+    --pink:#FF2E7E;
+    --lilac:#C79BE6;
+    --paper:#FFF1E4;
+    --paper-dim:#E4CDDF;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+  body{
+    background:var(--plum);
+    color:var(--paper);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  a{color:inherit}
+
+  :focus-visible{
+    outline:3px solid var(--tangerine);
+    outline-offset:3px;
+    border-radius:2px;
+  }
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* ---------- Marquee light band ---------- */
+  .marquee{
+    background:var(--tangerine);
+    color:var(--plum);
+    border-top:3px solid var(--plum);
+    border-bottom:3px solid var(--plum);
+    overflow:hidden;
+    white-space:nowrap;
+    position:relative;
+  }
+  .marquee::before,.marquee::after{
+    content:"";position:absolute;top:0;bottom:0;width:64px;z-index:2;pointer-events:none;
+  }
+  .marquee::before{left:0;background:linear-gradient(90deg,var(--tangerine),transparent)}
+  .marquee::after{right:0;background:linear-gradient(270deg,var(--tangerine),transparent)}
+  .marquee__track{
+    display:inline-block;
+    padding:11px 0;
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:.82rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    animation:slide 26s linear infinite;
+  }
+  .marquee__track span{padding:0 22px}
+  .marquee__track .dot{color:var(--pink)}
+  @keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion:reduce){
+    .marquee__track{animation:none;padding-left:24px}
+  }
+
+  /* ---------- Sticky nav ---------- */
+  .nav{
+    position:sticky;top:0;z-index:20;
+    background:rgba(42,10,60,.86);
+    backdrop-filter:saturate(140%) blur(10px);
+    border-bottom:1px solid var(--plum-line);
+  }
+  .nav__in{display:flex;align-items:center;gap:20px;height:60px}
+  .brand{
+    font-weight:800;letter-spacing:-.02em;font-size:1.05rem;
+    display:flex;align-items:center;gap:9px;text-decoration:none;white-space:nowrap;
+  }
+  .brand .bulb{
+    width:12px;height:12px;border-radius:50%;
+    background:var(--tangerine);
+    box-shadow:0 0 0 3px rgba(255,106,26,.25),0 0 14px var(--tangerine);
+  }
+  .nav__links{margin-left:auto;display:flex;gap:6px;align-items:center}
+  .nav__links a{
+    text-decoration:none;font-size:.86rem;font-weight:600;
+    color:var(--paper-dim);padding:8px 12px;border-radius:999px;
+  }
+  .nav__links a:hover{color:var(--paper);background:var(--plum-700)}
+  .nav__tix{
+    text-decoration:none;font-weight:700;font-size:.86rem;
+    background:var(--tangerine);color:var(--plum);
+    padding:9px 16px;border-radius:999px;white-space:nowrap;
+    box-shadow:0 0 0 0 rgba(255,106,26,.5);transition:box-shadow .2s,transform .1s;
+  }
+  .nav__tix:hover{box-shadow:0 6px 22px -6px var(--tangerine);transform:translateY(-1px)}
+  .nav__tix:active{transform:translateY(0)}
+  .nav__label{display:none}
+  @media (max-width:640px){
+    .nav__links a:not(.keep){display:none}
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{padding:72px 0 64px;position:relative}
+  .eyebrow{
+    font-family:var(--mono);font-size:.78rem;letter-spacing:.28em;
+    text-transform:uppercase;color:var(--tangerine);font-weight:700;
+    display:flex;align-items:center;gap:12px;margin-bottom:26px;
+  }
+  .eyebrow::after{content:"";flex:1;height:1px;background:var(--plum-line);max-width:180px}
+  .hero h1{
+    font-size:clamp(3.2rem,11vw,7.5rem);
+    line-height:.9;font-weight:800;letter-spacing:-.035em;
+    text-transform:uppercase;
+  }
+  .hero h1 .yr{
+    -webkit-text-stroke:2px var(--tangerine);
+    color:transparent;
+  }
+  .hero .tagline{
+    margin-top:28px;font-size:clamp(1.15rem,2.6vw,1.6rem);
+    max-width:30ch;color:var(--paper);font-weight:500;
+  }
+  .hero .tagline b{color:var(--tangerine);font-weight:700}
+  .meta{
+    margin-top:38px;display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;
+    font-family:var(--mono);font-size:.95rem;letter-spacing:.02em;
+  }
+  .meta .chip{display:flex;align-items:center;gap:9px}
+  .meta .k{color:var(--lilac);text-transform:uppercase;font-size:.72rem;letter-spacing:.18em}
+  .meta .v{font-weight:700;font-size:1.05rem}
+  .cta-row{margin-top:44px;display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+  .btn-tix{
+    text-decoration:none;font-weight:800;font-size:1.05rem;letter-spacing:-.01em;
+    background:var(--tangerine);color:var(--plum);
+    padding:16px 30px;border-radius:999px;display:inline-flex;align-items:center;gap:12px;
+    box-shadow:0 10px 30px -10px var(--tangerine);transition:transform .12s,box-shadow .2s;
+  }
+  .btn-tix:hover{transform:translateY(-2px);box-shadow:0 16px 40px -12px var(--tangerine)}
+  .btn-tix:active{transform:translateY(0)}
+  .btn-tix .arrow{transition:transform .2s}
+  .btn-tix:hover .arrow{transform:translate(4px)}
+  .cta-note{font-size:.9rem;color:var(--paper-dim)}
+  .cta-note b{color:var(--paper)}
+
+  /* section heading shared */
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+  .sec-head h2{
+    font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;letter-spacing:-.03em;text-transform:uppercase;line-height:1;
+  }
+  .sec-head .num{font-family:var(--mono);color:var(--tangerine);font-size:.8rem;letter-spacing:.2em;font-weight:700}
+
+  /* ---------- Schedule ---------- */
+  .schedule{padding:26px 0 30px}
+  .block-label{
+    font-family:var(--mono);font-size:.75rem;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--lilac);font-weight:700;margin:34px 0 12px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .block-label::after{content:"";flex:1;height:1px;background:var(--plum-line)}
+
+  .slot{
+    display:grid;
+    grid-template-columns:132px 1fr auto;
+    gap:8px 28px;align-items:center;
+    padding:22px 20px 22px 0;
+    border-top:1px solid var(--plum-line);
+    position:relative;
+  }
+  .slot:last-child{border-bottom:1px solid var(--plum-line)}
+  .slot:hover{background:var(--plum-800)}
+  .slot .time{
+    font-family:var(--mono);font-weight:700;
+    font-size:2.5rem;letter-spacing:-.03em;line-height:1;
+    color:var(--paper);font-variant-numeric:tabular-nums;
+  }
+  .slot:hover .time{color:var(--tangerine)}
+  .slot .body h3{font-size:1.28rem;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+  .slot .body .who{
+    margin-top:6px;font-size:.95rem;color:var(--paper-dim);
+    font-family:var(--mono);letter-spacing:.01em;
+  }
+  .slot .body .who b{color:var(--paper);font-weight:700}
+  .room{
+    justify-self:end;white-space:nowrap;
+    font-family:var(--mono);font-size:.74rem;font-weight:700;
+    letter-spacing:.12em;text-transform:uppercase;
+    padding:6px 12px;border-radius:999px;
+    border:1.5px solid currentColor;
+  }
+  .room.main{color:var(--tangerine)}
+  .room.a{color:var(--pink)}
+  .room.b{color:var(--lilac)}
+  .slot.keynote .body h3{color:var(--tangerine)}
+  .slot.panel .body h3{color:var(--pink)}
+
+  @media (max-width:680px){
+    .slot{
+      grid-template-columns:1fr auto;
+      gap:4px 16px;
+      padding:20px 0;
+    }
+    .slot .time{grid-column:1;font-size:2.1rem}
+    .room{grid-column:2;grid-row:1;align-self:start}
+    .slot .body{grid-column:1 / -1;margin-top:10px}
+  }
+
+  /* ---------- Speakers strip ---------- */
+  .speakers{padding:56px 0 20px}
+  .spk-grid{
+    margin-top:26px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    border-top:1px solid var(--plum-line);
+  }
+  .spk{
+    padding:24px 20px 24px 0;border-bottom:1px solid var(--plum-line);
+    display:flex;align-items:baseline;gap:14px;
+  }
+  .spk .idx{font-family:var(--mono);font-size:.78rem;color:var(--tangerine);font-weight:700;min-width:24px}
+  .spk .nm{font-size:1.25rem;font-weight:700;letter-spacing:-.01em}
+  .spk .role{display:block;margin-top:3px;font-size:.82rem;color:var(--paper-dim);font-family:var(--mono);letter-spacing:.02em}
+
+  /* ---------- Tickets banner ---------- */
+  .tix-cta{
+    margin:60px 0 0;padding:48px 40px;border-radius:22px;
+    background:linear-gradient(120deg,var(--tangerine),var(--pink));
+    color:var(--plum);text-align:center;position:relative;overflow:hidden;
+  }
+  .tix-cta h2{font-size:clamp(1.9rem,6vw,3.2rem);font-weight:800;letter-spacing:-.03em;text-transform:uppercase;line-height:.98}
+  .tix-cta p{margin-top:14px;font-weight:600;font-size:1.05rem;opacity:.85}
+  .tix-cta a{
+    margin-top:28px;display:inline-flex;align-items:center;gap:12px;
+    background:var(--plum);color:var(--paper);text-decoration:none;
+    font-weight:800;font-size:1.05rem;padding:16px 32px;border-radius:999px;
+    transition:transform .12s;
+  }
+  .tix-cta a:hover{transform:translateY(-2px)}
+  .tix-cta a .arrow{transition:transform .2s}
+  .tix-cta a:hover .arrow{transform:translate(4px)}
+
+  /* ---------- Footer ---------- */
+  footer{padding:64px 0 72px;margin-top:56px;border-top:1px solid var(--plum-line)}
+  .foot-grid{display:flex;flex-wrap:wrap;justify-content:space-between;gap:32px}
+  .foot-venue .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--lilac);font-weight:700}
+  .foot-venue .v{margin-top:8px;font-size:1.15rem;font-weight:700}
+  .foot-venue .addr{margin-top:4px;color:var(--paper-dim);font-size:.95rem}
+  .see-you{
+    font-size:clamp(2rem,7vw,3.6rem);font-weight:800;letter-spacing:-.03em;
+    text-transform:uppercase;line-height:.9;text-align:right;
+  }
+  .see-you span{color:var(--tangerine)}
+  .foot-fine{
+    margin-top:44px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+    font-family:var(--mono);font-size:.78rem;color:var(--paper-dim);letter-spacing:.04em;
+  }
+  @media (max-width:560px){.see-you{text-align:left}}
+</style>
+</head>
+<body>
+
+  <!-- Marquee light band -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track">
+      <span>StackConf 2026</span><span class="dot">●</span><span>14 Oct · Istanbul</span><span class="dot">●</span><span>One track, one Tuesday</span><span class="dot">●</span><span>Get your tickets now</span><span class="dot">●</span><span>StackConf 2026</span><span class="dot">●</span><span>14 Oct · Istanbul</span><span class="dot">●</span><span>One track, one Tuesday</span><span class="dot">●</span><span>Get your tickets now</span><span class="dot">●</span>
+    </div>
+  </div>
+
+  <!-- Sticky nav -->
+  <nav class="nav">
+    <div class="wrap nav__in">
+      <a href="#top" class="brand"><span class="bulb"></span>StackConf<span style="color:var(--tangerine)">26</span></a>
+      <div class="nav__links">
+        <a href="#schedule">Schedule</a>
+        <a href="#speakers">Speakers</a>
+        <a href="#venue">Venue</a>
+        <a href="#" class="nav__tix keep">Get tickets</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero" id="top">
+    <div class="wrap">
+      <p class="eyebrow">Tuesday · 14 Oct 2026 · Istanbul</p>
+      <h1>Stack<br>Conf <span class="yr">2026</span></h1>
+      <p class="tagline">One day, <b>one track</b> of ideas worth your Tuesday.</p>
+
+      <div class="meta">
+        <div class="chip"><span class="k">Date</span><span class="v">14 Oct 2026</span></div>
+        <div class="chip"><span class="k">City</span><span class="v">Istanbul</span></div>
+        <div class="chip"><span class="k">Format</span><span class="v">6 talks · 1 stage</span></div>
+      </div>
+
+      <div class="cta-row">
+        <a href="#" class="btn-tix">Get tickets <span class="arrow">→</span></a>
+        <span class="cta-note"><b>Early-bird open.</b> Doors 08:30, first talk 09:00.</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Schedule -->
+  <main>
+  <section class="schedule" id="schedule">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>The running order</h2>
+        <span class="num">6 TALKS · MAIN HALL + ROOMS A/B</span>
+      </div>
+
+      <p class="block-label">Morning</p>
+
+      <article class="slot keynote">
+        <div class="time">09:00</div>
+        <div class="body">
+          <h3>Opening keynote: Own your stack</h3>
+          <p class="who">with <b>Ada Lovelace</b></p>
+        </div>
+        <span class="room main">Main hall</span>
+      </article>
+
+      <article class="slot">
+        <div class="time">10:00</div>
+        <div class="body">
+          <h3>Scaling Postgres to a billion rows</h3>
+          <p class="who">with <b>Grace Hopper</b></p>
+        </div>
+        <span class="room a">Room A</span>
+      </article>
+
+      <article class="slot">
+        <div class="time">11:00</div>
+        <div class="body">
+          <h3>Design systems that don't rot</h3>
+          <p class="who">with <b>Dieter Rams</b></p>
+        </div>
+        <span class="room b">Room B</span>
+      </article>
+
+      <p class="block-label">Afternoon</p>
+
+      <article class="slot">
+        <div class="time">13:00</div>
+        <div class="body">
+          <h3>The web is a document, still</h3>
+          <p class="who">with <b>Tim Berners-Lee</b></p>
+        </div>
+        <span class="room main">Main hall</span>
+      </article>
+
+      <article class="slot">
+        <div class="time">14:30</div>
+        <div class="body">
+          <h3>Rust in production, honestly</h3>
+          <p class="who">with <b>Carol Nichols</b></p>
+        </div>
+        <span class="room a">Room A</span>
+      </article>
+
+      <article class="slot panel">
+        <div class="time">16:00</div>
+        <div class="body">
+          <h3>Closing panel: what breaks next</h3>
+          <p class="who">with <b>All speakers</b></p>
+        </div>
+        <span class="room main">Main hall</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- Speakers -->
+  <section class="speakers" id="speakers">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Who's talking</h2>
+        <span class="num">SIX ON STAGE</span>
+      </div>
+      <div class="spk-grid">
+        <div class="spk"><span class="idx">01</span><span><span class="nm">Ada Lovelace</span><span class="role">Opening keynote</span></span></div>
+        <div class="spk"><span class="idx">02</span><span><span class="nm">Grace Hopper</span><span class="role">Postgres at scale</span></span></div>
+        <div class="spk"><span class="idx">03</span><span><span class="nm">Dieter Rams</span><span class="role">Design systems</span></span></div>
+        <div class="spk"><span class="idx">04</span><span><span class="nm">Tim Berners-Lee</span><span class="role">The web, still</span></span></div>
+        <div class="spk"><span class="idx">05</span><span><span class="nm">Carol Nichols</span><span class="role">Rust in production</span></span></div>
+        <div class="spk"><span class="idx">06</span><span><span class="nm">All speakers</span><span class="role">Closing panel</span></span></div>
+      </div>
+
+      <!-- Tickets banner -->
+      <div class="tix-cta">
+        <h2>Your Tuesday, well spent</h2>
+        <p>One ticket. One track. Every talk.</p>
+        <a href="#">Get tickets <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <!-- Footer -->
+  <footer id="venue">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="foot-venue">
+          <p class="k">Venue</p>
+          <p class="v">Zorlu PSM — Main Hall</p>
+          <p class="addr">Levazım, Beşiktaş · Istanbul · 14 Oct 2026</p>
+        </div>
+        <p class="see-you">See you<br><span>there.</span></p>
+      </div>
+      <div class="foot-fine">
+        <span>StackConf 2026 · One day, one track.</span>
+        <span>Doors 08:30 · Talks 09:00–17:00</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

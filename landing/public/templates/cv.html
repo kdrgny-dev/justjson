@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deniz Kaya — Senior Backend Engineer</title>
+<style>
+  :root{
+    --paper:#FAF8F3;
+    --ink:#1B1A17;
+    --muted:#6C685E;
+    --faint:#928D80;
+    --rule:#D9D3C6;
+    --rule-strong:#B7AF9E;
+    --accent:#7A2E2E;
+    --serif:"Palatino Linotype","Book Antiqua",Palatino,"Iowan Old Style",Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .sheet{
+    max-width:940px;
+    margin:0 auto;
+    padding:48px 40px 72px;
+  }
+
+  /* metadata label */
+  .label{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--faint);
+  }
+
+  /* ---- header ---- */
+  header.masthead{
+    border-top:2px solid var(--ink);
+    padding-top:16px;
+  }
+  .masthead .filing{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .masthead .filing .ref{color:var(--accent)}
+  .name{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:clamp(2.6rem,7vw,4.4rem);
+    line-height:.98;
+    letter-spacing:-.01em;
+    margin:.28em 0 .12em;
+  }
+  .role{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:clamp(1.05rem,2.4vw,1.35rem);
+    color:var(--muted);
+    margin:0;
+  }
+  .contactline{
+    margin-top:18px;
+    padding-top:14px;
+    border-top:1px solid var(--rule);
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 24px;
+    font-size:14px;
+    color:var(--muted);
+  }
+  .contactline a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--rule-strong)}
+  .contactline a:hover{border-bottom-color:var(--accent);color:var(--accent)}
+  .contactline .k{color:var(--faint);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-right:8px}
+
+  /* ---- body grid ---- */
+  .grid{
+    display:grid;
+    grid-template-columns:250px 1fr;
+    gap:0 44px;
+    margin-top:40px;
+  }
+  aside{border-right:1px solid var(--rule);padding-right:40px}
+  main{padding-top:2px}
+
+  section{margin-bottom:34px}
+  section:last-child{margin-bottom:0}
+  .sectitle{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--faint);
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .sectitle::after{content:"";flex:1;height:1px;background:var(--rule)}
+
+  .summary{font-size:15px;color:#2a2823;margin:0}
+
+  .skills{list-style:none;margin:0;padding:0}
+  .skills li{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    padding:7px 0;
+    border-bottom:1px solid var(--rule);
+    font-size:14.5px;
+  }
+  .skills li:last-child{border-bottom:0}
+  .skills .idx{font-family:var(--mono);font-size:10px;color:var(--faint)}
+
+  .edu .deg{font-family:var(--serif);font-size:1.05rem;margin:0}
+  .edu .school{font-size:14px;color:var(--muted);margin:2px 0 0}
+  .edu .yr{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--faint);margin-top:4px}
+
+  /* ---- experience timeline (signature) ---- */
+  .entry{
+    display:grid;
+    grid-template-columns:96px 1fr;
+    gap:0 22px;
+    padding:22px 0 26px;
+    border-top:1px solid var(--rule);
+  }
+  .entry:first-of-type{border-top:1px solid var(--rule-strong)}
+  .entry .years{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:1.5rem;
+    line-height:1.05;
+    letter-spacing:-.01em;
+    color:var(--ink);
+  }
+  .entry .years .to{display:block;font-size:1.5rem;color:var(--faint)}
+  .entry .years .now{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-top:4px}
+  .entry .body h3{
+    font-family:var(--serif);
+    font-size:1.32rem;
+    font-weight:600;
+    margin:0 0 2px;
+    letter-spacing:-.005em;
+  }
+  .entry .body .org{
+    font-size:14px;
+    color:var(--muted);
+    margin:0 0 9px;
+  }
+  .entry .body .org .dot{color:var(--rule-strong);margin:0 8px}
+  .entry .body p.line{margin:0;font-size:15px;color:#33302a;max-width:52ch}
+
+  footer{
+    margin-top:52px;
+    padding-top:14px;
+    border-top:2px solid var(--ink);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  a:focus-visible,.contactline a:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:3px;
+    border-radius:2px;
+  }
+
+  @media (max-width:680px){
+    .sheet{padding:32px 22px 56px}
+    .grid{grid-template-columns:1fr;gap:0}
+    aside{border-right:0;padding-right:0;border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:34px}
+    .entry{grid-template-columns:1fr;gap:6px}
+    .entry .years{font-size:1.25rem}
+    .entry .years .to{display:inline;font-size:1.25rem}
+    .entry .years .now{display:inline;margin-left:8px}
+  }
+
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  @media print{
+    :root{--paper:#fff}
+    body{font-size:11pt;color:#000}
+    .sheet{max-width:none;padding:0}
+    .contactline a,.contactline a:hover{color:#000;border:0}
+    .entry .years .now,.masthead .filing .ref,.entry .body .org{color:#000}
+    .entry,section{break-inside:avoid}
+    footer{margin-top:24px}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="masthead">
+    <div class="filing label">
+      <span>Curriculum Vitae — Dossier</span>
+      <span class="ref">Ref. BE-08 · İstanbul</span>
+    </div>
+    <h1 class="name">Deniz Kaya</h1>
+    <p class="role">Senior Backend Engineer</p>
+    <div class="contactline">
+      <span><span class="k">Loc</span>İstanbul</span>
+      <span><span class="k">Mail</span><a href="mailto:deniz@example.com">deniz@example.com</a></span>
+      <span><span class="k">Git</span><a href="#">GitHub</a></span>
+      <span><span class="k">In</span><a href="#">LinkedIn</a></span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <aside>
+      <section>
+        <h2 class="sectitle">Profile</h2>
+        <p class="summary">Backend engineer with 8 years building reliable, high-throughput systems. I care about clear interfaces, boring reliable tech, and cutting latency.</p>
+      </section>
+
+      <section>
+        <h2 class="sectitle">Skills</h2>
+        <ul class="skills">
+          <li><span>Go</span><span class="idx">01</span></li>
+          <li><span>PostgreSQL</span><span class="idx">02</span></li>
+          <li><span>Kubernetes</span><span class="idx">03</span></li>
+          <li><span>gRPC</span><span class="idx">04</span></li>
+          <li><span>Redis</span><span class="idx">05</span></li>
+          <li><span>Terraform</span><span class="idx">06</span></li>
+          <li><span>Observability</span><span class="idx">07</span></li>
+        </ul>
+      </section>
+
+      <section class="edu">
+        <h2 class="sectitle">Education</h2>
+        <p class="deg">BSc Computer Engineering</p>
+        <p class="school">Boğaziçi University</p>
+        <p class="yr">2018</p>
+      </section>
+    </aside>
+
+    <main>
+      <section>
+        <h2 class="sectitle">Experience</h2>
+
+        <article class="entry">
+          <div class="years">2023<span class="to">–24+</span><span class="now">Present</span></div>
+          <div class="body">
+            <h3>Senior Backend Engineer</h3>
+            <p class="org">Northwind Labs<span class="dot">·</span>2023–present</p>
+            <p class="line">Lead the platform team; cut p99 latency by 40% and halved infra cost.</p>
+          </div>
+        </article>
+
+        <article class="entry">
+          <div class="years">2020<span class="to">–23</span></div>
+          <div class="body">
+            <h3>Backend Engineer</h3>
+            <p class="org">Acme Inc.<span class="dot">·</span>2020–2023</p>
+            <p class="line">Built the billing pipeline processing millions of transactions a month.</p>
+          </div>
+        </article>
+
+        <article class="entry">
+          <div class="years">2018<span class="to">–20</span></div>
+          <div class="body">
+            <h3>Software Engineer</h3>
+            <p class="org">Bitwise<span class="dot">·</span>2018–2020</p>
+            <p class="line">Shipped the public API and its first client SDKs.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <footer class="label">
+    <span>Deniz Kaya · Senior Backend Engineer</span>
+    <span>Prepared 2025 · Page 1 of 1</span>
+  </footer>
+
+</div>
+</body>
+</html>
