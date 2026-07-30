@@ -1,0 +1,22 @@
+{
+  "order": 2,
+  "name": "Handoff",
+  "tagline": "Hand the finished site to a client. They edit and publish — no git, no deploy, no fear.",
+  "price": "$99",
+  "period": "per year",
+  "badge": "Coming soon",
+  "note": "Early-bird lifetime — $199",
+  "status": "soon",
+  "featured": true,
+  "cta": "Join the waitlist",
+  "ctaUrl": "#waitlist",
+  "features": [
+    "Everything in Local",
+    "/admin — a deployable editor for your client",
+    "Magic-link login (no GitHub, no account setup)",
+    "One-click Publish = commit + auto-deploy",
+    "Client media uploads, history & rollback",
+    "1 developer · unlimited client sites",
+    "Email support"
+  ]
+}

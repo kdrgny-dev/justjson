@@ -1,0 +1,20 @@
+{
+  "order": 1,
+  "name": "Local",
+  "tagline": "Everything you need to build on your own machine.",
+  "price": "$0",
+  "period": "free forever",
+  "badge": "MIT",
+  "status": "live",
+  "featured": false,
+  "cta": "npx @kdrgny/justjson",
+  "ctaUrl": "/docs/getting-started",
+  "features": [
+    "Visual schema builder",
+    "Content editor with live preview",
+    "Typed output + one-line Astro loader",
+    "CI validation, draft/publish, i18n",
+    "Designed templates + self-deploy",
+    "Community support"
+  ]
+}

@@ -23,6 +23,7 @@ const comparison = collection(import.meta.glob('../../content/comparison/*.json'
 const steps = collection(import.meta.glob('../../content/steps/*.json', { eager: true }))
 const showcase = collection(import.meta.glob('../../content/showcase/*.json', { eager: true }))
 const stats = collection(import.meta.glob('../../content/stats/*.json', { eager: true }))
+const plans = collection(import.meta.glob('../../content/plans/*.json', { eager: true }))
 ---
 
 <!doctype html>
@@ -374,6 +375,70 @@ const stats = collection(import.meta.glob('../../content/stats/*.json', { eager:
         </div>
       )
     }
+
+    <section class="block wrap reveal" id="pricing">
+      <div class="head">
+        <span class="eyebrow">{sections.pricingEyebrow}</span>
+        <h2>{sections.pricingTitle}</h2>
+        <p>{sections.pricingSub}</p>
+      </div>
+
+      <div class="plans stagger">
+        {
+          plans.map((p) => (
+            <div class={`card plan${p.featured ? ' plan-featured' : ''}${p.status === 'soon' ? ' plan-soon' : ''}`}>
+              <div class="plan-head">
+                <span class="lbl">{p.name}</span>
+                {p.badge && <span class={`plan-badge${p.status === 'soon' ? ' soon' : ''}`}>{p.badge}</span>}
+              </div>
+              <div class="plan-price">
+                <span class="amt">{p.price}</span>
+                <span class="per">{p.period}</span>
+              </div>
+              {p.note && <div class="plan-note">{p.note}</div>}
+              <p class="plan-tag">{p.tagline}</p>
+              <ul class="plan-feats">
+                {p.features.map((f: string) => (
+                  <li>{f}</li>
+                ))}
+              </ul>
+              <a
+                class={`btn ${p.featured ? 'btn-primary' : 'btn-ghost'} plan-cta`}
+                href={p.ctaUrl}
+              >
+                {p.cta} {p.featured && <span class="arrow">→</span>}
+              </a>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="waitlist" id="waitlist">
+        <div class="waitlist-copy">
+          <span class="eyebrow">{sections.waitlistTitle}</span>
+          <p>{sections.waitlistBody}</p>
+        </div>
+        <form
+          class="waitlist-form"
+          action="https://buttondown.com/api/emails/embed-subscribe/kdrgny"
+          method="post"
+          target="_blank"
+        >
+          <input type="hidden" name="tag" value="pro-waitlist" />
+          <input
+            type="email"
+            name="email"
+            placeholder="you@studio.com"
+            aria-label="Email address"
+            required
+          />
+          <button type="submit" class="btn btn-primary">
+            Notify me <span class="arrow">→</span>
+          </button>
+        </form>
+        <span class="waitlist-note">{sections.waitlistNote}</span>
+      </div>
+    </section>
 
     <section class="closing wrap reveal">
       <h2>{closing.title}</h2>
