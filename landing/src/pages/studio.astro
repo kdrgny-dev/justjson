@@ -61,6 +61,27 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
       .prev { background: #fff; }
       iframe { width: 100%; height: 100%; border: 0; display: block; }
       @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } .prev { min-height: 320px; } }
+
+      .modal { position: fixed; inset: 0; background: rgba(10, 8, 5, 0.7);
+        display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50;
+        backdrop-filter: blur(3px); }
+      .modal[hidden] { display: none; }
+      .modal-card { position: relative; background: var(--raised); border: 1px solid var(--line);
+        border-top: 3px solid var(--signal); border-radius: 12px; padding: 34px 30px;
+        max-width: 440px; width: 100%; text-align: center; box-shadow: 0 30px 70px -30px #000;
+        animation: pop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+      @keyframes pop { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+      .modal-emoji { font-size: 2.6rem; }
+      .modal-card h2 { margin: 8px 0 4px; font-size: 1.4rem; }
+      .modal-sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 20px; }
+      .modal-url { display: block; font-family: var(--mono); font-size: 0.95rem; color: var(--signal-ink);
+        background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px;
+        word-break: break-all; text-decoration: none; margin-bottom: 18px; }
+      .modal-actions { display: flex; gap: 10px; }
+      .modal-actions button { margin-top: 0; }
+      .modal-actions .ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+      .modal-x { position: absolute; top: 12px; right: 14px; width: auto; margin: 0; padding: 4px 8px;
+        background: transparent; color: var(--muted); font-size: 1.3rem; line-height: 1; }
     </style>
   </head>
   <body>
@@ -92,6 +113,20 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
 
       <div class="prev">
         <iframe id="preview" title="Preview"></iframe>
+      </div>
+    </div>
+
+    <div id="modal" class="modal" hidden>
+      <div class="modal-card">
+        <button id="modal-close" class="modal-x" type="button" aria-label="Close">×</button>
+        <div class="modal-emoji">🎉</div>
+        <h2>Siten yayında!</h2>
+        <p class="modal-sub">İçeriğin senin kendi Netlify hesabında. Burada hiçbir şey saklanmadı.</p>
+        <a id="modal-url" class="modal-url" href="#" target="_blank" rel="noreferrer"></a>
+        <div class="modal-actions">
+          <button id="modal-open" type="button">Siteyi aç ↗</button>
+          <button id="modal-copy" class="ghost" type="button">Linki kopyala</button>
+        </div>
       </div>
     </div>
 
@@ -152,15 +187,38 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
         return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
       }
       const NF = 'https://api.netlify.com/api/v1'
+      function slugify(s) {
+        return s
+          .replace(/[İIı]/g, 'i').replace(/[Şş]/g, 's').replace(/[Çç]/g, 'c')
+          .replace(/[Ğğ]/g, 'g').replace(/[Öö]/g, 'o').replace(/[Üü]/g, 'u')
+          .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+          .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40)
+      }
+      async function createSite(auth) {
+        // Try the title-derived name first; a taken/invalid name (422/400) falls
+        // back to a suffixed slug, then to Netlify's random name.
+        const base = slugify($('title').value) || 'site'
+        const tries = [base, base + '-' + Math.random().toString(36).slice(2, 6), null]
+        for (const name of tries) {
+          const res = await fetch(`${NF}/sites`, {
+            method: 'POST',
+            headers: name ? { ...auth, 'Content-Type': 'application/json' } : auth,
+            body: name ? JSON.stringify({ name }) : null,
+          })
+          if (res.ok) return res.json()
+          if (res.status !== 422 && res.status !== 400) {
+            throw new Error('create site failed: ' + res.status + ' ' + (await res.text()))
+          }
+        }
+        throw new Error('could not name the site')
+      }
       async function deploy(token) {
         const html = buildHTML()
         const digest = await sha1(html)
         const auth = { Authorization: 'Bearer ' + token }
 
         ok('Creating site…')
-        const siteRes = await fetch(`${NF}/sites`, { method: 'POST', headers: auth })
-        if (!siteRes.ok) throw new Error('create site failed: ' + siteRes.status + ' ' + (await siteRes.text()))
-        const site = await siteRes.json()
+        const site = await createSite(auth)
 
         ok('Uploading…')
         const depRes = await fetch(`${NF}/sites/${site.id}/deploys`, {
@@ -183,8 +241,22 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
       // ---- glue ----
       const btn = $('publish'), msg = $('msg')
       function ok(t) { msg.className = 'msg'; msg.textContent = t }
-      function done(t) { msg.className = 'msg ok'; msg.innerHTML = t }
       function fail(t) { msg.className = 'msg err'; msg.textContent = t }
+
+      const modal = $('modal')
+      function showLive(url) {
+        msg.textContent = ''
+        const link = $('modal-url')
+        link.textContent = url; link.href = url
+        $('modal-open').onclick = () => window.open(url, '_blank', 'noreferrer')
+        $('modal-copy').onclick = async () => {
+          try { await navigator.clipboard.writeText(url); $('modal-copy').textContent = 'Kopyalandı ✓' }
+          catch { $('modal-copy').textContent = 'Kopyalanamadı' }
+        }
+        modal.hidden = false
+      }
+      $('modal-close').onclick = () => { modal.hidden = true; $('modal-copy').textContent = 'Linki kopyala' }
+      modal.addEventListener('click', (e) => { if (e.target === modal) $('modal-close').onclick() })
 
       async function run() {
         let token = tokenFromHash()
@@ -192,7 +264,7 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
         btn.disabled = true
         try {
           const url = await deploy(token)
-          done(`Live ✓ <a href="${url}" target="_blank" rel="noreferrer">${url}</a>`)
+          showLive(url)
         } catch (e) {
           if ((e.message || '').includes('401')) { sessionStorage.removeItem('nf_token'); fail('Session expired — click again to reconnect.') }
           else fail(e.message)
