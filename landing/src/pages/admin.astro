@@ -1,0 +1,152 @@
+---
+// JustJSON /admin — MVP client editor (proof of the self-hosted publish loop).
+// Renders content fields, prefilled from the repo, and commits changes back via
+// /api/publish. Dogfood target: this site's own hero. noindex — not public UI.
+import hero from '../../content/hero.json'
+
+const fields = [
+  { key: 'eyebrow', label: 'Eyebrow', type: 'text' },
+  { key: 'title', label: 'Title', type: 'text' },
+  { key: 'titleAccent', label: 'Title accent', type: 'text' },
+  { key: 'lead', label: 'Lead', type: 'textarea' },
+  { key: 'command', label: 'Command', type: 'text' },
+  { key: 'ctaLabel', label: 'CTA label', type: 'text' },
+  { key: 'ctaUrl', label: 'CTA URL', type: 'text' },
+]
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Edit content — JustJSON</title>
+    <style>
+      :root {
+        --bg: #17130d; --raised: #201a11; --ink: #f1e8d2; --muted: #b7a883;
+        --line: #362b1a; --signal: #e8ae3e; --signal-ink: #f6c567;
+        --moss: #9cae79; --rust: #e07a4e;
+        --mono: "Space Mono", ui-monospace, Menlo, monospace;
+        --sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; background: var(--bg); color: var(--ink);
+        font-family: var(--sans); line-height: 1.5;
+        min-height: 100vh; padding: 40px 20px;
+      }
+      .wrap { max-width: 640px; margin: 0 auto; }
+      .brand { font-family: var(--mono); font-weight: 700; font-size: 15px; }
+      .brand b { color: var(--signal); }
+      h1 { font-size: 1.5rem; margin: 6px 0 2px; letter-spacing: -0.01em; }
+      .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 28px; }
+      .card {
+        background: var(--raised); border: 1px solid var(--line);
+        border-radius: 8px; padding: 22px; margin-bottom: 16px;
+      }
+      label { display: block; font-family: var(--mono); font-size: 11px;
+        text-transform: uppercase; letter-spacing: 0.06em; color: var(--signal-ink);
+        margin: 14px 0 6px; }
+      label:first-child { margin-top: 0; }
+      input, textarea {
+        width: 100%; background: var(--bg); color: var(--ink);
+        border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px;
+        font-family: var(--sans); font-size: 0.95rem;
+      }
+      textarea { min-height: 90px; resize: vertical; }
+      input:focus, textarea:focus { outline: none; border-color: var(--signal); }
+      .bar { display: flex; gap: 12px; align-items: center; margin-top: 8px; }
+      button {
+        font-family: var(--sans); font-weight: 700; font-size: 0.95rem;
+        background: var(--signal); color: #17130d; border: 0;
+        border-radius: 6px; padding: 12px 22px; cursor: pointer;
+      }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .pw { max-width: 220px; }
+      .msg { font-family: var(--mono); font-size: 13px; margin-top: 4px; }
+      .msg.ok { color: var(--moss); }
+      .msg.err { color: var(--rust); }
+      .msg a { color: inherit; }
+      .note { color: var(--muted); font-size: 0.82rem; font-family: var(--mono); margin-top: 22px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <span class="brand">Just<b>&#123;JSON&#125;</b> · admin</span>
+      <h1>Edit homepage</h1>
+      <p class="sub">Change the copy, hit Publish. It commits to your repo and the site redeploys.</p>
+
+      <form id="editor" class="card">
+        {
+          fields.map((f) => (
+            <>
+              <label for={f.key}>{f.label}</label>
+              {f.type === 'textarea' ? (
+                <textarea id={f.key} name={f.key}>{(hero as any)[f.key] ?? ''}</textarea>
+              ) : (
+                <input id={f.key} name={f.key} type="text" value={(hero as any)[f.key] ?? ''} />
+              )}
+            </>
+          ))
+        }
+      </form>
+
+      <div class="card">
+        <label for="pw">Password</label>
+        <div class="bar">
+          <input id="pw" class="pw" type="password" placeholder="admin password" autocomplete="current-password" />
+          <button id="publish" type="button">Publish</button>
+        </div>
+        <p id="msg" class="msg"></p>
+      </div>
+
+      <p class="note">MVP · shared-password auth · commits to landing/content/hero.json</p>
+    </div>
+
+    <script>
+      const $ = (id: string) => document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement
+      const keys = ['eyebrow', 'title', 'titleAccent', 'lead', 'command', 'ctaLabel', 'ctaUrl']
+      const btn = document.getElementById('publish') as HTMLButtonElement
+      const msg = document.getElementById('msg') as HTMLParagraphElement
+
+      btn.addEventListener('click', async () => {
+        const pw = ($('pw') as HTMLInputElement).value
+        if (!pw) { msg.className = 'msg err'; msg.textContent = 'Enter the password.'; return }
+
+        const data: Record<string, string> = {}
+        for (const k of keys) data[k] = $(k).value
+
+        btn.disabled = true
+        msg.className = 'msg'
+        msg.textContent = 'Publishing…'
+        try {
+          const r = await fetch('/api/publish', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              path: 'landing/content/hero.json',
+              content: JSON.stringify(data, null, 2) + '\n',
+              password: pw,
+            }),
+          })
+          const out = await r.json()
+          if (r.ok && out.ok) {
+            msg.className = 'msg ok'
+            msg.innerHTML = out.url
+              ? `Published ✓ <a href="${out.url}" target="_blank" rel="noreferrer">${(out.commit || '').slice(0, 7)}</a> — site redeploying…`
+              : 'Published ✓ — site redeploying…'
+          } else {
+            msg.className = 'msg err'
+            msg.textContent = 'Failed: ' + (out.error || r.status) + (out.detail ? ' — ' + out.detail : '')
+          }
+        } catch (e) {
+          msg.className = 'msg err'
+          msg.textContent = 'Network error: ' + (e as Error).message
+        } finally {
+          btn.disabled = false
+        }
+      })
+    </script>
+  </body>
+</html>
