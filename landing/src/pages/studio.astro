@@ -1,21 +1,18 @@
 ---
-// JustJSON Studio — no-backend browser publish (SPIKE).
-// Proves the whole thesis: a fully static page (no server, no DB) that lets a
-// non-dev build a tiny site and publish it to THEIR OWN Netlify account via
-// browser-side implicit OAuth + the Netlify deploy API. We host nothing, store
-// nothing. If this loop works in prod (esp. CORS to api.netlify.com), the rest
-// (real editor, templates, Ed25519 license, Vercel adapter via a stateless
-// broker) is known-buildable.
+// JustJSON Studio — no-backend, template-based site builder.
+// Fully static page: pick a template, fill schema-driven fields (incl.
+// repeatable lists), live-preview, and publish the generated static site to the
+// USER'S OWN host (Netlify today) via browser-side implicit OAuth + deploy API.
+// We run no server, store no content. License gate (Ed25519) + Vercel/GitHub
+// adapters come next.
 //
-// Setup the site owner must do once: register a Netlify OAuth app
-// (User settings > Applications > New OAuth app), redirect URI =
-// https://justjson.vercel.app/studio (+ http://localhost:4322/studio for dev),
-// then paste its Client ID below. The implicit-flow client ID is public.
+// Owner one-time setup: a Netlify OAuth app (implicit); its public client id is
+// embedded below. Redirect URI: https://justjson.vercel.app/studio.
 const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="tr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -30,6 +27,7 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
         --sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
       }
       * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
       body { margin: 0; background: var(--bg); color: var(--ink);
         font-family: var(--sans); line-height: 1.5; min-height: 100vh; }
       .top { border-bottom: 1px solid var(--line); padding: 14px 20px;
@@ -39,40 +37,65 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
       .pill { font-family: var(--mono); font-size: 10px; text-transform: uppercase;
         letter-spacing: 0.06em; color: var(--signal-ink);
         border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; }
-      .grid { display: grid; grid-template-columns: 380px 1fr; min-height: calc(100vh - 51px); }
-      .panel { padding: 24px; border-right: 1px solid var(--line); }
-      h1 { font-size: 1.2rem; margin: 0 0 4px; }
-      .sub { color: var(--muted); font-size: 0.85rem; margin: 0 0 22px; }
-      label { display: block; font-family: var(--mono); font-size: 11px;
-        text-transform: uppercase; letter-spacing: 0.06em; color: var(--signal-ink);
-        margin: 16px 0 6px; }
-      input, textarea { width: 100%; background: var(--bg); color: var(--ink);
+
+      /* gallery */
+      .gallery { max-width: 960px; margin: 0 auto; padding: 40px 20px; }
+      .gallery h1 { font-size: 1.5rem; margin: 0 0 4px; }
+      .gallery .sub { color: var(--muted); margin: 0 0 28px; }
+      .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .tcard { text-align: left; background: var(--raised); border: 1px solid var(--line);
+        border-top: 3px solid var(--signal); border-radius: 8px; padding: 20px; cursor: pointer;
+        color: inherit; font: inherit; transition: transform 0.15s, border-color 0.15s; }
+      .tcard:hover { transform: translateY(-3px); border-color: var(--signal); }
+      .tcard .tname { font-weight: 700; font-size: 1.1rem; margin-bottom: 4px; }
+      .tcard .tdesc { color: var(--muted); font-size: 0.88rem; }
+      .tcard .tgo { margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--signal-ink); }
+
+      /* builder */
+      .grid { display: grid; grid-template-columns: 400px 1fr; min-height: calc(100vh - 51px); }
+      .panel { padding: 22px 24px; border-right: 1px solid var(--line); overflow-y: auto;
+        max-height: calc(100vh - 51px); }
+      .back { background: none; border: 0; color: var(--muted); font: inherit; cursor: pointer;
+        padding: 0; margin-bottom: 14px; font-family: var(--mono); font-size: 12px; }
+      .back:hover { color: var(--ink); }
+      h1.bt { font-size: 1.15rem; margin: 0 0 18px; }
+      label { display: block; font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+        letter-spacing: 0.06em; color: var(--signal-ink); margin: 15px 0 6px; }
+      input, textarea, select { width: 100%; background: var(--bg); color: var(--ink);
         border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px;
-        font-family: var(--sans); font-size: 0.95rem; }
-      textarea { min-height: 80px; resize: vertical; }
+        font-family: var(--sans); font-size: 0.94rem; }
+      textarea { min-height: 74px; resize: vertical; }
       input:focus, textarea:focus, select:focus { outline: none; border-color: var(--signal); }
+
+      .list { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-top: 6px; }
+      .row { position: relative; border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 12px; }
+      .row:last-of-type { border-bottom: 0; margin-bottom: 8px; padding-bottom: 0; }
+      .row .rm { position: absolute; top: 0; right: 0; background: none; border: 0; color: var(--rust);
+        cursor: pointer; font-size: 1.1rem; width: auto; padding: 0 4px; }
+      .row label:first-child { margin-top: 0; }
+      .add { background: transparent; color: var(--signal-ink); border: 1px solid var(--line);
+        border-radius: 6px; padding: 8px 14px; cursor: pointer; font: inherit; font-size: 0.85rem; }
+
       .addr { display: flex; gap: 8px; }
       .addr input { flex: 1; min-width: 0; }
-      .addr select { background: var(--bg); color: var(--ink); border: 1px solid var(--line);
-        border-radius: 6px; padding: 0 10px; font-family: var(--mono); font-size: 0.85rem; }
-      button { font-family: var(--sans); font-weight: 700; font-size: 0.95rem;
+      .addr select { width: auto; font-family: var(--mono); font-size: 0.82rem; padding: 0 8px; }
+
+      .publish { font-family: var(--sans); font-weight: 700; font-size: 0.95rem;
         background: var(--signal); color: #17130d; border: 0; border-radius: 6px;
-        padding: 12px 22px; cursor: pointer; width: 100%; margin-top: 22px; }
-      button:disabled { opacity: 0.5; cursor: default; }
-      .msg { font-family: var(--mono); font-size: 12.5px; margin-top: 14px; min-height: 1.2em; }
-      .msg.ok { color: var(--moss); } .msg.err { color: var(--rust); }
-      .msg a { color: inherit; }
+        padding: 13px 22px; cursor: pointer; width: 100%; margin-top: 22px; }
+      .publish:disabled { opacity: 0.5; cursor: default; }
+      .msg { font-family: var(--mono); font-size: 12.5px; margin-top: 12px; min-height: 1.2em; }
+      .msg.err { color: var(--rust); }
+
       .prev { background: #fff; }
       iframe { width: 100%; height: 100%; border: 0; display: block; }
-      @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } .prev { min-height: 320px; } }
 
-      .modal { position: fixed; inset: 0; background: rgba(10, 8, 5, 0.7);
-        display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50;
-        backdrop-filter: blur(3px); }
+      .modal { position: fixed; inset: 0; background: rgba(10, 8, 5, 0.7); display: flex;
+        align-items: center; justify-content: center; padding: 20px; z-index: 50; backdrop-filter: blur(3px); }
       .modal[hidden] { display: none; }
       .modal-card { position: relative; background: var(--raised); border: 1px solid var(--line);
-        border-top: 3px solid var(--signal); border-radius: 12px; padding: 34px 30px;
-        max-width: 440px; width: 100%; text-align: center; box-shadow: 0 30px 70px -30px #000;
+        border-top: 3px solid var(--signal); border-radius: 12px; padding: 34px 30px; max-width: 440px;
+        width: 100%; text-align: center; box-shadow: 0 30px 70px -30px #000;
         animation: pop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
       @keyframes pop { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
       .modal-emoji { font-size: 2.6rem; }
@@ -82,10 +105,18 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
         background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px;
         word-break: break-all; text-decoration: none; margin-bottom: 18px; }
       .modal-actions { display: flex; gap: 10px; }
-      .modal-actions button { margin-top: 0; }
+      .modal-actions button { width: 100%; font: inherit; font-weight: 700; border-radius: 6px;
+        padding: 12px; cursor: pointer; background: var(--signal); color: #17130d; border: 0; }
       .modal-actions .ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
-      .modal-x { position: absolute; top: 12px; right: 14px; width: auto; margin: 0; padding: 4px 8px;
-        background: transparent; color: var(--muted); font-size: 1.3rem; line-height: 1; }
+      .modal-x { position: absolute; top: 12px; right: 14px; background: transparent; color: var(--muted);
+        font-size: 1.3rem; line-height: 1; border: 0; cursor: pointer; padding: 4px 8px; }
+
+      @media (max-width: 820px) {
+        .cards { grid-template-columns: 1fr; }
+        .grid { grid-template-columns: 1fr; }
+        .panel { max-height: none; border-right: 0; border-bottom: 1px solid var(--line); }
+        .prev { min-height: 360px; }
+      }
     </style>
   </head>
   <body>
@@ -94,22 +125,19 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
       <span class="pill">no backend · publishes to your host</span>
     </div>
 
-    <div class="grid">
+    <!-- template picker -->
+    <div id="gallery" class="gallery">
+      <h1>Bir şablon seç</h1>
+      <p class="sub">Doldur, yayınla. Site senin kendi hostuna gider — burada hiçbir şey saklanmaz.</p>
+      <div id="cards" class="cards"></div>
+    </div>
+
+    <!-- builder (hidden until a template is chosen) -->
+    <div id="builder" class="grid" hidden>
       <div class="panel">
-        <h1>Build a site</h1>
-        <p class="sub">Fill it in, hit publish. It deploys to your own Netlify — nothing is stored here.</p>
-
-        <label for="title">Site title</label>
-        <input id="title" type="text" value="Ayşe'nin Mantı Evi" />
-
-        <label for="tagline">Tagline</label>
-        <input id="tagline" type="text" value="El açması, günlük taze." />
-
-        <label for="body">About</label>
-        <textarea id="body">1998'den beri ev yapımı mantı. Sipariş için arayın.</textarea>
-
-        <label for="cta">Phone / contact</label>
-        <input id="cta" type="text" value="0555 123 45 67" />
+        <button id="back" class="back" type="button">‹ Şablonlar</button>
+        <h1 id="btitle" class="bt"></h1>
+        <div id="form"></div>
 
         <label for="subdomain">Adres</label>
         <div class="addr">
@@ -121,13 +149,10 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
           </select>
         </div>
 
-        <button id="publish" type="button">Connect Netlify &amp; publish</button>
+        <button id="publish" class="publish" type="button">Yayınla</button>
         <p id="msg" class="msg"></p>
       </div>
-
-      <div class="prev">
-        <iframe id="preview" title="Preview"></iframe>
-      </div>
+      <div class="prev"><iframe id="preview" title="Preview"></iframe></div>
     </div>
 
     <div id="modal" class="modal" hidden>
@@ -135,7 +160,7 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
         <button id="modal-close" class="modal-x" type="button" aria-label="Close">×</button>
         <div class="modal-emoji">🎉</div>
         <h2>Siten yayında!</h2>
-        <p class="modal-sub">İçeriğin senin kendi Netlify hesabında. Burada hiçbir şey saklanmadı.</p>
+        <p class="modal-sub">İçeriğin senin kendi hostunda. Burada hiçbir şey saklanmadı.</p>
         <a id="modal-url" class="modal-url" href="#" target="_blank" rel="noreferrer"></a>
         <div class="modal-actions">
           <button id="modal-open" type="button">Siteyi aç ↗</button>
@@ -146,49 +171,238 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
 
     <script define:vars={{ NETLIFY_CLIENT_ID }}>
       const $ = (id) => document.getElementById(id)
-      const fields = ['title', 'tagline', 'body', 'cta']
       const REDIRECT = location.origin + '/studio'
 
-      // ---- generate the static site (in the browser) ----
-      function esc(s) {
-        return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
-      }
-      function buildHTML() {
-        const t = $('title').value, tag = $('tagline').value, body = $('body').value, cta = $('cta').value
-        return `<!doctype html><html lang="tr"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(t)}</title>
-<style>
-  :root{--a:#d69a1f;--ink:#241c10;--bg:#f7f1e4}
-  *{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--ink)}
-  .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px}
-  h1{font-size:clamp(2rem,6vw,3.5rem);margin:0 0 10px}
-  .tag{font-size:1.2rem;color:#6e6248;margin:0 0 28px}
-  p{max-width:52ch;line-height:1.6;font-size:1.05rem}
-  .cta{margin-top:28px;display:inline-block;background:var(--a);color:#241c10;font-weight:700;
-    text-decoration:none;padding:14px 28px;border-radius:8px}
-  footer{padding:20px;text-align:center;color:#9c8f6e;font-size:.85rem}
-</style></head><body>
-<div class="hero"><h1>${esc(t)}</h1><p class="tag">${esc(tag)}</p><p>${esc(body)}</p>
-<a class="cta" href="tel:${esc(cta).replace(/\\s/g, '')}">${esc(cta)}</a></div>
+      const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
+      const tel = (s) => String(s ?? '').replace(/\s/g, '')
+
+      // ---------- templates: schema (fields) + render(data) ----------
+      const TEMPLATES = [
+        {
+          id: 'business', name: 'İşletme', desc: 'Küçük işletme / restoran / hizmet — tek sayfa vitrin.',
+          titleKey: 'title',
+          fields: [
+            { key: 'title', label: 'İşletme adı', type: 'text' },
+            { key: 'tagline', label: 'Slogan', type: 'text' },
+            { key: 'about', label: 'Hakkında', type: 'textarea' },
+            { key: 'phone', label: 'Telefon', type: 'text' },
+            { key: 'address', label: 'Adres', type: 'text' },
+            { key: 'items', label: 'Menü / Hizmetler', type: 'list',
+              item: [
+                { key: 'name', label: 'Ad', type: 'text' },
+                { key: 'price', label: 'Fiyat', type: 'text' },
+                { key: 'desc', label: 'Açıklama', type: 'text' },
+              ] },
+          ],
+          defaults: {
+            title: "Ayşe'nin Mantı Evi", tagline: 'El açması, günlük taze.',
+            about: "1998'den beri ev yapımı mantı. Sipariş için arayın.",
+            phone: '0555 123 45 67', address: 'Kadıköy, İstanbul',
+            items: [
+              { name: 'Kayseri Mantısı', price: '₺180', desc: 'Yoğurt ve tereyağlı sos ile' },
+              { name: 'Fırın Mantı', price: '₺200', desc: 'Fırında kızarmış, bol soslu' },
+            ],
+          },
+          render(d) {
+            const items = (d.items || []).map((i) => `<div class="item"><div class="it-h"><span>${esc(i.name)}</span><span class="pr">${esc(i.price)}</span></div><p>${esc(i.desc)}</p></div>`).join('')
+            return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(d.title)}</title>
+<style>:root{--a:#c0392b;--ink:#2b1a12;--bg:#faf4ea}*{box-sizing:border-box}body{margin:0;font-family:Georgia,serif;background:var(--bg);color:var(--ink)}
+.hero{text-align:center;padding:90px 24px 40px}.hero h1{font-size:clamp(2.2rem,6vw,3.6rem);margin:0 0 8px}.tag{font-size:1.25rem;color:#8a6d55;margin:0}
+.wrap{max-width:720px;margin:0 auto;padding:0 24px}.about{text-align:center;font-size:1.1rem;line-height:1.7;margin:24px auto 50px}
+.menu{display:grid;gap:14px}.item{border-bottom:1px dashed #d8c3a8;padding-bottom:12px}.it-h{display:flex;justify-content:space-between;font-weight:700;font-size:1.15rem}.pr{color:var(--a)}.item p{margin:4px 0 0;color:#7a6450}
+.contact{text-align:center;background:var(--a);color:#fff;padding:40px 24px;margin-top:60px}.contact a{color:#fff;font-size:1.5rem;font-weight:700;text-decoration:none}.addr{opacity:.85;margin-top:6px}
+footer{text-align:center;padding:18px;color:#a08b73;font-size:.8rem;font-family:system-ui}</style></head><body>
+<div class="hero"><h1>${esc(d.title)}</h1><p class="tag">${esc(d.tagline)}</p></div>
+<div class="wrap"><p class="about">${esc(d.about)}</p><div class="menu">${items}</div></div>
+<div class="contact"><a href="tel:${tel(d.phone)}">${esc(d.phone)}</a><div class="addr">${esc(d.address)}</div></div>
 <footer>Made with Just{JSON}</footer></body></html>`
-      }
-      function refresh() {
-        $('preview').srcdoc = buildHTML()
-      }
-      fields.forEach((f) => $(f).addEventListener('input', refresh))
-      refresh()
+          },
+        },
+        {
+          id: 'portfolio', name: 'Portfolyo', desc: 'Kişisel portfolyo — işlerini öne çıkar.',
+          titleKey: 'name',
+          fields: [
+            { key: 'name', label: 'İsim', type: 'text' },
+            { key: 'role', label: 'Ünvan', type: 'text' },
+            { key: 'bio', label: 'Hakkında', type: 'textarea' },
+            { key: 'email', label: 'E-posta', type: 'text' },
+            { key: 'projects', label: 'Projeler', type: 'list',
+              item: [
+                { key: 'title', label: 'Başlık', type: 'text' },
+                { key: 'desc', label: 'Açıklama', type: 'text' },
+                { key: 'url', label: 'Link', type: 'text' },
+              ] },
+          ],
+          defaults: {
+            name: 'Aria Solmaz', role: 'Product Designer & Developer',
+            bio: 'Sade, işe yarayan arayüzler tasarlıyorum. 8 yıldır ürün ekiplerindeyim.',
+            email: 'aria@example.com',
+            projects: [
+              { title: 'Fintech Dashboard', desc: 'Karmaşık veriyi sade bir panele indirdim.', url: '#' },
+              { title: 'E-ticaret Yeniden Tasarımı', desc: 'Dönüşümü %30 artıran akış.', url: '#' },
+            ],
+          },
+          render(d) {
+            const projects = (d.projects || []).map((p) => `<a class="proj" href="${esc(p.url) || '#'}"><h3>${esc(p.title)}</h3><p>${esc(p.desc)}</p><span class="go">Gör →</span></a>`).join('')
+            return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(d.name)} — ${esc(d.role)}</title>
+<style>:root{--ink:#0a0a0d;--paper:#f2f2ec;--fog:#8a8a96;--a:#ff2e88;--line:#26262e}*{box-sizing:border-box;margin:0}body{background:var(--ink);color:var(--paper);font-family:ui-sans-serif,system-ui,sans-serif;line-height:1.5}
+.wrap{max-width:1000px;margin:0 auto;padding:0 clamp(20px,5vw,48px)}
+.hero{padding:110px 0 60px}.hero h1{font-size:clamp(2.6rem,9vw,5rem);line-height:1;letter-spacing:-.02em}.role{color:var(--a);font-size:1.2rem;margin:16px 0}.bio{color:var(--fog);max-width:54ch;font-size:1.1rem;margin-top:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding-bottom:60px}
+.proj{display:block;background:#111116;border:1px solid var(--line);border-radius:12px;padding:24px;color:inherit;text-decoration:none;transition:.15s}.proj:hover{border-color:var(--a);transform:translateY(-3px)}
+.proj h3{font-size:1.3rem}.proj p{color:var(--fog);margin:8px 0 16px}.go{color:var(--a);font-family:ui-monospace,monospace;font-size:13px}
+.foot{border-top:1px solid var(--line);padding:30px 0;color:var(--fog)}.foot a{color:var(--paper)}
+.credit{text-align:center;padding:16px;color:#4a4a54;font-size:.8rem;font-family:ui-monospace,monospace}</style></head><body>
+<div class="wrap"><div class="hero"><h1>${esc(d.name)}</h1><div class="role">${esc(d.role)}</div><p class="bio">${esc(d.bio)}</p></div>
+<div class="grid">${projects}</div>
+<div class="foot">İletişim · <a href="mailto:${esc(d.email)}">${esc(d.email)}</a></div></div>
+<div class="credit">Made with Just{JSON}</div></body></html>`
+          },
+        },
+        {
+          id: 'cv', name: 'CV', desc: 'Özgeçmiş — tek sayfa, baskıya uygun.',
+          titleKey: 'name',
+          fields: [
+            { key: 'name', label: 'İsim', type: 'text' },
+            { key: 'title', label: 'Ünvan', type: 'text' },
+            { key: 'summary', label: 'Özet', type: 'textarea' },
+            { key: 'email', label: 'E-posta', type: 'text' },
+            { key: 'experience', label: 'Deneyim', type: 'list',
+              item: [
+                { key: 'role', label: 'Pozisyon', type: 'text' },
+                { key: 'org', label: 'Kurum', type: 'text' },
+                { key: 'period', label: 'Dönem', type: 'text' },
+                { key: 'detail', label: 'Detay', type: 'text' },
+              ] },
+          ],
+          defaults: {
+            name: 'Mehmet Yılmaz', title: 'Senior Frontend Developer',
+            summary: '10 yıllık deneyimli, ölçeklenebilir arayüzler kuran bir geliştirici.',
+            email: 'mehmet@example.com',
+            experience: [
+              { role: 'Senior Frontend Developer', org: 'Acme A.Ş.', period: '2020 — bugün', detail: 'Ürün ekibine liderlik, React/TS mimarisi.' },
+              { role: 'Frontend Developer', org: 'Beta Yazılım', period: '2016 — 2020', detail: 'Tasarım sistemi ve komponent kütüphanesi.' },
+            ],
+          },
+          render(d) {
+            const exp = (d.experience || []).map((e) => `<div class="job"><div class="jh"><b>${esc(e.role)}</b><span>${esc(e.period)}</span></div><div class="org">${esc(e.org)}</div><p>${esc(e.detail)}</p></div>`).join('')
+            return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(d.name)} — CV</title>
+<style>*{box-sizing:border-box;margin:0}body{background:#eceae4;font-family:Georgia,serif;color:#1c1c1c;padding:40px 16px}
+.sheet{max-width:720px;margin:0 auto;background:#fff;padding:56px clamp(28px,6vw,64px);box-shadow:0 10px 40px -20px rgba(0,0,0,.4)}
+h1{font-size:2.4rem;letter-spacing:-.01em}.title{color:#8a6d2f;font-size:1.15rem;margin:4px 0 2px}.mail{color:#666;font-size:.95rem}
+.summary{margin:22px 0 30px;line-height:1.7;color:#333}
+h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.15em;color:#8a6d2f;border-bottom:1px solid #ddd;padding-bottom:6px;margin-bottom:16px}
+.job{margin-bottom:20px}.jh{display:flex;justify-content:space-between;align-items:baseline}.jh b{font-size:1.1rem}.jh span{color:#888;font-size:.9rem}.org{color:#8a6d2f}.job p{margin:6px 0 0;color:#444;line-height:1.6}
+.credit{text-align:center;margin-top:30px;color:#aaa;font-size:.8rem;font-family:system-ui}</style></head><body>
+<div class="sheet"><h1>${esc(d.name)}</h1><div class="title">${esc(d.title)}</div><div class="mail">${esc(d.email)}</div>
+<p class="summary">${esc(d.summary)}</p><h2>Deneyim</h2>${exp}</div>
+<div class="credit">Made with Just{JSON}</div></body></html>`
+          },
+        },
+      ]
+      const byId = (id) => TEMPLATES.find((t) => t.id === id)
 
-      // ---- address: derive from title until the user edits it ----
-      let subTouched = false
-      $('subdomain').value = slugify($('title').value) || 'site'
-      $('title').addEventListener('input', () => {
-        if (!subTouched) $('subdomain').value = slugify($('title').value) || 'site'
+      function slugify(s) {
+        return String(s || '')
+          .replace(/[İIı]/g, 'i').replace(/[Şş]/g, 's').replace(/[Çç]/g, 'c')
+          .replace(/[Ğğ]/g, 'g').replace(/[Öö]/g, 'o').replace(/[Üü]/g, 'u')
+          .replace(/['’‘"`]/g, '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+          .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40)
+      }
+
+      // ---------- state (autosaved so OAuth redirect never loses edits) ----------
+      let state = { tid: null, data: null, sub: '', subTouched: false }
+      const SAVE = 'studio_state'
+      const save = () => sessionStorage.setItem(SAVE, JSON.stringify(state))
+      const load = () => { try { return JSON.parse(sessionStorage.getItem(SAVE)) } catch { return null } }
+
+      // ---------- gallery ----------
+      function renderGallery() {
+        $('cards').innerHTML = TEMPLATES.map((t) =>
+          `<button class="tcard" data-id="${t.id}"><div class="tname">${esc(t.name)}</div><div class="tdesc">${esc(t.desc)}</div><div class="tgo">Kullan →</div></button>`
+        ).join('')
+        $('cards').querySelectorAll('.tcard').forEach((c) =>
+          c.addEventListener('click', () => choose(c.dataset.id, null)))
+      }
+
+      function choose(tid, data) {
+        const t = byId(tid); if (!t) return
+        state.tid = tid
+        state.data = data || structuredClone(t.defaults)
+        if (!data) { state.sub = slugify(state.data[t.titleKey]); state.subTouched = false }
+        buildForm(); $('gallery').hidden = true; $('builder').hidden = false
+        refresh(); save()
+      }
+
+      // ---------- schema-driven form ----------
+      function fieldInput(f, val, path) {
+        if (f.type === 'textarea') return `<textarea data-path="${path}">${esc(val)}</textarea>`
+        return `<input type="text" data-path="${path}" value="${esc(val)}" />`
+      }
+      function buildForm() {
+        const t = byId(state.tid); const d = state.data
+        $('btitle').textContent = t.name
+        let html = ''
+        for (const f of t.fields) {
+          if (f.type === 'list') {
+            html += `<label>${esc(f.label)}</label><div class="list" data-list="${f.key}">`
+            ;(d[f.key] || []).forEach((row, i) => { html += listRow(f, row, i) })
+            html += `<button class="add" type="button" data-add="${f.key}">+ Ekle</button></div>`
+          } else {
+            html += `<label>${esc(f.label)}</label>${fieldInput(f, d[f.key], f.key)}`
+          }
+        }
+        $('form').innerHTML = html
+        $('subdomain').value = state.sub
+        wireForm()
+      }
+      function listRow(f, row, i) {
+        let inner = `<button class="rm" type="button" data-rm="${f.key}:${i}" aria-label="Sil">×</button>`
+        for (const sub of f.item) {
+          inner += `<label>${esc(sub.label)}</label>${fieldInput(sub, row[sub.key], `${f.key}.${i}.${sub.key}`)}`
+        }
+        return `<div class="row">${inner}</div>`
+      }
+      function setByPath(path, value) {
+        const p = path.split('.'); let o = state.data
+        for (let i = 0; i < p.length - 1; i++) o = o[p[i]]
+        o[p[p.length - 1]] = value
+      }
+      function wireForm() {
+        $('form').querySelectorAll('[data-path]').forEach((el) =>
+          el.addEventListener('input', () => {
+            setByPath(el.dataset.path, el.value)
+            const t = byId(state.tid)
+            if (!state.subTouched && el.dataset.path === t.titleKey) {
+              state.sub = slugify(el.value); $('subdomain').value = state.sub
+            }
+            refresh(); save()
+          }))
+        $('form').querySelectorAll('[data-add]').forEach((b) =>
+          b.addEventListener('click', () => {
+            const f = byId(state.tid).fields.find((x) => x.key === b.dataset.add)
+            const blank = {}; f.item.forEach((s) => (blank[s.key] = ''))
+            state.data[f.key].push(blank); buildForm(); refresh(); save()
+          }))
+        $('form').querySelectorAll('[data-rm]').forEach((b) =>
+          b.addEventListener('click', () => {
+            const [key, i] = b.dataset.rm.split(':')
+            state.data[key].splice(+i, 1); buildForm(); refresh(); save()
+          }))
+      }
+
+      $('subdomain').addEventListener('input', (e) => { state.subTouched = true; state.sub = e.target.value; save() })
+      $('subdomain').addEventListener('blur', (e) => { e.target.value = slugify(e.target.value); state.sub = e.target.value; save() })
+      $('back').addEventListener('click', () => {
+        $('builder').hidden = true; $('gallery').hidden = false
+        state = { tid: null, data: null, sub: '', subTouched: false }; sessionStorage.removeItem(SAVE)
       })
-      $('subdomain').addEventListener('input', () => { subTouched = true })
-      $('subdomain').addEventListener('blur', () => { $('subdomain').value = slugify($('subdomain').value) })
 
-      // ---- Netlify OAuth (implicit, browser-only) ----
+      // ---------- preview ----------
+      function buildHTML() { return byId(state.tid).render(state.data) }
+      function refresh() { $('preview').srcdoc = buildHTML() }
+
+      // ---------- Netlify OAuth (implicit, browser-only) ----------
       function tokenFromHash() {
         const h = new URLSearchParams(location.hash.slice(1))
         const t = h.get('access_token')
@@ -196,107 +410,87 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
         return t || sessionStorage.getItem('nf_token')
       }
       function connect() {
-        if (NETLIFY_CLIENT_ID.includes('PLACEHOLDER')) {
-          fail('Netlify OAuth app not configured yet (need the Client ID).'); return null
-        }
-        const u = `https://app.netlify.com/authorize?client_id=${encodeURIComponent(NETLIFY_CLIENT_ID)}` +
+        if (NETLIFY_CLIENT_ID.includes('PLACEHOLDER')) { fail('Netlify OAuth app not configured.'); return }
+        save() // keep edits across the redirect
+        location.href = `https://app.netlify.com/authorize?client_id=${encodeURIComponent(NETLIFY_CLIENT_ID)}` +
           `&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT)}`
-        location.href = u
       }
 
-      // ---- Netlify deploy (digest method, single file, zero deps) ----
+      // ---------- Netlify deploy (digest method, single file, zero deps) ----------
       async function sha1(str) {
         const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(str))
         return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
       }
       const NF = 'https://api.netlify.com/api/v1'
-      function slugify(s) {
-        return s
-          .replace(/[İIı]/g, 'i').replace(/[Şş]/g, 's').replace(/[Çç]/g, 'c')
-          .replace(/[Ğğ]/g, 'g').replace(/[Öö]/g, 'o').replace(/[Üü]/g, 'u')
-          .replace(/['’‘"`]/g, '')
-          .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-          .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40)
-      }
       async function createSite(auth) {
-        // Try the title-derived name first; a taken/invalid name (422/400) falls
-        // back to a suffixed slug, then to Netlify's random name.
-        const base = slugify($('subdomain').value) || slugify($('title').value) || 'site'
-        const tries = [base, base + '-' + Math.random().toString(36).slice(2, 6), null]
-        for (const name of tries) {
+        const base = slugify(state.sub) || slugify(state.data?.[byId(state.tid).titleKey]) || 'site'
+        for (const name of [base, base + '-' + Math.random().toString(36).slice(2, 6), null]) {
           const res = await fetch(`${NF}/sites`, {
-            method: 'POST',
-            headers: name ? { ...auth, 'Content-Type': 'application/json' } : auth,
+            method: 'POST', headers: name ? { ...auth, 'Content-Type': 'application/json' } : auth,
             body: name ? JSON.stringify({ name }) : null,
           })
           if (res.ok) return res.json()
-          if (res.status !== 422 && res.status !== 400) {
-            throw new Error('create site failed: ' + res.status + ' ' + (await res.text()))
-          }
+          if (res.status !== 422 && res.status !== 400) throw new Error('create site failed: ' + res.status + ' ' + (await res.text()))
         }
         throw new Error('could not name the site')
       }
       async function deploy(token) {
-        const html = buildHTML()
-        const digest = await sha1(html)
-        const auth = { Authorization: 'Bearer ' + token }
-
-        ok('Creating site…')
+        const html = buildHTML(); const digest = await sha1(html); const auth = { Authorization: 'Bearer ' + token }
+        ok('Site oluşturuluyor…')
         const site = await createSite(auth)
-
-        ok('Uploading…')
+        ok('Yükleniyor…')
         const depRes = await fetch(`${NF}/sites/${site.id}/deploys`, {
           method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' },
           body: JSON.stringify({ files: { '/index.html': digest } }),
         })
         if (!depRes.ok) throw new Error('deploy failed: ' + depRes.status + ' ' + (await depRes.text()))
         let dep = await depRes.json()
-
         if ((dep.required || []).includes(digest)) {
           const up = await fetch(`${NF}/deploys/${dep.id}/files/index.html`, {
             method: 'PUT', headers: { ...auth, 'Content-Type': 'application/octet-stream' }, body: html,
           })
           if (!up.ok) throw new Error('upload failed: ' + up.status + ' ' + (await up.text()))
-          dep = await up.json()
         }
         return site.ssl_url || site.url || ('https://' + site.name + '.netlify.app')
       }
 
-      // ---- glue ----
+      // ---------- glue ----------
       const btn = $('publish'), msg = $('msg')
       function ok(t) { msg.className = 'msg'; msg.textContent = t }
       function fail(t) { msg.className = 'msg err'; msg.textContent = t }
-
       const modal = $('modal')
       function showLive(url) {
         msg.textContent = ''
-        const link = $('modal-url')
-        link.textContent = url; link.href = url
+        const link = $('modal-url'); link.textContent = url; link.href = url
         $('modal-open').onclick = () => window.open(url, '_blank', 'noreferrer')
         $('modal-copy').onclick = async () => {
-          try { await navigator.clipboard.writeText(url); $('modal-copy').textContent = 'Kopyalandı ✓' }
-          catch { $('modal-copy').textContent = 'Kopyalanamadı' }
+          try { await navigator.clipboard.writeText(url); $('modal-copy').textContent = 'Kopyalandı ✓' } catch { $('modal-copy').textContent = 'Kopyalanamadı' }
         }
         modal.hidden = false
       }
       $('modal-close').onclick = () => { modal.hidden = true; $('modal-copy').textContent = 'Linki kopyala' }
       modal.addEventListener('click', (e) => { if (e.target === modal) $('modal-close').onclick() })
 
-      async function run() {
-        let token = tokenFromHash()
+      async function publish() {
+        const token = tokenFromHash()
         if (!token) { connect(); return }
         btn.disabled = true
-        try {
-          const url = await deploy(token)
-          showLive(url)
-        } catch (e) {
-          if ((e.message || '').includes('401')) { sessionStorage.removeItem('nf_token'); fail('Session expired — click again to reconnect.') }
+        try { showLive(await deploy(token)) }
+        catch (e) {
+          if ((e.message || '').includes('401')) { sessionStorage.removeItem('nf_token'); fail('Oturum doldu — tekrar bağlanmak için tıkla.') }
           else fail(e.message)
         } finally { btn.disabled = false }
       }
-      btn.addEventListener('click', run)
-      // returning from OAuth with a token in the hash → auto-continue
-      if (location.hash.includes('access_token')) run()
+      btn.addEventListener('click', publish)
+
+      // ---------- init ----------
+      renderGallery()
+      const saved = load()
+      if (saved && saved.tid && saved.data) {
+        state = saved; choose(saved.tid, saved.data); $('subdomain').value = saved.sub
+      }
+      // returning from Netlify OAuth with a token → auto-continue the publish
+      if (location.hash.includes('access_token') && state.tid) publish()
     </script>
   </body>
 </html>
