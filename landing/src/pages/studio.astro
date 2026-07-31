@@ -50,7 +50,11 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
         border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px;
         font-family: var(--sans); font-size: 0.95rem; }
       textarea { min-height: 80px; resize: vertical; }
-      input:focus, textarea:focus { outline: none; border-color: var(--signal); }
+      input:focus, textarea:focus, select:focus { outline: none; border-color: var(--signal); }
+      .addr { display: flex; gap: 8px; }
+      .addr input { flex: 1; min-width: 0; }
+      .addr select { background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+        border-radius: 6px; padding: 0 10px; font-family: var(--mono); font-size: 0.85rem; }
       button { font-family: var(--sans); font-weight: 700; font-size: 0.95rem;
         background: var(--signal); color: #17130d; border: 0; border-radius: 6px;
         padding: 12px 22px; cursor: pointer; width: 100%; margin-top: 22px; }
@@ -106,6 +110,16 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
 
         <label for="cta">Phone / contact</label>
         <input id="cta" type="text" value="0555 123 45 67" />
+
+        <label for="subdomain">Adres</label>
+        <div class="addr">
+          <input id="subdomain" type="text" placeholder="site-adiniz" autocapitalize="off" autocomplete="off" spellcheck="false" />
+          <select id="host">
+            <option value="netlify">.netlify.app</option>
+            <option value="vercel" disabled>.vercel.app (yakında)</option>
+            <option value="github" disabled>.github.io (yakında)</option>
+          </select>
+        </div>
 
         <button id="publish" type="button">Connect Netlify &amp; publish</button>
         <p id="msg" class="msg"></p>
@@ -165,6 +179,15 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
       fields.forEach((f) => $(f).addEventListener('input', refresh))
       refresh()
 
+      // ---- address: derive from title until the user edits it ----
+      let subTouched = false
+      $('subdomain').value = slugify($('title').value) || 'site'
+      $('title').addEventListener('input', () => {
+        if (!subTouched) $('subdomain').value = slugify($('title').value) || 'site'
+      })
+      $('subdomain').addEventListener('input', () => { subTouched = true })
+      $('subdomain').addEventListener('blur', () => { $('subdomain').value = slugify($('subdomain').value) })
+
       // ---- Netlify OAuth (implicit, browser-only) ----
       function tokenFromHash() {
         const h = new URLSearchParams(location.hash.slice(1))
@@ -191,13 +214,14 @@ const NETLIFY_CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
         return s
           .replace(/[İIı]/g, 'i').replace(/[Şş]/g, 's').replace(/[Çç]/g, 'c')
           .replace(/[Ğğ]/g, 'g').replace(/[Öö]/g, 'o').replace(/[Üü]/g, 'u')
+          .replace(/['’‘"`]/g, '')
           .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
           .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40)
       }
       async function createSite(auth) {
         // Try the title-derived name first; a taken/invalid name (422/400) falls
         // back to a suffixed slug, then to Netlify's random name.
-        const base = slugify($('title').value) || 'site'
+        const base = slugify($('subdomain').value) || slugify($('title').value) || 'site'
         const tries = [base, base + '-' + Math.random().toString(36).slice(2, 6), null]
         for (const name of tries) {
           const res = await fetch(`${NF}/sites`, {
