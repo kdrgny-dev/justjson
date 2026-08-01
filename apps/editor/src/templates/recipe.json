@@ -1,0 +1,82 @@
+{
+  "title": "Recipe box",
+  "description": "Recipes with ingredients, steps and a cover image, plus Kitchen settings.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "recipes",
+        "label": "Recipes",
+        "path": "recipes",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "time",
+            "label": "Time",
+            "type": "text"
+          },
+          {
+            "key": "servings",
+            "label": "Servings",
+            "type": "number"
+          },
+          {
+            "key": "cover",
+            "label": "Cover",
+            "type": "image"
+          },
+          {
+            "key": "ingredients",
+            "label": "Ingredients",
+            "type": "richtext"
+          },
+          {
+            "key": "steps",
+            "label": "Steps",
+            "type": "richtext"
+          }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "kitchen",
+        "label": "Kitchen",
+        "path": "kitchen.json",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Site name",
+            "type": "text"
+          }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "recipes": [
+      {
+        "title": "Weeknight pasta",
+        "slug": "weeknight-pasta",
+        "time": "20 min",
+        "servings": 2,
+        "ingredients": "- 200g pasta\n- 2 cloves garlic\n- Olive oil",
+        "steps": "Boil the pasta. Fry the garlic in olive oil. Toss together."
+      }
+    ],
+    "kitchen": {
+      "title": "My recipe box"
+    }
+  }
+}

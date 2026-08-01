@@ -1,0 +1,83 @@
+{
+  "title": "Product catalog",
+  "description": "Products with price, category and an image, plus Store settings.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "products",
+        "label": "Products",
+        "path": "products",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "price",
+            "label": "Price",
+            "type": "number"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "type": "select",
+            "options": ["Home", "Clothing", "Accessories"]
+          },
+          {
+            "key": "cover",
+            "label": "Image",
+            "type": "image"
+          },
+          {
+            "key": "description",
+            "label": "Description",
+            "type": "richtext"
+          }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "store",
+        "label": "Store",
+        "path": "store.json",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Store name",
+            "type": "text"
+          },
+          {
+            "key": "tagline",
+            "label": "Tagline",
+            "type": "text"
+          }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "products": [
+      {
+        "title": "Ceramic mug",
+        "slug": "ceramic-mug",
+        "price": 18,
+        "category": "Home",
+        "description": "Hand-made ceramic mug."
+      }
+    ],
+    "store": {
+      "title": "My store",
+      "tagline": "Small batch, made well"
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "title": "Blog",
+  "description": "Posts with rich-text content, plus a Settings singleton for the site name.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "posts",
+        "label": "Posts",
+        "path": "posts",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "date",
+            "label": "Date",
+            "type": "date"
+          },
+          {
+            "key": "body",
+            "label": "Body",
+            "type": "richtext"
+          }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "settings",
+        "label": "Settings",
+        "path": "settings.json",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Site name",
+            "type": "text"
+          }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "posts": [
+      {
+        "title": "First post",
+        "slug": "first-post",
+        "body": "Hello."
+      }
+    ],
+    "settings": {
+      "title": "My blog"
+    }
+  }
+}

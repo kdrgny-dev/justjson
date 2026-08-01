@@ -1,0 +1,99 @@
+{
+  "title": "Portfolio",
+  "description": "Projects with a cover image, tag and rich-text body, plus an About page.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "projects",
+        "label": "Projects",
+        "path": "projects",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "type": "text"
+          },
+          {
+            "key": "cover",
+            "label": "Cover",
+            "type": "image"
+          },
+          {
+            "key": "url",
+            "label": "Link",
+            "type": "url"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "type": "select",
+            "options": ["Web", "Mobile", "Design"]
+          },
+          {
+            "key": "body",
+            "label": "Body",
+            "type": "richtext"
+          },
+          {
+            "key": "date",
+            "label": "Date",
+            "type": "date"
+          }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "about",
+        "label": "About",
+        "path": "about.json",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "avatar",
+            "label": "Avatar",
+            "type": "image"
+          },
+          {
+            "key": "bio",
+            "label": "Bio",
+            "type": "richtext"
+          }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "projects": [
+      {
+        "title": "Sample project",
+        "slug": "sample-project",
+        "summary": "A short description.",
+        "kind": "Web",
+        "body": "Project details go here."
+      }
+    ],
+    "about": {
+      "name": "Ada Lovelace",
+      "bio": "I build things for the web."
+    }
+  }
+}

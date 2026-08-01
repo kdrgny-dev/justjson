@@ -1,11 +1,56 @@
-import type { EntryRow, Schema } from '@justjson/core'
+// Browser api — the editor's data layer with NO server. Every call runs
+// against @justjson/core over an IndexedDB StorageAdapter, so schema building,
+// content editing and theming work entirely in the user's browser. Same
+// exported surface as the old fetch-based module, so the UI is unchanged.
+// Publish (ship) is wired to the host adapters (Netlify…) separately.
+import {
+  ContentStore,
+  type EntryRow,
+  type Schema,
+  type Theme,
+  inferProject,
+  loadSchema,
+  loadTheme,
+  parseSchema,
+  saveSchema,
+  saveTheme,
+  slugify,
+} from '@justjson/core'
+import { IdbAdapter } from './browser/idb'
+import blog from './templates/blog.json'
+import catalog from './templates/catalog.json'
+import changelog from './templates/changelog.json'
+import cv from './templates/cv.json'
+import docs from './templates/docs.json'
+import event from './templates/event.json'
+import portfolio from './templates/portfolio.json'
+import recipe from './templates/recipe.json'
 
 export type { EntryRow }
 export type Entry = Record<string, unknown>
 
-async function ok(res: Response): Promise<Response> {
-  if (!res.ok) throw new Error(`Request failed: ${res.status}`)
-  return res
+const CONTENT = 'content'
+const adapter = new IdbAdapter()
+const EMPTY_SCHEMA: Schema = { collections: [], singletons: [] }
+
+async function schema(): Promise<Schema> {
+  return (await loadSchema(adapter, CONTENT)) ?? EMPTY_SCHEMA
+}
+async function store(): Promise<ContentStore> {
+  return new ContentStore(adapter, await schema(), CONTENT)
+}
+
+// ---------- templates (bundled) ----------
+interface Template {
+  title: string
+  description: string
+  schema: unknown
+  samples: Record<string, Record<string, unknown>[] | Record<string, unknown>>
+}
+const templates: Record<string, Template> = {
+  blog: blog as Template, cv: cv as Template, portfolio: portfolio as Template,
+  docs: docs as Template, changelog: changelog as Template, recipe: recipe as Template,
+  event: event as Template, catalog: catalog as Template,
 }
 
 export interface TemplateMeta {
@@ -25,256 +70,195 @@ export interface ProjectInfo {
 }
 
 export async function getProject(): Promise<ProjectInfo> {
-  const res = await ok(await fetch('/api/_project'))
-  return res.json() as Promise<ProjectInfo>
+  const s = await schema()
+  return {
+    name: 'My site', path: 'browser', contentDir: CONTENT,
+    collections: s.collections.length, singletons: s.singletons.length,
+  }
 }
 
 export async function getSchema(): Promise<Schema> {
-  const res = await ok(await fetch('/api/_schema'))
-  return res.json() as Promise<Schema>
+  return schema()
 }
 
 export async function listTemplates(): Promise<TemplateMeta[]> {
-  const res = await ok(await fetch('/api/_templates'))
-  const data = (await res.json()) as { items: TemplateMeta[] }
-  return data.items
+  return Object.entries(templates).map(([id, t]) => {
+    const s = t.schema as Schema
+    return {
+      id, title: t.title, description: t.description,
+      collections: s.collections.map((c) => ({ label: c.label ?? c.name, fields: c.fields.length })),
+      singletons: s.singletons.map((sg) => ({ label: sg.label ?? sg.name })),
+    }
+  })
 }
 
 export async function applyTemplate(template: string): Promise<void> {
-  const res = await fetch('/api/_init', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ template }),
-  })
-  if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { error?: string }
-    throw new Error(err.error ?? `Could not apply the template: ${res.status}`)
+  const t = templates[template]
+  if (!t) throw new Error(`Unknown template: ${template}`)
+  const parsed = parseSchema(t.schema)
+  await saveSchema(adapter, parsed, CONTENT)
+  const cs = new ContentStore(adapter, parsed, CONTENT)
+  const singletonNames = new Set(parsed.singletons.map((s) => s.name))
+  for (const [name, sample] of Object.entries(t.samples)) {
+    if (!Array.isArray(sample)) {
+      if (singletonNames.has(name)) await cs.writeSingleton(name, sample)
+      continue
+    }
+    for (const row of sample) {
+      const slug = slugify(typeof row.slug === 'string' ? row.slug : String(row.title ?? 'content'))
+      await cs.writeEntry(name, slug, row)
+    }
   }
 }
 
-// raw: either a JustJSON schema or plain content JSON — the server tells
-// them apart and infers a schema from content.
 export async function importProject(raw: unknown): Promise<void> {
-  const res = await fetch('/api/_import', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ raw }),
-  })
-  if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { error?: string }
-    throw new Error(err.error ?? `Import failed: ${res.status}`)
+  const inferred = inferProject(raw)
+  await saveSchema(adapter, inferred.schema, CONTENT)
+  const cs = new ContentStore(adapter, inferred.schema, CONTENT)
+  for (const [name, rows] of Object.entries(inferred.entries)) {
+    for (const row of rows) {
+      const slug = slugify(String(row.slug ?? row.title ?? row.name ?? 'content'))
+      await cs.writeEntry(name, slug, row)
+    }
+  }
+  for (const [name, data] of Object.entries(inferred.singletons)) {
+    await cs.writeSingleton(name, data)
   }
 }
 
-export const exportUrl = '/api/_export'
+export const exportUrl = '#'
 
-export function downloadExport(): void {
+export async function downloadExport(): Promise<void> {
+  // No server/zip: bundle every stored file into a single JSON download.
+  const files: Record<string, string> = {}
+  const s = await schema()
+  files[`${CONTENT}/_schema.json`] = (await adapter.read(`${CONTENT}/_schema.json`)) ?? ''
+  const cs = new ContentStore(adapter, s, CONTENT)
+  for (const col of s.collections) {
+    for (const slug of await cs.listEntries(col.name)) {
+      const data = await cs.readEntry(col.name, slug)
+      if (data) files[`${CONTENT}/${col.path}/${slug}.json`] = JSON.stringify(data, null, 2)
+    }
+  }
+  for (const sg of s.singletons) {
+    const data = await cs.readSingleton(sg.name)
+    if (data) files[`${CONTENT}/${sg.path}`] = JSON.stringify(data, null, 2)
+  }
+  const blob = new Blob([JSON.stringify(files, null, 2)], { type: 'application/json' })
   const a = document.createElement('a')
-  a.href = exportUrl
-  a.download = 'justjson-export.zip'
+  a.href = URL.createObjectURL(blob)
+  a.download = 'justjson-export.json'
   document.body.appendChild(a)
   a.click()
   a.remove()
+  URL.revokeObjectURL(a.href)
 }
 
-export async function putSchema(schema: Schema): Promise<void> {
-  const res = await fetch('/api/_schema', {
-    method: 'PUT',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(schema),
-  })
-  if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { error?: string }
-    throw new Error(err.error ?? `Could not save the schema: ${res.status}`)
-  }
+export async function putSchema(next: Schema): Promise<void> {
+  await saveSchema(adapter, next, CONTENT)
 }
 
 export async function listRows(collection: string): Promise<EntryRow[]> {
-  const res = await ok(await fetch(`/api/${encodeURIComponent(collection)}`))
-  const data = (await res.json()) as { items: EntryRow[] }
-  return data.items
+  return (await store()).listRows(collection)
 }
-
 export async function listEntries(collection: string): Promise<string[]> {
-  return (await listRows(collection)).map((r) => r.slug)
+  return (await store()).listEntries(collection)
 }
-
 export async function getEntry(collection: string, slug: string): Promise<Entry | null> {
-  const res = await fetch(`/api/${encodeURIComponent(collection)}/${encodeURIComponent(slug)}`)
-  if (res.status === 404) return null
-  await ok(res)
-  return res.json() as Promise<Entry>
+  return (await store()).readEntry(collection, slug)
 }
-
 export async function putEntry(collection: string, slug: string, data: Entry): Promise<string> {
-  const res = await ok(
-    await fetch(`/api/${encodeURIComponent(collection)}/${encodeURIComponent(slug)}`, {
-      method: 'PUT',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(data),
-    }),
-  )
-  const out = (await res.json()) as { slug: string }
-  return out.slug
+  const finalSlug = slug || slugify(String(data.slug ?? data.title ?? 'entry'))
+  await (await store()).writeEntry(collection, finalSlug, data)
+  return finalSlug
 }
-
 export async function deleteEntry(collection: string, slug: string): Promise<void> {
-  await ok(
-    await fetch(`/api/${encodeURIComponent(collection)}/${encodeURIComponent(slug)}`, {
-      method: 'DELETE',
-    }),
-  )
+  await (await store()).deleteEntry(collection, slug)
 }
 
 export async function uploadMedia(dataBase64: string, filename: string): Promise<string> {
-  const res = await ok(
-    await fetch('/api/_media', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ dataBase64, filename }),
-    }),
-  )
-  const out = (await res.json()) as { path: string }
-  return out.path
+  // No media server: embed as a data URL so it works in preview and in the
+  // published (self-contained) site.
+  const ext = (filename.split('.').pop() || 'png').toLowerCase()
+  const mime = ext === 'svg' ? 'image/svg+xml' : ext === 'jpg' ? 'image/jpeg' : `image/${ext}`
+  const clean = dataBase64.includes(',') ? dataBase64.split(',')[1] : dataBase64
+  return `data:${mime};base64,${clean}`
 }
 
 export async function getSingleton(name: string): Promise<Entry> {
-  const res = await ok(await fetch(`/api/_singleton/${encodeURIComponent(name)}`))
-  return res.json() as Promise<Entry>
+  return (await (await store()).readSingleton(name)) ?? {}
 }
-
 export async function putSingleton(name: string, data: Entry): Promise<void> {
-  await ok(
-    await fetch(`/api/_singleton/${encodeURIComponent(name)}`, {
-      method: 'PUT',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(data),
-    }),
-  )
+  await (await store()).writeSingleton(name, data)
 }
 
-export async function aiGenerate(
-  config: { provider: string; model: string; apiKey: string; baseUrl?: string },
-  system: string,
-  prompt: string,
-): Promise<string> {
-  const res = await fetch('/api/_ai/generate', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ ...config, system, prompt }),
-  })
-  const data = (await res.json()) as { text?: string; error?: string }
-  if (!res.ok || !data.text) throw new Error(data.error || `The AI request failed (${res.status})`)
-  return data.text
-}
-
+// ---------- AI (browser build: not wired yet) ----------
 export interface AiModel {
   id: string
   label: string
 }
-
-export async function aiListModels(config: {
+export async function aiGenerate(
+  _config: { provider: string; model: string; apiKey: string; baseUrl?: string },
+  _system: string,
+  _prompt: string,
+): Promise<string> {
+  throw new Error('AI generation is not available in the browser build yet.')
+}
+export async function aiListModels(_config: {
   provider: string
   apiKey: string
   baseUrl?: string
 }): Promise<AiModel[]> {
-  const res = await fetch('/api/_ai/models', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(config),
-  })
-  const data = (await res.json()) as { models?: AiModel[]; error?: string }
-  if (!res.ok || !data.models)
-    throw new Error(data.error || `Could not fetch models (${res.status})`)
-  return data.models
+  throw new Error('AI models are not available in the browser build yet.')
 }
 
+// ---------- theme ----------
+export interface Theme_ extends Theme {}
+export async function getTheme(): Promise<Theme> {
+  return loadTheme(adapter, CONTENT)
+}
+export async function putTheme(theme: Theme): Promise<Theme> {
+  await saveTheme(adapter, theme, CONTENT)
+  return loadTheme(adapter, CONTENT)
+}
+export type { Theme }
+
+// ---------- ship / preview (wired to host adapters in a later step) ----------
 export type Framework = 'astro' | 'next' | 'nuxt' | 'sveltekit' | 'vite' | 'node' | 'unknown'
-
 export interface GitStatus {
-  isRepo: boolean
-  branch: string | null
-  hasRemote: boolean
-  remoteUrl: string | null
-  pendingFiles: number
-  remoteWebUrl: string | null
-  hasGh: boolean
+  isRepo: boolean; branch: string | null; hasRemote: boolean; remoteUrl: string | null
+  pendingFiles: number; remoteWebUrl: string | null; hasGh: boolean
 }
-
 export interface ShipInfo {
   framework: Framework
   git: GitStatus
 }
-
 export async function getShip(): Promise<ShipInfo> {
-  const res = await ok(await fetch('/api/_ship'))
-  return res.json() as Promise<ShipInfo>
+  return {
+    framework: 'unknown',
+    git: { isRepo: false, branch: null, hasRemote: false, remoteUrl: null, pendingFiles: 0, remoteWebUrl: null, hasGh: false },
+  }
 }
-
-async function shipAction<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`/api/_ship/${path}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  const data = (await res.json()) as T & { error?: string }
-  if (!res.ok) throw new Error(data.error ?? `Request failed: ${res.status}`)
-  return data
+const shipNA = (): never => {
+  throw new Error('Publishing from the browser is coming next.')
 }
-
-export const shipScaffold = () =>
-  shipAction<{ written: string[]; skipped: string[] }>('scaffold', {})
-
-export const shipPublish = (message: string) =>
-  shipAction<{ committed: boolean; count: number; branch: string }>('publish', { message })
-
-export const shipCommit = (message: string) =>
-  shipAction<{ committed: boolean; count: number }>('commit', { message })
-export const shipPush = () => shipAction<{ branch: string }>('push', {})
-export const shipCreateRepo = (name: string, isPrivate: boolean) =>
-  shipAction<{ name: string }>('repo', { name, private: isPrivate })
-
-export interface Theme {
-  palette: string
-  accent: string
-  font: string
-  radius: number
-  density: 'tight' | 'normal' | 'roomy'
-}
-
-export async function getTheme(): Promise<Theme> {
-  const res = await ok(await fetch('/api/_theme'))
-  return res.json() as Promise<Theme>
-}
-
-export async function putTheme(theme: Theme): Promise<Theme> {
-  const res = await ok(
-    await fetch('/api/_theme', {
-      method: 'PUT',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(theme),
-    }),
-  )
-  return res.json() as Promise<Theme>
-}
+export const shipScaffold = async (): Promise<{ written: string[]; skipped: string[] }> => shipNA()
+export const shipPublish = async (_message: string): Promise<{ committed: boolean; count: number; branch: string }> => shipNA()
+export const shipCommit = async (_message: string): Promise<{ committed: boolean; count: number }> => shipNA()
+export const shipPush = async (): Promise<{ branch: string }> => shipNA()
+export const shipCreateRepo = async (_name: string, _isPrivate: boolean): Promise<{ name: string }> => shipNA()
 
 export type PreviewState =
   | { status: 'idle' }
   | { status: 'starting' }
   | { status: 'running'; url: string }
   | { status: 'error'; message: string }
-
 export async function getPreview(): Promise<PreviewState> {
-  const res = await ok(await fetch('/api/_preview'))
-  return res.json() as Promise<PreviewState>
+  return { status: 'idle' }
 }
-
 export async function startPreview(): Promise<PreviewState> {
-  const res = await ok(await fetch('/api/_preview/start', { method: 'POST' }))
-  return res.json() as Promise<PreviewState>
+  return { status: 'error', message: 'Live preview is not available in the browser build.' }
 }
-
 export async function stopPreview(): Promise<PreviewState> {
-  const res = await ok(await fetch('/api/_preview/stop', { method: 'POST' }))
-  return res.json() as Promise<PreviewState>
+  return { status: 'idle' }
 }

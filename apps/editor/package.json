@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "build": "vite build",
+    "build:studio": "vite build --base=/studio/ --outDir ../../landing/public/studio --emptyOutDir",
     "dev": "vite",
     "preview": "vite preview",
     "test": "vitest run --passWithNoTests",

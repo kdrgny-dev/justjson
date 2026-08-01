@@ -1,0 +1,88 @@
+{
+  "title": "Event schedule",
+  "description": "An event agenda of sessions with date, time and speaker.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "sessions",
+        "label": "Sessions",
+        "path": "sessions",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "date",
+            "label": "Date",
+            "type": "date"
+          },
+          {
+            "key": "time",
+            "label": "Time",
+            "type": "text"
+          },
+          {
+            "key": "speaker",
+            "label": "Speaker",
+            "type": "text"
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "type": "text"
+          },
+          {
+            "key": "description",
+            "label": "Description",
+            "type": "richtext"
+          }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "event",
+        "label": "Event",
+        "path": "event.json",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Event name",
+            "type": "text"
+          },
+          {
+            "key": "tagline",
+            "label": "Tagline",
+            "type": "text"
+          }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "sessions": [
+      {
+        "title": "Opening keynote",
+        "slug": "opening-keynote",
+        "time": "09:00",
+        "speaker": "Ada Lovelace",
+        "room": "Main hall",
+        "description": "Welcome to the event."
+      }
+    ],
+    "event": {
+      "title": "My event",
+      "tagline": "One day, one track"
+    }
+  }
+}
