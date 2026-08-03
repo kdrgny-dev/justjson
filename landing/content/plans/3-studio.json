@@ -1,7 +1,7 @@
 {
   "order": 3,
-  "name": "Studio",
-  "tagline": "For agencies handing off many client sites.",
+  "name": "Agency",
+  "tagline": "For people building lots of sites — with teammates and your own branding.",
   "price": "$299",
   "period": "per year",
   "badge": "Coming soon",
@@ -10,10 +10,10 @@
   "cta": "Join the waitlist",
   "ctaUrl": "#waitlist",
   "features": [
-    "Everything in Handoff",
-    "Up to 5 developer seats",
-    "White-label the editor (remove our badge)",
-    "Client multi-user + roles",
+    "Everything in Studio",
+    "Up to 5 team seats",
+    "White-label the published site (remove our badge)",
+    "Custom domain guidance",
     "Priority support"
   ]
 }

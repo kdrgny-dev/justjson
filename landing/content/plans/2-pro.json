@@ -1,7 +1,7 @@
 {
   "order": 2,
-  "name": "Handoff",
-  "tagline": "Hand the finished site to a client. They edit and publish — no git, no deploy, no fear.",
+  "name": "Studio",
+  "tagline": "Build and publish a whole site in your browser — no terminal, no git, no account.",
   "price": "$99",
   "period": "per year",
   "badge": "Coming soon",
@@ -12,11 +12,11 @@
   "ctaUrl": "#waitlist",
   "features": [
     "Everything in Local",
-    "/admin — a deployable editor for your client",
-    "Magic-link login (no GitHub, no account setup)",
-    "One-click Publish = commit + auto-deploy",
-    "Client media uploads, history & rollback",
-    "1 developer · unlimited client sites",
+    "A visual editor in your browser — pick a template, fill it in",
+    "Live preview as you edit",
+    "One-click publish to your own host (Netlify)",
+    "Image uploads",
+    "Unlimited sites",
     "Email support"
   ]
 }

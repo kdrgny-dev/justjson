@@ -13,9 +13,9 @@
   "showcaseTitle": "Built with JustJSON",
   "showcaseSub": "Real sites whose content is nothing but the JSON in their own repo.",
   "pricingEyebrow": "Pricing",
-  "pricingTitle": "Free to build. Pay only when you hand it to a client.",
-  "pricingSub": "The whole local CMS is free and MIT. The one thing you pay for is client handoff — the part you bill for anyway.",
-  "waitlistTitle": "Client handoff is coming",
-  "waitlistBody": "Give a non-technical client a URL, a login and a Publish button — while the content stays in your own repo. Join the waitlist and lock the early-bird lifetime price.",
+  "pricingTitle": "Free on your machine. Pay to build it all in the browser.",
+  "pricingSub": "The local CMS is free and MIT. The paid Studio lets anyone build and publish a site from the browser — no terminal, no git, no account.",
+  "waitlistTitle": "JustJSON Studio is coming",
+  "waitlistBody": "Build a whole site in your browser and publish it to your own host in one click — no terminal, no git. Join the waitlist and lock the early-bird lifetime price.",
   "waitlistNote": "No spam. One email when it ships."
 }
