@@ -1,0 +1,11 @@
+{
+  "id": "default",
+  "name": "Default",
+  "version": "1.0.0",
+  "license": "free",
+  "css": "*{box-sizing:border-box}body{margin:0;background:var(--jj-bg);color:var(--jj-text);font-family:var(--jj-font);line-height:var(--jj-lead)}\na{color:var(--jj-accent)}.wrap{max-width:880px;margin:0 auto;padding:var(--jj-page) 22px}\nh1{font-size:clamp(2rem,5vw,3rem);margin:0 0 6px}h2{margin:2.4em 0 .6em;font-size:1.5rem}\nh3{margin:0 0 6px}.sub{color:var(--jj-muted);font-size:1.1rem;margin:0 0 10px}\n.card{display:block;background:color-mix(in srgb, var(--jj-text) 4%, var(--jj-bg));border:1px solid var(--jj-border);border-radius:var(--jj-radius);padding:var(--jj-gap);margin:12px 0;text-decoration:none;color:inherit}\n.card:hover{border-color:var(--jj-accent)}.grid{display:grid;gap:var(--jj-gap)}\n.fld{margin:16px 0}.fld-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--jj-muted);margin-bottom:4px}\n.rt img,.img{max-width:100%;border-radius:var(--jj-radius)}.img{max-height:360px}\n.swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;border:1px solid var(--jj-border)}\n.back{color:var(--jj-muted);text-decoration:none;font-size:14px}\nfooter{border-top:1px solid var(--jj-border);margin-top:48px;padding:20px 0;color:var(--jj-muted);font-size:13px;text-align:center}",
+  "templates": {
+    "index": "<div class=\"wrap\"><h1>{{siteName}}</h1>{{#singletons}}<section><h2>{{label}}</h2>{{#fields}}{{{html}}}{{/fields}}</section>{{/singletons}}{{#collections}}<section><h2>{{label}}</h2><div class=\"grid\">{{#entries}}<a class=\"card\" href=\"{{{url}}}\"><h3>{{title}}</h3></a>{{/entries}}{{^entries}}<p class=\"sub\">Henüz içerik yok.</p>{{/entries}}</div></section>{{/collections}}</div>",
+    "entry": "<div class=\"wrap\"><a class=\"back\" href=\"../index.html\">← {{siteName}}</a><h1>{{title}}</h1>{{#fields}}{{{html}}}{{/fields}}</div>"
+  }
+}

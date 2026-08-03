@@ -1,6 +1,7 @@
 import type { Schema } from '@justjson/core'
 import { describe, expect, it } from 'vitest'
-import { type ProjectData, renderSite } from './render'
+import { type ProjectData, renderSite, renderWithBundle } from './render'
+import type { ThemeBundle } from './theme-bundle'
 
 const schema: Schema = {
   version: 1,
@@ -47,5 +48,58 @@ describe('renderSite', () => {
 
   it('escapes the title and does not leak the raw markdown into <title>', () => {
     expect(files['/posts/hello.html']).toContain('<title>Hello World</title>')
+  })
+
+  it('injects the core themeCss --jj-* block before the bundle css', () => {
+    const idx = files['/index.html'] as string
+    const jjIdx = idx.indexOf('--jj-accent')
+    const bundleIdx = idx.indexOf('.wrap{max-width:880px')
+    expect(jjIdx).toBeGreaterThan(-1)
+    expect(bundleIdx).toBeGreaterThan(jjIdx)
+  })
+
+  it("does not execute a <script> in a text field — it's escaped", () => {
+    const evilSchema: Schema = {
+      version: 1,
+      collections: [
+        {
+          name: 'posts',
+          label: 'Posts',
+          path: 'posts',
+          fields: [
+            { key: 'title', type: 'text' },
+            { key: 'note', type: 'text' },
+          ],
+        },
+      ],
+      singletons: [],
+    }
+    const evil: ProjectData = {
+      ...data,
+      schema: evilSchema,
+      entries: { posts: [{ slug: 'xss', data: { title: 'Safe', note: '<script>alert(1)</script>' } }] },
+      singletons: {},
+    }
+    const out = renderSite(evil)['/posts/xss.html'] as string
+    expect(out).toContain('&lt;script&gt;')
+    expect(out).not.toContain('<script>alert(1)</script>')
+  })
+
+  it("renders a custom ThemeBundle's templates and css", () => {
+    const bundle: ThemeBundle = {
+      id: 'custom',
+      name: 'Custom',
+      version: '1.0.0',
+      license: 'commercial',
+      css: '.brandmark{color:hotpink}',
+      templates: {
+        index: '<main class="brandmark">SITE:{{siteName}}</main>',
+        entry: '<main class="brandmark">{{title}}</main>',
+      },
+    }
+    const out = renderWithBundle(data, bundle)
+    expect(out['/index.html']).toContain('.brandmark{color:hotpink}')
+    expect(out['/index.html']).toContain('<main class="brandmark">SITE:My Blog</main>')
+    expect(out['/posts/hello.html']).toContain('<main class="brandmark">Hello World</main>')
   })
 })

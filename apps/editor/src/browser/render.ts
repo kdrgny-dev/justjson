@@ -2,15 +2,14 @@
 // set of self-contained static HTML files, entirely in the browser. The local
 // CLI scaffolds an Astro project (needs a Node build); here we render final
 // HTML directly so publishing needs no build step.
-import {
-  type Collection,
-  type Field,
-  type Schema,
-  type Singleton,
-  type Theme,
-  themeCss,
-} from '@justjson/core'
+//
+// Theme-bundle driven: the renderer owns content gathering + safe field HTML +
+// routing; a ThemeBundle (logic-less Mustache templates + CSS) owns layout.
+import { type Field, type Schema, type Theme, themeCss } from '@justjson/core'
 import { marked } from 'marked'
+import Mustache from 'mustache'
+import defaultBundle from '../themes/default.json'
+import type { ThemeBundle } from './theme-bundle'
 
 export interface ProjectData {
   schema: Schema
@@ -18,6 +17,18 @@ export interface ProjectData {
   singletons: Record<string, Record<string, unknown>>
   theme: Theme
   siteName: string
+}
+
+interface FieldVM {
+  key: string
+  label: string
+  html: string
+}
+interface EntryVM {
+  title: string
+  slug: string
+  url: string
+  fields: FieldVM[]
 }
 
 const esc = (s: unknown) =>
@@ -30,6 +41,8 @@ function entryTitle(fields: Field[], data: Record<string, unknown>): string {
   return String((key && data[key]) || 'Untitled')
 }
 
+// Produces SAFE HTML per field (escaped text, marked for richtext). Themes only
+// place this via triple-mustache {{{html}}}, so a theme can't XSS through it.
 function renderField(f: Field, value: unknown): string {
   if (value == null || value === '') return ''
   const label = `<div class="fld-label">${esc(f.label ?? f.key)}</div>`
@@ -55,75 +68,74 @@ function renderField(f: Field, value: unknown): string {
   }
 }
 
-// Use core's canonical Theme→CSS (the same palette/font/density the editor's
-// Design panel edits and the Astro build uses) so the preview and the published
-// site actually match the chosen theme. Layout consumes those --jj-* vars.
-function siteCss(theme: Theme): string {
-  return `${themeCss(theme)}
-*{box-sizing:border-box}body{margin:0;background:var(--jj-bg);color:var(--jj-text);font-family:var(--jj-font);line-height:var(--jj-lead)}
-a{color:var(--jj-accent)}.wrap{max-width:880px;margin:0 auto;padding:var(--jj-page) 22px}
-h1{font-size:clamp(2rem,5vw,3rem);margin:0 0 6px}h2{margin:2.4em 0 .6em;font-size:1.5rem}
-h3{margin:0 0 6px}.sub{color:var(--jj-muted);font-size:1.1rem;margin:0 0 10px}
-.card{display:block;background:color-mix(in srgb, var(--jj-text) 4%, var(--jj-bg));border:1px solid var(--jj-border);border-radius:var(--jj-radius);padding:var(--jj-gap);margin:12px 0;text-decoration:none;color:inherit}
-.card:hover{border-color:var(--jj-accent)}.grid{display:grid;gap:var(--jj-gap)}
-.fld{margin:16px 0}.fld-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--jj-muted);margin-bottom:4px}
-.rt img,.img{max-width:100%;border-radius:var(--jj-radius)}.img{max-height:360px}
-.swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;border:1px solid var(--jj-border)}
-.back{color:var(--jj-muted);text-decoration:none;font-size:14px}
-footer{border-top:1px solid var(--jj-border);margin-top:48px;padding:20px 0;color:var(--jj-muted);font-size:13px;text-align:center}`
+function fieldVM(f: Field, value: unknown): FieldVM {
+  return { key: f.key, label: String(f.label ?? f.key), html: renderField(f, value) }
 }
 
-function page(title: string, css: string, body: string): string {
-  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>${css}</style></head><body><div class="wrap">${body}</div><footer>Made with Just&#123;JSON&#125;</footer></body></html>`
+// Studio theme-picking is a later phase; for now the free default bundle.
+function getActiveThemeBundle(): ThemeBundle {
+  return defaultBundle as ThemeBundle
+}
+
+// Page shell wraps each template's output. themeCss(theme) (the --jj-* block the
+// Design panel edits) is injected BEFORE the bundle css so the default theme —
+// and any bundle that opts into --jj-* — respects the user's palette/accent/font.
+function page(title: string, theme: Theme, bundle: ThemeBundle, body: string): string {
+  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>${themeCss(theme)}\n${bundle.css}</style></head><body>${body}<footer>Made with Just&#123;JSON&#125;</footer></body></html>`
 }
 
 export function renderSite(p: ProjectData): Record<string, string> {
-  const css = siteCss(p.theme)
+  return renderWithBundle(p, getActiveThemeBundle())
+}
+
+// The theme injection seam. Studio theme-picking (later phase) will pass the
+// user's chosen bundle here; renderSite uses the default for now.
+export function renderWithBundle(p: ProjectData, bundle: ThemeBundle): Record<string, string> {
   const files: Record<string, string> = {}
-  const colByName = (n: string) => p.schema.collections.find((c) => c.name === n) as Collection
 
-  // singletons rendered as sections on the home page
-  const singletonSections = p.schema.singletons
-    .map((s: Singleton) => {
-      const data = p.singletons[s.name]
-      if (!data) return ''
-      return `<section><h2>${esc(s.label ?? s.name)}</h2>${s.fields.map((f) => renderField(f, data[f.key])).join('')}</section>`
-    })
-    .join('')
+  const singletons = p.schema.singletons
+    .filter((s) => p.singletons[s.name])
+    .map((s) => ({
+      name: s.name,
+      label: String(s.label ?? s.name),
+      fields: s.fields.map((f) => fieldVM(f, (p.singletons[s.name] as Record<string, unknown>)[f.key])),
+    }))
 
-  // home: one section per collection, cards linking to entry pages
-  const collectionSections = p.schema.collections
-    .map((c) => {
-      const rows = p.entries[c.name] ?? []
-      const cards = rows
-        .map((r) => {
-          const tt = entryTitle(c.fields, r.data)
-          return `<a class="card" href="./${esc(c.path)}/${esc(r.slug)}.html"><h3>${esc(tt)}</h3></a>`
-        })
-        .join('')
-      return `<section><h2>${esc(c.label ?? c.name)}</h2><div class="grid">${cards || `<p class="sub">Henüz içerik yok.</p>`}</div></section>`
-    })
-    .join('')
+  const collections = p.schema.collections.map((c) => {
+    const rows = p.entries[c.name] ?? []
+    const entries: EntryVM[] = rows.map((r) => ({
+      title: entryTitle(c.fields, r.data),
+      slug: r.slug,
+      url: `./${esc(c.path)}/${esc(r.slug)}.html`,
+      fields: c.fields.map((f) => fieldVM(f, r.data[f.key])),
+    }))
+    return { name: c.name, label: String(c.label ?? c.name), entries }
+  })
 
   files['/index.html'] = page(
     p.siteName,
-    css,
-    `<h1>${esc(p.siteName)}</h1>${singletonSections}${collectionSections}`,
+    p.theme,
+    bundle,
+    Mustache.render(bundle.templates.index, { siteName: p.siteName, singletons, collections }),
   )
 
-  // entry pages
   for (const c of p.schema.collections) {
     for (const r of p.entries[c.name] ?? []) {
-      const col = colByName(c.name)
-      const tt = entryTitle(col.fields, r.data)
-      const body = col.fields
+      const title = entryTitle(c.fields, r.data)
+      const fields = c.fields
         .filter((f) => f.key !== 'title' && f.key !== 'name')
-        .map((f) => renderField(f, r.data[f.key]))
-        .join('')
+        .map((f) => fieldVM(f, r.data[f.key]))
       files[`/${c.path}/${r.slug}.html`] = page(
-        tt,
-        css,
-        `<a class="back" href="../index.html">← ${esc(p.siteName)}</a><h1>${esc(tt)}</h1>${body}`,
+        title,
+        p.theme,
+        bundle,
+        Mustache.render(bundle.templates.entry, {
+          siteName: p.siteName,
+          title,
+          slug: r.slug,
+          url: `./${esc(c.path)}/${esc(r.slug)}.html`,
+          fields,
+        }),
       )
     }
   }
