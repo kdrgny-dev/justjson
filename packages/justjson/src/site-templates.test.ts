@@ -39,7 +39,7 @@ describe('siteTemplates', () => {
   it('her styled index badge taşır ve JSON literalini kaçırır', () => {
     for (const id of ['portfolio', 'cv', 'event']) {
       const index = siteTemplateFiles(id, 'x')?.['src/pages/index.astro'] as string
-      expect(index).toContain('justjson.vercel.app')
+      expect(index).toContain('justjson.dev')
       expect(index).not.toContain('{JSON}')
     }
   })

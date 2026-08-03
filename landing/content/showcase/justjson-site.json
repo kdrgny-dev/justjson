@@ -1,7 +1,7 @@
 {
   "title": "JustJSON — this very page",
-  "host": "justjson.vercel.app",
-  "url": "https://justjson.vercel.app",
+  "host": "justjson.dev",
+  "url": "https://justjson.dev",
   "body": "The page you're reading. An Astro build whose every word is a JustJSON project in its own repo — edited in the editor, read straight at build.",
   "order": 0
 }

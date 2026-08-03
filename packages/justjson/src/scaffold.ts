@@ -54,7 +54,7 @@ const { title } = Astro.props
   </head>
   <body>
     <slot />
-    <footer class="jj-badge">Made with <a href="https://justjson.vercel.app">Just{JSON}</a></footer>
+    <footer class="jj-badge">Made with <a href="https://justjson.dev">Just{JSON}</a></footer>
   </body>
 </html>
 `

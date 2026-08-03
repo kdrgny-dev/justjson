@@ -5,7 +5,7 @@
  */
 
 const BADGE = 'Just&#123;JSON&#125;'
-const JJ = 'https://justjson.vercel.app'
+const JJ = 'https://justjson.dev'
 
 type ThemePreset = Record<string, unknown>
 
