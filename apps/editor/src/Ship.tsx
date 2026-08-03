@@ -1,13 +1,21 @@
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { type Schema, slugify } from '@justjson/core'
 import { CheckCircle2, ExternalLink, Globe, Loader2, RefreshCw, Rocket } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import * as api from './api'
 import { gatherProject } from './browser/gather'
-import { connectNetlify, publishToNetlify } from './browser/netlify'
+import { NameTakenError, connectNetlify, publishToNetlify } from './browser/netlify'
 import { renderSite } from './browser/render'
 import { PageBody, PageHeader, PageShell } from './components/PageShell'
 import { t } from './i18n'
@@ -18,9 +26,28 @@ export function Ship({ schema }: { schema: Schema }) {
   const [busy, setBusy] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
 
+  // "name taken" dialog — asks the user for another address instead of silently
+  // suffixing a random string.
+  const [taken, setTaken] = useState<string | null>(null)
+  const [retryName, setRetryName] = useState('')
+  const resolveRef = useRef<((v: string | null) => void) | null>(null)
+
   const proj = api.activeProject()
   const meta = api.getSiteMeta(proj.id)
   const published = !!meta.siteUrl
+
+  const askAnotherName = (takenName: string): Promise<string | null> => {
+    setTaken(takenName)
+    setRetryName(slugify(`${takenName}-2`))
+    return new Promise((resolve) => {
+      resolveRef.current = resolve
+    })
+  }
+  const closeTaken = (value: string | null) => {
+    setTaken(null)
+    resolveRef.current?.(value)
+    resolveRef.current = null
+  }
 
   useEffect(() => {
     if (published || touched) return
@@ -45,10 +72,27 @@ export function Ship({ schema }: { schema: Schema }) {
       const token = await connectNetlify()
       const data = await gatherProject(schema)
       const files = renderSite(data)
-      const res = await publishToNetlify(files, slugify(address) || 'my-site', token, meta.siteId)
-      api.setSiteMeta(proj.id, res.siteId, res.url)
-      setUrl(res.url)
-      toast.success(published ? t('Your site was updated.') : t('Your site is live.'))
+      let name = slugify(address) || 'my-site'
+      // Retry loop: if the address is taken, ask for another (existing sites
+      // republish by id and never hit this).
+      while (true) {
+        try {
+          const res = await publishToNetlify(files, name, token, meta.siteId)
+          api.setSiteMeta(proj.id, res.siteId, res.url)
+          setUrl(res.url)
+          setAddress(name)
+          toast.success(published ? t('Your site was updated.') : t('Your site is live.'))
+          break
+        } catch (e) {
+          if (!(e instanceof NameTakenError)) throw e
+          const next = await askAnotherName(e.takenName)
+          if (!next) {
+            toast.message(t('Publishing cancelled.'))
+            break
+          }
+          name = slugify(next) || name
+        }
+      }
     } catch (e) {
       toast.error((e as Error).message)
     } finally {
@@ -144,6 +188,41 @@ export function Ship({ schema }: { schema: Schema }) {
           )}
         </div>
       </PageBody>
+
+      <Dialog open={taken !== null} onOpenChange={(o) => !o && closeTaken(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('That address is taken')}</DialogTitle>
+            <DialogDescription>
+              {t('“{name}.netlify.app” is already in use. Pick another address.', {
+                name: taken ?? '',
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center">
+            <Input
+              autoFocus
+              value={retryName}
+              onChange={(e) => setRetryName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && slugify(retryName)) closeTaken(retryName)
+              }}
+              className="rounded-r-none font-mono text-sm"
+            />
+            <span className="inline-flex h-9 items-center rounded-r-md border border-l-0 bg-muted px-3 font-mono text-sm text-muted-foreground">
+              .netlify.app
+            </span>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => closeTaken(null)}>
+              {t('Cancel')}
+            </Button>
+            <Button onClick={() => closeTaken(retryName)} disabled={!slugify(retryName)}>
+              {t('Try this address')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   )
 }

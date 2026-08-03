@@ -426,8 +426,19 @@ function ProjectMenu({
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [resetting, setResetting] = useState(false)
+  const [nameMode, setNameMode] = useState<'new' | 'rename' | null>(null)
+  const [nameValue, setNameValue] = useState('')
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const { config: aiConfig, openSettings: openAiSettings } = useAiSettings()
   const lang = useLang()
+
+  const submitName = () => {
+    const v = nameValue.trim()
+    if (!v) return
+    if (nameMode === 'new') api.createProject(v)
+    else api.renameProject(api.activeProject().id, v)
+    window.location.reload()
+  }
 
   const confirmReset = async () => {
     setResetting(true)
@@ -478,11 +489,8 @@ function ProjectMenu({
           ))}
           <DropdownMenuItem
             onSelect={() => {
-              const name = window.prompt(t('Name your new site'))
-              if (name?.trim()) {
-                api.createProject(name)
-                window.location.reload()
-              }
+              setNameMode('new')
+              setNameValue('')
             }}
           >
             <Plus />
@@ -490,11 +498,8 @@ function ProjectMenu({
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {
-              const name = window.prompt(t('Rename this site'), project.name)
-              if (name?.trim()) {
-                api.renameProject(api.activeProject().id, name)
-                window.location.reload()
-              }
+              setNameMode('rename')
+              setNameValue(project.name)
             }}
           >
             <PencilRuler />
@@ -528,15 +533,7 @@ function ProjectMenu({
             <RotateCcw />
             {t('Start over (reset)')}
           </DropdownMenuItem>
-          <DropdownMenuItem
-            variant="destructive"
-            onSelect={() => {
-              if (window.confirm(t('Delete this site and all its content? This cannot be undone.'))) {
-                api.deleteProject(api.activeProject().id)
-                window.location.reload()
-              }
-            }}
-          >
+          <DropdownMenuItem variant="destructive" onSelect={() => setDeleteOpen(true)}>
             <Trash2 />
             {t('Delete this site')}
           </DropdownMenuItem>
@@ -559,6 +556,58 @@ function ProjectMenu({
             </DialogClose>
             <Button variant="destructive" onClick={confirmReset} disabled={resetting}>
               {resetting ? t('Resetting…') : t('Reset')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={nameMode !== null} onOpenChange={(o) => !o && setNameMode(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{nameMode === 'rename' ? t('Rename site') : t('New site')}</DialogTitle>
+          </DialogHeader>
+          <Input
+            autoFocus
+            value={nameValue}
+            onChange={(e) => setNameValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') submitName()
+            }}
+            placeholder={t('Site name')}
+          />
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">{t('Cancel')}</Button>
+            </DialogClose>
+            <Button onClick={submitName} disabled={!nameValue.trim()}>
+              {nameMode === 'rename' ? t('Rename') : t('Create')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('Delete this site?')}</DialogTitle>
+            <DialogDescription>
+              {t('This deletes “{name}” and all its content. This cannot be undone.', {
+                name: project.name,
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">{t('Cancel')}</Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                api.deleteProject(api.activeProject().id)
+                window.location.reload()
+              }}
+            >
+              {t('Delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

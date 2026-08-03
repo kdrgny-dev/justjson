@@ -46,21 +46,27 @@ function auth(token: string) {
   return { Authorization: `Bearer ${token}`, 'User-Agent': 'justjson-studio' }
 }
 
-async function createSite(token: string, name: string): Promise<{ id: string; url: string }> {
-  for (const n of [name, `${name}-${Math.random().toString(36).slice(2, 6)}`, null]) {
-    const res = await fetch(`${NF}/sites`, {
-      method: 'POST',
-      headers: n ? { ...auth(token), 'Content-Type': 'application/json' } : auth(token),
-      body: n ? JSON.stringify({ name: n }) : null,
-    })
-    if (res.ok) {
-      const s = await res.json()
-      return { id: s.id, url: s.ssl_url || s.url || `https://${s.name}.netlify.app` }
-    }
-    if (res.status !== 422 && res.status !== 400)
-      throw new Error(`Site oluşturulamadı: ${res.status} ${await res.text()}`)
+// Thrown when the chosen subdomain is already taken (Netlify names are global).
+// The UI catches this and asks the user for another name — no silent suffix.
+export class NameTakenError extends Error {
+  constructor(public readonly takenName: string) {
+    super(`name taken: ${takenName}`)
+    this.name = 'NameTakenError'
   }
-  throw new Error('Site adı alınamadı.')
+}
+
+async function createSite(token: string, name: string): Promise<{ id: string; url: string }> {
+  const res = await fetch(`${NF}/sites`, {
+    method: 'POST',
+    headers: { ...auth(token), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  })
+  if (res.ok) {
+    const s = await res.json()
+    return { id: s.id, url: s.ssl_url || s.url || `https://${s.name}.netlify.app` }
+  }
+  if (res.status === 422 || res.status === 400) throw new NameTakenError(name)
+  throw new Error(`Site oluşturulamadı: ${res.status} ${await res.text()}`)
 }
 
 async function getSiteUrl(token: string, id: string): Promise<string> {
