@@ -2,14 +2,21 @@
 // set of self-contained static HTML files, entirely in the browser. The local
 // CLI scaffolds an Astro project (needs a Node build); here we render final
 // HTML directly so publishing needs no build step.
-import type { Collection, Field, Schema, Singleton } from '@justjson/core'
+import {
+  type Collection,
+  type Field,
+  type Schema,
+  type Singleton,
+  type Theme,
+  themeCss,
+} from '@justjson/core'
 import { marked } from 'marked'
 
 export interface ProjectData {
   schema: Schema
   entries: Record<string, { slug: string; data: Record<string, unknown> }[]>
   singletons: Record<string, Record<string, unknown>>
-  theme: { palette: string; accent: string; font: string; radius: number; density: string }
+  theme: Theme
   siteName: string
 }
 
@@ -48,30 +55,22 @@ function renderField(f: Field, value: unknown): string {
   }
 }
 
-function themeCss(t: ProjectData['theme']): string {
-  const dark = /ink|dark|noir|night|slate/i.test(t.palette)
-  const bg = dark ? '#14120e' : '#faf7ef'
-  const raised = dark ? '#1e1b15' : '#ffffff'
-  const ink = dark ? '#f0eada' : '#231c12'
-  const muted = dark ? '#a99e85' : '#6b6350'
-  const line = dark ? '#332c20' : '#e6ddc6'
-  const font =
-    t.font === 'serif' ? 'Georgia, "Times New Roman", serif'
-    : t.font === 'mono' ? 'ui-monospace, "SF Mono", Menlo, monospace'
-    : 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
-  const pad = t.density === 'tight' ? '10px' : t.density === 'roomy' ? '22px' : '16px'
-  return `:root{--bg:${bg};--raised:${raised};--ink:${ink};--muted:${muted};--line:${line};--a:${t.accent || '#d69a1f'};--r:${t.radius ?? 6}px;--pad:${pad}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:${font};line-height:1.6}
-a{color:var(--a)}.wrap{max-width:880px;margin:0 auto;padding:48px 22px}
-h1{font-size:clamp(2rem,5vw,3rem);margin:0 0 6px}h2{margin:44px 0 14px;font-size:1.5rem}
-h3{margin:0 0 6px}.sub{color:var(--muted);font-size:1.1rem;margin:0 0 10px}
-.card{display:block;background:var(--raised);border:1px solid var(--line);border-radius:var(--r);padding:var(--pad);margin:12px 0;text-decoration:none;color:inherit}
-.card:hover{border-color:var(--a)}.grid{display:grid;gap:12px}
-.fld{margin:16px 0}.fld-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px}
-.rt img,.img{max-width:100%;border-radius:var(--r)}.img{max-height:360px}
-.swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;border:1px solid var(--line)}
-.back{color:var(--muted);text-decoration:none;font-size:14px}
-footer{border-top:1px solid var(--line);margin-top:48px;padding:20px 0;color:var(--muted);font-size:13px;text-align:center}`
+// Use core's canonical Theme→CSS (the same palette/font/density the editor's
+// Design panel edits and the Astro build uses) so the preview and the published
+// site actually match the chosen theme. Layout consumes those --jj-* vars.
+function siteCss(theme: Theme): string {
+  return `${themeCss(theme)}
+*{box-sizing:border-box}body{margin:0;background:var(--jj-bg);color:var(--jj-text);font-family:var(--jj-font);line-height:var(--jj-lead)}
+a{color:var(--jj-accent)}.wrap{max-width:880px;margin:0 auto;padding:var(--jj-page) 22px}
+h1{font-size:clamp(2rem,5vw,3rem);margin:0 0 6px}h2{margin:2.4em 0 .6em;font-size:1.5rem}
+h3{margin:0 0 6px}.sub{color:var(--jj-muted);font-size:1.1rem;margin:0 0 10px}
+.card{display:block;background:color-mix(in srgb, var(--jj-text) 4%, var(--jj-bg));border:1px solid var(--jj-border);border-radius:var(--jj-radius);padding:var(--jj-gap);margin:12px 0;text-decoration:none;color:inherit}
+.card:hover{border-color:var(--jj-accent)}.grid{display:grid;gap:var(--jj-gap)}
+.fld{margin:16px 0}.fld-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--jj-muted);margin-bottom:4px}
+.rt img,.img{max-width:100%;border-radius:var(--jj-radius)}.img{max-height:360px}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;border:1px solid var(--jj-border)}
+.back{color:var(--jj-muted);text-decoration:none;font-size:14px}
+footer{border-top:1px solid var(--jj-border);margin-top:48px;padding:20px 0;color:var(--jj-muted);font-size:13px;text-align:center}`
 }
 
 function page(title: string, css: string, body: string): string {
@@ -79,7 +78,7 @@ function page(title: string, css: string, body: string): string {
 }
 
 export function renderSite(p: ProjectData): Record<string, string> {
-  const css = themeCss(p.theme)
+  const css = siteCss(p.theme)
   const files: Record<string, string> = {}
   const colByName = (n: string) => p.schema.collections.find((c) => c.name === n) as Collection
 
