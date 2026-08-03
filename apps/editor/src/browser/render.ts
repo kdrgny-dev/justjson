@@ -8,8 +8,8 @@
 import { type Field, type Schema, type Theme, themeCss } from '@justjson/core'
 import { marked } from 'marked'
 import Mustache from 'mustache'
-import defaultBundle from '../themes/default.json'
 import type { ThemeBundle } from './theme-bundle'
+import { getSelectedBundle } from './theme-store'
 
 export interface ProjectData {
   schema: Schema
@@ -72,9 +72,9 @@ function fieldVM(f: Field, value: unknown): FieldVM {
   return { key: f.key, label: String(f.label ?? f.key), html: renderField(f, value) }
 }
 
-// Studio theme-picking is a later phase; for now the free default bundle.
+// The user's chosen theme for the active project (theme-store); default fallback.
 function getActiveThemeBundle(): ThemeBundle {
-  return defaultBundle as ThemeBundle
+  return getSelectedBundle()
 }
 
 // Page shell wraps each template's output. themeCss(theme) (the --jj-* block the

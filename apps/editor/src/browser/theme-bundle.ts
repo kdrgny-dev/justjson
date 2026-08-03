@@ -6,6 +6,8 @@ export interface ThemeBundle {
   name: string
   version: string
   license: 'free' | 'commercial'
+  /** Preview image (data URI). Empty until a real thumbnail is added. */
+  thumb?: string
   css: string
   templates: {
     index: string

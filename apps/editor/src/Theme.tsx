@@ -1,12 +1,22 @@
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { PALETTES, type Theme as SiteTheme, THEME_FONTS, themeCss } from '@justjson/core'
-import { Check, Loader2, Save } from 'lucide-react'
-import { useCallback, useEffect, useId, useMemo, useState } from 'react'
+import { Check, Loader2, Save, Upload, X } from 'lucide-react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import * as api from './api'
+import type { ThemeBundle } from './browser/theme-bundle'
+import {
+  BUNDLED_THEMES,
+  allThemes,
+  getSelectedThemeId,
+  importTheme,
+  removeImportedTheme,
+  setSelectedThemeId,
+} from './browser/theme-store'
 import { PageBody, PageHeader, PageShell } from './components/PageShell'
 import { t } from './i18n'
 
@@ -113,6 +123,97 @@ function PreviewSample() {
   )
 }
 
+const BUNDLED_IDS = new Set(BUNDLED_THEMES.map((t) => t.id))
+
+function ThemePicker() {
+  const [themes, setThemes] = useState<ThemeBundle[]>(() => allThemes())
+  const [selected, setSelected] = useState<string>(() => getSelectedThemeId())
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const select = (id: string) => {
+    setSelectedThemeId(id)
+    setSelected(id)
+  }
+
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    try {
+      const bundle = importTheme(JSON.parse(await file.text()))
+      setThemes(allThemes())
+      select(bundle.id)
+      toast.success(t('Theme "{name}" imported.', { name: bundle.name }))
+    } catch (err) {
+      toast.error((err as Error).message)
+    }
+  }
+
+  const remove = (id: string) => {
+    removeImportedTheme(id)
+    setThemes(allThemes())
+    if (selected === id) select('default')
+  }
+
+  return (
+    <Field label={t('Theme')}>
+      <div className="grid grid-cols-2 gap-2">
+        {themes.map((th) => {
+          const active = th.id === selected
+          return (
+            <div key={th.id} className="relative">
+              <button
+                type="button"
+                onClick={() => select(th.id)}
+                aria-pressed={active}
+                className={cn(
+                  'flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50',
+                  active
+                    ? 'border-primary bg-primary/5 text-foreground'
+                    : 'border-border text-muted-foreground hover:bg-muted',
+                )}
+              >
+                <span className="truncate">{th.name}</span>
+                {th.license === 'commercial' ? (
+                  <Badge variant="secondary" className="shrink-0">
+                    {t('Premium')}
+                  </Badge>
+                ) : active ? (
+                  <Check className="size-3.5 shrink-0 text-primary" />
+                ) : null}
+              </button>
+              {!BUNDLED_IDS.has(th.id) && (
+                <button
+                  type="button"
+                  onClick={() => remove(th.id)}
+                  aria-label={t('Remove theme')}
+                  className="absolute -top-1.5 -right-1.5 rounded-full border bg-background p-0.5 text-muted-foreground shadow-sm hover:text-foreground"
+                >
+                  <X className="size-3" />
+                </button>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <div className="mt-2 flex items-center justify-between">
+        <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+          <Upload className="size-3.5" /> {t('Import theme')}
+        </Button>
+        <a
+          href="https://justjson.dev/themes"
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+        >
+          {t('Browse premium themes →')}
+        </a>
+      </div>
+      <input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={onFile} />
+    </Field>
+  )
+}
+
 export function Theme(): JSX.Element {
   const [theme, setTheme] = useState<SiteTheme | null>(null)
   const [saved, setSaved] = useState<SiteTheme | null>(null)
@@ -179,6 +280,8 @@ export function Theme(): JSX.Element {
         ) : (
           <div className="grid gap-6 px-8 py-6 lg:grid-cols-[380px_minmax(0,1fr)]">
             <div className="space-y-6">
+              <ThemePicker />
+
               <Field label={t('Palette')}>
                 <div className="grid grid-cols-5 gap-2">
                   {PALETTES.map((p) => {
