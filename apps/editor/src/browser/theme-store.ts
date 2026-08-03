@@ -4,6 +4,7 @@
 import bold from '../themes/bold.json'
 import defaultTheme from '../themes/default.json'
 import editorial from '../themes/editorial.json'
+import signal from '../themes/signal.json'
 import { activeProject } from './project'
 import type { ThemeBundle } from './theme-bundle'
 
@@ -14,6 +15,7 @@ export const BUNDLED_THEMES: ThemeBundle[] = [
   DEFAULT,
   bold as ThemeBundle,
   editorial as ThemeBundle,
+  signal as ThemeBundle,
 ]
 
 const IMPORTED_KEY = 'jj_imported_themes'

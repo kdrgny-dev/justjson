@@ -1,0 +1,184 @@
+#!/usr/bin/env node
+// Theme compiler: readable SOURCE (semantic CSS + Mustache HTML) -> shipped
+// ThemeBundle JSON with MANGLED class names + minified CSS. A stolen copy is
+// then a frozen, working-but-uneditable artifact.
+//
+//   node scripts/theme-compile.mjs <id>
+//
+// Reads   apps/editor/themes-src/<id>/{meta.json,index.html,entry.html,styles.css}
+// Writes  apps/editor/src/themes/<id>.json
+import { execFileSync } from 'node:child_process'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import * as esbuild from 'esbuild'
+
+// Classes the renderer emits with FIXED names (render.ts contract). Themes
+// style them but must never rename them, or field HTML loses its styling.
+const RESERVED = new Set(['fld', 'fld-label', 'rt', 'img', 'swatch', 'group'])
+
+// Sentinel used to mask url()/strings while scanning CSS for class names. A NUL
+// char never appears in real CSS, so it can't collide with values like ` 0 `.
+const SENT = String.fromCharCode(0)
+const sentRe = new RegExp(`${SENT}(\\d+)${SENT}`, 'g')
+
+const here = dirname(fileURLToPath(import.meta.url))
+const editorRoot = join(here, '..')
+
+const id = process.argv[2]
+if (!id) {
+  console.error('usage: node scripts/theme-compile.mjs <id>')
+  process.exit(1)
+}
+
+const srcDir = join(editorRoot, 'themes-src', id)
+const read = (f) => readFileSync(join(srcDir, f), 'utf8')
+
+const meta = JSON.parse(read('meta.json'))
+let css = read('styles.css')
+const indexHtml = read('index.html')
+const entryHtml = read('entry.html')
+
+// 1. Tailwind: if the source uses @tailwind/@apply, resolve it to plain CSS via
+//    the tailwind CLI (scanning the templates for content) before mangling.
+//    ponytail: only @apply-in-styles is supported; utility classes in the HTML
+//    are not (they'd be un-mangleable utility soup). Author with @apply.
+if (/@tailwind\b|@apply\b/.test(css)) {
+  css = compileTailwind(css, [indexHtml, entryHtml])
+}
+
+// 2. Collect mangle-able class names: union of template class tokens + CSS
+//    class selectors, minus RESERVED. url()/strings are masked so filenames
+//    like foo.png are never mistaken for a `.png` class.
+const [maskedCss, restoreCss] = maskCss(css)
+
+const names = new Set()
+for (const tok of templateClassTokens(indexHtml)) names.add(tok)
+for (const tok of templateClassTokens(entryHtml)) names.add(tok)
+for (const m of maskedCss.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) names.add(m[1])
+for (const r of RESERVED) names.delete(r)
+
+// 3. Deterministic map original -> .hN (sorted for stable output).
+const sorted = [...names].sort()
+const map = new Map(sorted.map((name, i) => [name, `h${i}`]))
+
+// 4. Rewrite CSS selectors + template class attrs from the SAME map (kept in
+//    sync). Word-boundary-safe: `.foo` never touches `.foobar`.
+const outCss = restoreCss(rewriteCssClasses(maskedCss, map))
+const outIndex = rewriteTemplateClasses(indexHtml, map)
+const outEntry = rewriteTemplateClasses(entryHtml, map)
+
+// 5. Minify (esbuild, build-time only, not shipped).
+const minCss = esbuild.transformSync(outCss, { loader: 'css', minify: true }).code.trim()
+
+// Safety net: no original semantic name may leak as a class token.
+assertNoLeak(minCss, outIndex, outEntry, sorted)
+
+const bundle = {
+  id: meta.id,
+  name: meta.name,
+  version: meta.version,
+  license: meta.license ?? 'commercial',
+  thumb: meta.thumb ?? '',
+  css: minCss,
+  templates: {
+    index: collapse(outIndex),
+    entry: collapse(outEntry),
+  },
+}
+
+const outPath = join(editorRoot, 'src', 'themes', `${id}.json`)
+writeFileSync(outPath, `${JSON.stringify(bundle, null, 2)}\n`)
+console.log(`compiled ${id}: ${sorted.length} classes mangled -> src/themes/${id}.json`)
+
+// ---------- helpers ----------
+
+// Tokens inside class="..."/class='...' attributes, minus Mustache-tainted ones.
+function templateClassTokens(html) {
+  const out = []
+  for (const m of html.matchAll(/\bclass\s*=\s*(["'])([\s\S]*?)\1/g)) {
+    for (const tok of m[2].trim().split(/\s+/)) {
+      if (tok && !tok.includes('{') && !tok.includes('}')) out.push(tok)
+    }
+  }
+  return out
+}
+
+function rewriteTemplateClasses(html, map) {
+  return html.replace(/(\bclass\s*=\s*)(["'])([\s\S]*?)\2/g, (_full, pre, q, val) => {
+    const rewritten = val
+      .split(/(\s+)/)
+      .map((t) => (map.has(t) ? map.get(t) : t))
+      .join('')
+    return `${pre}${q}${rewritten}${q}`
+  })
+}
+
+function rewriteCssClasses(source, map) {
+  let out = source
+  for (const [name, hashed] of map) {
+    const re = new RegExp(`\\.${escapeRe(name)}(?![\\w-])`, 'g')
+    out = out.replace(re, `.${hashed}`)
+  }
+  return out
+}
+
+// Replace url()/quoted strings with SENT-delimited indices so class scanning and
+// rewriting can't corrupt filenames or string content. Returns [masked, restore].
+function maskCss(source) {
+  const store = []
+  const masked = source.replace(/url\([^)]*\)|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, (m) => {
+    store.push(m)
+    return `${SENT}${store.length - 1}${SENT}`
+  })
+  const restore = (s) => s.replace(sentRe, (_m, i) => store[Number(i)])
+  return [masked, restore]
+}
+
+function compileTailwind(source, contents) {
+  const dir = mkdtempSync(join(tmpdir(), 'jj-tw-'))
+  try {
+    const input = join(dir, 'in.css')
+    const output = join(dir, 'out.css')
+    writeFileSync(input, source)
+    contents.forEach((c, i) => writeFileSync(join(dir, `content${i}.html`), c))
+    // tailwind CLI reads the editor's tailwind install; content auto-detected in dir.
+    execFileSync('pnpm', ['exec', 'tailwindcss', '-i', input, '-o', output], {
+      cwd: editorRoot,
+      stdio: 'inherit',
+    })
+    return readFileSync(output, 'utf8')
+  } catch (e) {
+    console.error(
+      'Tailwind directives found but tailwind CLI failed. Install @tailwindcss/cli, ' +
+        'or author styles.css as plain CSS / @apply-only semantic classes.',
+    )
+    throw e
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+}
+
+// Collapse inter-tag whitespace in templates (Mustache-safe: only between > and <).
+function collapse(html) {
+  return html.replace(/>\s+</g, '><').trim()
+}
+
+function assertNoLeak(minCss, index, entry, originals) {
+  for (const name of originals) {
+    const cssRe = new RegExp(`\\.${escapeRe(name)}(?![\\w-])`)
+    if (cssRe.test(minCss)) throw new Error(`leak: original class .${name} still in css`)
+    const clsRe = new RegExp(`class\\s*=\\s*["'][^"']*\\b${escapeRe(name)}\\b`)
+    for (const pair of [
+      ['index', index],
+      ['entry', entry],
+    ]) {
+      if (clsRe.test(pair[1])) throw new Error(`leak: original class ${name} still in ${pair[0]} template`)
+    }
+  }
+}
+
+function escapeRe(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
