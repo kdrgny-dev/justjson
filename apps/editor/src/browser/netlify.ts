@@ -63,12 +63,28 @@ async function createSite(token: string, name: string): Promise<{ id: string; ur
   throw new Error('Site adı alınamadı.')
 }
 
+async function getSiteUrl(token: string, id: string): Promise<string> {
+  const res = await fetch(`${NF}/sites/${id}`, { headers: auth(token) })
+  if (!res.ok) throw new Error(`Site bulunamadı: ${res.status}`)
+  const s = await res.json()
+  return s.ssl_url || s.url || `https://${s.name}.netlify.app`
+}
+
+export interface PublishResult {
+  url: string
+  siteId: string
+}
+
 export async function publishToNetlify(
   files: Record<string, string>,
   siteName: string,
   token: string,
-): Promise<string> {
-  const site = await createSite(token, siteName)
+  existingSiteId?: string,
+): Promise<PublishResult> {
+  // Re-publish updates the SAME site instead of spawning a new one.
+  const site = existingSiteId
+    ? { id: existingSiteId, url: await getSiteUrl(token, existingSiteId) }
+    : await createSite(token, siteName)
 
   // digest: path -> sha1
   const digests: Record<string, string> = {}
@@ -97,7 +113,7 @@ export async function publishToNetlify(
     })
     if (!up.ok) throw new Error(`Yükleme başarısız (${path}): ${up.status}`)
   }
-  return site.url
+  return { url: site.url, siteId: site.id }
 }
 
 export function clearNetlifyToken() {

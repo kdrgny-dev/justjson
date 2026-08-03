@@ -458,7 +458,47 @@ function ProjectMenu({
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={onExport}>
             <Download />
-            {t('Export (.zip)')}
+            {t('Export (.json)')}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+            {t('Sites')}
+          </DropdownMenuLabel>
+          {api.listProjects().map((p) => (
+            <DropdownMenuCheckboxItem
+              key={p.id}
+              checked={p.id === api.activeProject().id}
+              onCheckedChange={() => {
+                api.switchProject(p.id)
+                window.location.reload()
+              }}
+            >
+              <span className="truncate">{p.name}</span>
+            </DropdownMenuCheckboxItem>
+          ))}
+          <DropdownMenuItem
+            onSelect={() => {
+              const name = window.prompt(t('Name your new site'))
+              if (name?.trim()) {
+                api.createProject(name)
+                window.location.reload()
+              }
+            }}
+          >
+            <Plus />
+            {t('New site')}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              const name = window.prompt(t('Rename this site'), project.name)
+              if (name?.trim()) {
+                api.renameProject(api.activeProject().id, name)
+                window.location.reload()
+              }
+            }}
+          >
+            <PencilRuler />
+            {t('Rename site')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={openAiSettings}>
@@ -487,6 +527,18 @@ function ProjectMenu({
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirmOpen(true)}>
             <RotateCcw />
             {t('Start over (reset)')}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            variant="destructive"
+            onSelect={() => {
+              if (window.confirm(t('Delete this site and all its content? This cannot be undone.'))) {
+                api.deleteProject(api.activeProject().id)
+                window.location.reload()
+              }
+            }}
+          >
+            <Trash2 />
+            {t('Delete this site')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -678,7 +730,7 @@ function MainArea({
   }
 
   if (selection.kind === 'preview') {
-    return <Preview />
+    return <Preview schema={schema} />
   }
 
   if (selection.kind === 'collection') {

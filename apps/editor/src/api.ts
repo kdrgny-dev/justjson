@@ -16,7 +16,8 @@ import {
   saveTheme,
   slugify,
 } from '@justjson/core'
-import { IdbAdapter } from './browser/idb'
+import { IdbAdapter, clearProject } from './browser/idb'
+import * as proj from './browser/project'
 import blog from './templates/blog.json'
 import catalog from './templates/catalog.json'
 import changelog from './templates/changelog.json'
@@ -31,7 +32,7 @@ export type Entry = Record<string, unknown>
 
 const CONTENT = 'content'
 const adapter = new IdbAdapter()
-const EMPTY_SCHEMA: Schema = { collections: [], singletons: [] }
+const EMPTY_SCHEMA: Schema = { version: 1, collections: [], singletons: [] }
 
 async function schema(): Promise<Schema> {
   return (await loadSchema(adapter, CONTENT)) ?? EMPTY_SCHEMA
@@ -72,10 +73,24 @@ export interface ProjectInfo {
 export async function getProject(): Promise<ProjectInfo> {
   const s = await schema()
   return {
-    name: 'My site', path: 'browser', contentDir: CONTENT,
+    name: proj.activeProject().name, path: 'browser', contentDir: CONTENT,
     collections: s.collections.length, singletons: s.singletons.length,
   }
 }
+
+// ---------- projects (multi-site) ----------
+export type ProjectMeta = proj.ProjectMeta
+export const listProjects = proj.listProjects
+export const activeProject = proj.activeProject
+export const createProject = (name: string) => proj.createProject(name)
+export const switchProject = (id: string) => proj.switchProject(id)
+export const renameProject = (id: string, name: string) => proj.renameProject(id, name)
+export function deleteProject(id: string): void {
+  void clearProject(id)
+  proj.removeProject(id)
+}
+export const getSiteMeta = (id: string) => proj.getSite(id)
+export const setSiteMeta = (id: string, siteId: string, url: string) => proj.setSite(id, siteId, url)
 
 export async function getSchema(): Promise<Schema> {
   return schema()

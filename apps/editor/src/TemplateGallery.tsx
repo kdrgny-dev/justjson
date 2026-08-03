@@ -225,8 +225,6 @@ export function TemplateGallery({
           </div>
         )}
 
-        <AiScaffoldPanel onApplied={onApplied} disabled={busy} />
-
         <TemplateCarousel templates={templates} applying={applying} onPick={apply} />
 
         <StartOptions onImported={onApplied} onScratch={onScratch} disabled={busy} />

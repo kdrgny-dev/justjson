@@ -1,4 +1,12 @@
 import type { StorageAdapter } from '@justjson/core'
+import { activeId } from './project'
+
+// A project's keys are namespaced: 'default' uses flat keys (preserves earlier
+// data), every other project is prefixed p/<id>/.
+function scope(): string {
+  const id = activeId()
+  return id === 'default' ? '' : `p/${id}/`
+}
 
 // IndexedDB-backed StorageAdapter — the browser equivalent of the CLI's
 // FsAdapter. Lets the whole core engine (ContentStore, schema, theme) run with
@@ -36,20 +44,20 @@ interface FileRec {
 
 export class IdbAdapter implements StorageAdapter {
   async read(path: string): Promise<string | null> {
-    const rec = await tx<FileRec | undefined>('readonly', (s) => s.get(path))
+    const rec = await tx<FileRec | undefined>('readonly', (s) => s.get(scope() + path))
     return rec ? rec.content : null
   }
 
   async write(path: string, content: string): Promise<void> {
-    await tx('readwrite', (s) => s.put({ content, mtime: Date.now() } as FileRec, path))
+    await tx('readwrite', (s) => s.put({ content, mtime: Date.now() } as FileRec, scope() + path))
   }
 
   async delete(path: string): Promise<void> {
-    await tx('readwrite', (s) => s.delete(path))
+    await tx('readwrite', (s) => s.delete(scope() + path))
   }
 
   async list(dir: string): Promise<string[]> {
-    const prefix = `${dir}/`
+    const prefix = `${scope()}${dir}/`
     const keys = (await tx<IDBValidKey[]>('readonly', (s) => s.getAllKeys())) as string[]
     const out: string[] = []
     for (const key of keys) {
@@ -61,12 +69,22 @@ export class IdbAdapter implements StorageAdapter {
   }
 
   async exists(path: string): Promise<boolean> {
-    const rec = await tx<FileRec | undefined>('readonly', (s) => s.get(path))
+    const rec = await tx<FileRec | undefined>('readonly', (s) => s.get(scope() + path))
     return rec !== undefined
   }
 
   async mtime(path: string): Promise<number | null> {
-    const rec = await tx<FileRec | undefined>('readonly', (s) => s.get(path))
+    const rec = await tx<FileRec | undefined>('readonly', (s) => s.get(scope() + path))
     return rec ? rec.mtime : null
   }
+}
+
+// Wipe every file belonging to one project (used on delete).
+export async function clearProject(id: string): Promise<void> {
+  const prefix = id === 'default' ? '' : `p/${id}/`
+  const keys = (await tx<IDBValidKey[]>('readonly', (s) => s.getAllKeys())) as string[]
+  const targets = keys.filter((k) =>
+    id === 'default' ? !k.startsWith('p/') : k.startsWith(prefix),
+  )
+  for (const k of targets) await tx('readwrite', (s) => s.delete(k))
 }
