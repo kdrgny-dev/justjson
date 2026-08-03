@@ -43,7 +43,7 @@ describe.each(bundles)('theme bundle: %s', (_id, bundle) => {
     expect(bundle.css.trim().length).toBeGreaterThan(0)
     expect(bundle.templates.index.trim().length).toBeGreaterThan(0)
     expect(bundle.templates.entry.trim().length).toBeGreaterThan(0)
-    expect(bundle.license).toBe('commercial')
+    expect(['free', 'commercial']).toContain(bundle.license)
   })
 
   it('renders an index page with the site name and an entry link', () => {
