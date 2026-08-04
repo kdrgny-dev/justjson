@@ -1,6 +1,7 @@
-// Netlify publish adapter — browser-only. Implicit OAuth in a popup (no
-// secret, no reload of the editor), then a multi-file deploy via the Netlify
-// digest API. Runs on the user's own Netlify account; we store nothing.
+// Netlify adapter — implicit OAuth in a popup (no secret), then a multi-file
+// deploy via the Netlify digest API. Runs on the user's own account.
+import { NameTakenError, type Provider, type PublishResult } from './index'
+
 const CLIENT_ID = 'Knha7tY8sVFmH9fHvOhz5mRjhfNh7nDEl4DwLnOGhUs'
 const NF = 'https://api.netlify.com/api/v1'
 const TOKEN_KEY = 'nf_token'
@@ -42,17 +43,12 @@ export function connectNetlify(): Promise<string> {
   })
 }
 
-function auth(token: string) {
-  return { Authorization: `Bearer ${token}`, 'User-Agent': 'justjson-studio' }
+export function clearNetlifyToken() {
+  sessionStorage.removeItem(TOKEN_KEY)
 }
 
-// Thrown when the chosen subdomain is already taken (Netlify names are global).
-// The UI catches this and asks the user for another name — no silent suffix.
-export class NameTakenError extends Error {
-  constructor(public readonly takenName: string) {
-    super(`name taken: ${takenName}`)
-    this.name = 'NameTakenError'
-  }
+function auth(token: string) {
+  return { Authorization: `Bearer ${token}`, 'User-Agent': 'justjson-studio' }
 }
 
 async function createSite(token: string, name: string): Promise<{ id: string; url: string }> {
@@ -76,23 +72,16 @@ async function getSiteUrl(token: string, id: string): Promise<string> {
   return s.ssl_url || s.url || `https://${s.name}.netlify.app`
 }
 
-export interface PublishResult {
-  url: string
-  siteId: string
-}
-
-export async function publishToNetlify(
+async function publish(
   files: Record<string, string>,
   siteName: string,
   token: string,
   existingSiteId?: string,
 ): Promise<PublishResult> {
-  // Re-publish updates the SAME site instead of spawning a new one.
   const site = existingSiteId
     ? { id: existingSiteId, url: await getSiteUrl(token, existingSiteId) }
     : await createSite(token, siteName)
 
-  // digest: path -> sha1
   const digests: Record<string, string> = {}
   const bySha: Record<string, string> = {}
   for (const [path, content] of Object.entries(files)) {
@@ -122,6 +111,10 @@ export async function publishToNetlify(
   return { url: site.url, siteId: site.id }
 }
 
-export function clearNetlifyToken() {
-  sessionStorage.removeItem(TOKEN_KEY)
+export const netlify: Provider = {
+  id: 'netlify',
+  name: 'Netlify',
+  suffix: '.netlify.app',
+  auth: { kind: 'oauth', connect: connectNetlify },
+  publish,
 }

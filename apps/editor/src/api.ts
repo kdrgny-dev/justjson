@@ -100,8 +100,8 @@ export function deleteProject(id: string): void {
   proj.removeProject(id)
 }
 export const getSiteMeta = (id: string) => proj.getSite(id)
-export const setSiteMeta = (id: string, siteId: string, url: string) =>
-  proj.setSite(id, siteId, url)
+export const setSiteMeta = (id: string, siteId: string, url: string, provider?: string) =>
+  proj.setSite(id, siteId, url, provider)
 
 export async function getSchema(): Promise<Schema> {
   return schema()

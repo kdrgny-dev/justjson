@@ -15,26 +15,34 @@ import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import * as api from './api'
 import { gatherProject } from './browser/gather'
-import { NameTakenError, connectNetlify, publishToNetlify } from './browser/netlify'
+import { NameTakenError, PROVIDERS, getProvider, getToken, setToken } from './browser/publish'
 import { renderSite } from './browser/render'
 import { PageBody, PageHeader, PageShell } from './components/PageShell'
 import { t } from './i18n'
 
 export function Ship({ schema }: { schema: Schema }) {
+  const proj = api.activeProject()
+  const meta = api.getSiteMeta(proj.id)
+
+  const [providerId, setProviderId] = useState(meta.provider || 'netlify')
+  const provider = getProvider(providerId)
   const [address, setAddress] = useState('')
   const [touched, setTouched] = useState(false)
+  const [token, setTok] = useState(() => getToken(providerId))
   const [busy, setBusy] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
 
-  // "name taken" dialog — asks the user for another address instead of silently
-  // suffixing a random string.
+  // "name taken" dialog — Netlify subdomains are global; ask for another name
+  // instead of silently suffixing.
   const [taken, setTaken] = useState<string | null>(null)
   const [retryName, setRetryName] = useState('')
   const resolveRef = useRef<((v: string | null) => void) | null>(null)
 
-  const proj = api.activeProject()
-  const meta = api.getSiteMeta(proj.id)
-  const published = !!meta.siteUrl
+  // A site is "already published" only for the provider it was published with;
+  // picking a different host is a fresh publish. Legacy sites predate the
+  // provider field — they were all Netlify.
+  const publishedHere = !!meta.siteUrl && (meta.provider || 'netlify') === providerId
+  const isToken = provider.auth.kind === 'token'
 
   const askAnotherName = (takenName: string): Promise<string | null> => {
     setTaken(takenName)
@@ -49,8 +57,13 @@ export function Ship({ schema }: { schema: Schema }) {
     resolveRef.current = null
   }
 
+  // Reload the pasted token when switching provider.
   useEffect(() => {
-    if (published || touched) return
+    setTok(getToken(providerId))
+  }, [providerId])
+
+  useEffect(() => {
+    if (publishedHere || touched) return
     void (async () => {
       const singletons: Record<string, Record<string, unknown>> = {}
       for (const s of schema.singletons) singletons[s.name] = await api.getSingleton(s.name)
@@ -63,25 +76,37 @@ export function Ship({ schema }: { schema: Schema }) {
       }
       setAddress(slugify(name) || 'my-site')
     })()
-  }, [schema, touched, published, proj.name])
+  }, [schema, touched, publishedHere, proj.name])
 
   const publish = async () => {
     setBusy(true)
     setUrl(null)
     try {
-      const token = await connectNetlify()
+      let authToken: string
+      if (provider.auth.kind === 'oauth') {
+        authToken = await provider.auth.connect()
+      } else {
+        authToken = token.trim()
+        if (!authToken) {
+          toast.error(t('Paste your {name} token first.', { name: provider.name }))
+          return
+        }
+        setToken(providerId, authToken)
+      }
+
       const data = await gatherProject(schema)
       const files = renderSite(data)
       let name = slugify(address) || 'my-site'
-      // Retry loop: if the address is taken, ask for another (existing sites
-      // republish by id and never hit this).
+      const existingSiteId = publishedHere ? meta.siteId : undefined
+      // Retry loop only matters for Netlify's global names; others never throw
+      // NameTakenError.
       while (true) {
         try {
-          const res = await publishToNetlify(files, name, token, meta.siteId)
-          api.setSiteMeta(proj.id, res.siteId, res.url)
+          const res = await provider.publish(files, name, authToken, existingSiteId)
+          api.setSiteMeta(proj.id, res.siteId, res.url, providerId)
           setUrl(res.url)
           setAddress(name)
-          toast.success(published ? t('Your site was updated.') : t('Your site is live.'))
+          toast.success(publishedHere ? t('Your site was updated.') : t('Your site is live.'))
           break
         } catch (e) {
           if (!(e instanceof NameTakenError)) throw e
@@ -100,25 +125,45 @@ export function Ship({ schema }: { schema: Schema }) {
     }
   }
 
-  const liveUrl = url ?? meta.siteUrl ?? null
+  const liveUrl = url ?? (publishedHere ? meta.siteUrl : null) ?? null
 
   return (
     <PageShell>
       <PageHeader
         title={t('Publish')}
-        subtitle={t('Put your site online — on your own Netlify. Nothing is stored here.')}
+        subtitle={t('Put your site online — on your own hosting. Nothing is stored here.')}
       />
       <PageBody>
         <div className="mx-auto max-w-xl space-y-5 px-8 py-6">
           <section className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
             <div className="flex items-center gap-2.5">
               <Globe className="size-5 text-primary" />
-              <h2 className="font-medium">
-                {published ? t('Update your site') : t('Publish to the web')}
-              </h2>
+              <h2 className="font-medium">{t('Publish to the web')}</h2>
             </div>
 
-            {published ? (
+            <div className="space-y-1.5">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                {t('Host')}
+              </Label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {PROVIDERS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setProviderId(p.id)}
+                    className={`rounded-md border px-2 py-2 text-sm transition ${
+                      p.id === providerId
+                        ? 'border-primary bg-primary/10 font-medium text-primary'
+                        : 'border-input text-muted-foreground hover:bg-accent/60'
+                    }`}
+                  >
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {publishedHere ? (
               <p className="text-sm text-muted-foreground">
                 {t('Publishing again updates the same site.')}{' '}
                 <a
@@ -136,7 +181,7 @@ export function Ship({ schema }: { schema: Schema }) {
                   htmlFor="addr"
                   className="text-xs uppercase tracking-wide text-muted-foreground"
                 >
-                  {t('Address')}
+                  {provider.id === 'github' ? t('Repository name') : t('Address')}
                 </Label>
                 <div className="flex items-center">
                   <Input
@@ -148,26 +193,80 @@ export function Ship({ schema }: { schema: Schema }) {
                     }}
                     onBlur={() => setAddress(slugify(address))}
                     placeholder="my-site"
-                    className="rounded-r-none font-mono text-sm"
+                    className={`font-mono text-sm ${provider.suffix ? 'rounded-r-none' : ''}`}
                   />
-                  <span className="inline-flex h-9 items-center rounded-r-md border border-l-0 bg-muted px-3 font-mono text-sm text-muted-foreground">
-                    .netlify.app
-                  </span>
+                  {provider.suffix && (
+                    <span className="inline-flex h-9 items-center rounded-r-md border border-l-0 bg-muted px-3 font-mono text-sm text-muted-foreground">
+                      {provider.suffix}
+                    </span>
+                  )}
                 </div>
+                {provider.id === 'github' && (
+                  <p className="text-xs text-muted-foreground">
+                    {t('Publishes to {owner}.github.io/{repo}/', {
+                      owner: t('your-username'),
+                      repo: slugify(address) || 'my-site',
+                    })}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {isToken && provider.auth.kind === 'token' && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label
+                    htmlFor="tok"
+                    className="text-xs uppercase tracking-wide text-muted-foreground"
+                  >
+                    {t('{name} token', { name: provider.name })}
+                  </Label>
+                  <a
+                    href={provider.auth.tokenUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    {t('Get a token')} <ExternalLink className="size-3" />
+                  </a>
+                </div>
+                <Input
+                  id="tok"
+                  type="password"
+                  value={token}
+                  onChange={(e) => setTok(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">{provider.auth.help}</p>
               </div>
             )}
 
             <Button onClick={publish} disabled={busy} className="w-full">
-              {busy ? <Loader2 className="animate-spin" /> : published ? <RefreshCw /> : <Rocket />}
-              {published ? t('Republish') : t('Connect Netlify & publish')}
+              {busy ? (
+                <Loader2 className="animate-spin" />
+              ) : publishedHere ? (
+                <RefreshCw />
+              ) : (
+                <Rocket />
+              )}
+              {publishedHere
+                ? t('Republish')
+                : provider.auth.kind === 'oauth'
+                  ? t('Connect {name} & publish', { name: provider.name })
+                  : t('Publish to {name}', { name: provider.name })}
             </Button>
 
-            <p className="text-xs text-muted-foreground">
-              {t('Opens Netlify in a popup to sign in, then deploys to your account.')}
-            </p>
+            {provider.auth.kind === 'oauth' && (
+              <p className="text-xs text-muted-foreground">
+                {t('Opens {name} in a popup to sign in, then deploys to your account.', {
+                  name: provider.name,
+                })}
+              </p>
+            )}
           </section>
 
-          {liveUrl && (url || published) && (
+          {liveUrl && (
             <section className="rounded-xl border border-primary/40 bg-primary/5 p-5 shadow-sm">
               <div className="mb-2 flex items-center gap-2 text-primary">
                 <CheckCircle2 className="size-5" />
@@ -181,6 +280,11 @@ export function Ship({ schema }: { schema: Schema }) {
               >
                 {liveUrl} <ExternalLink className="size-3.5 shrink-0" />
               </a>
+              {provider.id === 'github' && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t('First build takes about a minute to go live.')}
+                </p>
+              )}
             </section>
           )}
         </div>
