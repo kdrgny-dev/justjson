@@ -18,6 +18,7 @@ import {
 } from '@justjson/core'
 import { IdbAdapter, clearProject } from './browser/idb'
 import * as proj from './browser/project'
+import { setSelectedThemeId } from './browser/theme-store'
 import blog from './templates/blog.json'
 import catalog from './templates/catalog.json'
 import changelog from './templates/changelog.json'
@@ -27,6 +28,7 @@ import event from './templates/event.json'
 import portfolio from './templates/portfolio.json'
 import psikolog from './templates/psikolog.json'
 import recipe from './templates/recipe.json'
+import saas from './templates/saas.json'
 
 export type { EntryRow }
 export type Entry = Record<string, unknown>
@@ -63,6 +65,8 @@ interface Template {
   description: string
   schema: unknown
   samples: Record<string, Record<string, unknown>[] | Record<string, unknown>>
+  /** Optional theme to pair with the content (bundle id + accent). */
+  theme?: { bundle: string; accent?: string }
 }
 const templates: Record<string, Template> = {
   blog: blog as Template,
@@ -74,6 +78,7 @@ const templates: Record<string, Template> = {
   event: event as Template,
   catalog: catalog as Template,
   psikolog: psikolog as Template,
+  saas: saas as Template,
 }
 
 export interface TemplateMeta {
@@ -154,6 +159,11 @@ export async function applyTemplate(template: string): Promise<void> {
       const slug = slugify(typeof row.slug === 'string' ? row.slug : String(row.title ?? 'content'))
       await cs.writeEntry(name, slug, row)
     }
+  }
+  // Pair the template with its intended theme (bundle + accent).
+  if (t.theme) {
+    setSelectedThemeId(t.theme.bundle)
+    if (t.theme.accent) await putTheme({ ...(await getTheme()), accent: t.theme.accent })
   }
 }
 

@@ -165,7 +165,8 @@ const EMPTY_SLOTS: Slots = { title: '', lead: '', cover: '', body: '', meta: [],
 //   body   — every richtext field, concatenated to HTML (place with {{{body}}})
 //   meta   — remaining scalars (date/url/email/select/number) as labeled chips
 // Plumbing fields that carry no display value — never surface them as a slot.
-const IGNORED_SLOT_KEYS = new Set(['slug', 'order'])
+// siteName is site-level metadata (brand/nav), not page content — never a slot.
+const IGNORED_SLOT_KEYS = new Set(['slug', 'order', 'siteName'])
 
 function slots(fields: Field[], data: Record<string, unknown>): Slots {
   const val = (k: string) => data[k]

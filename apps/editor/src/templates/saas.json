@@ -1,0 +1,158 @@
+{
+  "title": "SaaS / Startup",
+  "description": "A product landing with hero, pricing table, feature grid and a changelog — paired with the Beacon theme.",
+  "theme": { "bundle": "beacon", "accent": "#5b5bf5" },
+  "schema": {
+    "version": 1,
+    "singletons": [
+      {
+        "name": "home",
+        "label": "Home",
+        "path": "home.json",
+        "fields": [
+          { "key": "siteName", "label": "Site name", "type": "text" },
+          { "key": "title", "label": "Headline", "type": "text", "required": true },
+          { "key": "tagline", "label": "Tagline", "type": "text" },
+          { "key": "cover", "label": "Hero image", "type": "image" },
+          { "key": "intro", "label": "Intro", "type": "richtext" },
+          { "key": "cta", "label": "Start free", "type": "url" },
+          { "key": "docs", "label": "Read the docs", "type": "url" },
+          {
+            "key": "pricing",
+            "label": "Pricing",
+            "type": "repeater",
+            "fields": [
+              { "key": "plan", "label": "Plan", "type": "text" },
+              { "key": "price", "label": "Price", "type": "text" },
+              { "key": "includes", "label": "Includes", "type": "text" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "contact",
+        "label": "Contact",
+        "path": "contact.json",
+        "fields": [
+          { "key": "email", "label": "Email", "type": "email" },
+          { "key": "twitter", "label": "Twitter", "type": "url" },
+          { "key": "github", "label": "GitHub", "type": "url" }
+        ]
+      }
+    ],
+    "collections": [
+      {
+        "name": "features",
+        "label": "Features",
+        "path": "features",
+        "fields": [
+          { "key": "title", "label": "Title", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "summary", "label": "Summary", "type": "text" },
+          { "key": "cover", "label": "Cover", "type": "image" },
+          { "key": "body", "label": "Body", "type": "richtext" }
+        ]
+      },
+      {
+        "name": "changelog",
+        "label": "Changelog",
+        "path": "changelog",
+        "fields": [
+          { "key": "title", "label": "Title", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "version", "label": "Version", "type": "text" },
+          { "key": "date", "label": "Date", "type": "date" },
+          { "key": "body", "label": "Body", "type": "richtext" }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "home": {
+      "siteName": "Beacon",
+      "title": "Ship features, not infrastructure",
+      "tagline": "Beacon is the platform that turns your ideas into production in minutes — no ops, no glue code, no waiting.",
+      "cover": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80&auto=format&fit=crop",
+      "intro": "Trusted by 4,000+ teams to build, launch and scale. Deploy on every push, roll back in one click, and watch it all from a single dashboard.",
+      "cta": "https://example.com/signup",
+      "docs": "https://example.com/docs",
+      "pricing": [
+        { "plan": "Starter", "price": "$0 / mo", "includes": "1 project · community support · 10k requests" },
+        { "plan": "Pro", "price": "$29 / mo", "includes": "Unlimited projects · email support · 5M requests · previews" },
+        { "plan": "Scale", "price": "$99 / mo", "includes": "SSO · SLA · audit logs · unlimited requests · priority support" }
+      ]
+    },
+    "contact": {
+      "email": "hello@beacon.dev",
+      "twitter": "https://twitter.com/",
+      "github": "https://github.com/"
+    },
+    "features": [
+      {
+        "title": "Realtime analytics",
+        "slug": "analytics",
+        "summary": "Every request, deploy and error on one live dashboard — no setup.",
+        "cover": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80&auto=format&fit=crop",
+        "body": "See traffic, latency and errors update as they happen. Drill into any request, filter by route, and share a link to any view.\n\nNo agents to install — it works the moment you deploy."
+      },
+      {
+        "title": "Deploy on every push",
+        "slug": "deploys",
+        "summary": "Connect a repo and ship. Previews for every branch, rollbacks in one click.",
+        "cover": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&q=80&auto=format&fit=crop",
+        "body": "Push to a branch and get a shareable preview URL. Merge to main and it's live. If anything looks off, roll back instantly — your last ten deploys are always one click away."
+      },
+      {
+        "title": "Built-in auth",
+        "slug": "auth",
+        "summary": "Email, OAuth and SSO out of the box. Sessions, tokens, done.",
+        "cover": "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=1200&q=80&auto=format&fit=crop",
+        "body": "Add sign-in with a few lines. Passwordless, social login and enterprise SSO are handled for you, with sessions and refresh tokens managed securely."
+      },
+      {
+        "title": "Global edge",
+        "slug": "edge",
+        "summary": "Your app runs close to every user, automatically.",
+        "cover": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=80&auto=format&fit=crop",
+        "body": "Static assets and functions run at the edge in 30+ regions. No config — requests are served from the location nearest each visitor."
+      },
+      {
+        "title": "Team collaboration",
+        "slug": "teams",
+        "summary": "Invite the team, set roles, review changes together.",
+        "cover": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80&auto=format&fit=crop",
+        "body": "Organize work into teams, assign roles, and comment on preview deploys. Everyone sees the same source of truth."
+      },
+      {
+        "title": "Open API",
+        "slug": "api",
+        "summary": "Automate everything with a clean REST API and CLI.",
+        "cover": "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=1200&q=80&auto=format&fit=crop",
+        "body": "Script deploys, pull metrics, manage teams — the whole platform is available over a documented REST API and a first-class CLI."
+      }
+    ],
+    "changelog": [
+      {
+        "title": "Edge functions, now in every region",
+        "slug": "edge-functions",
+        "version": "v2.4",
+        "date": "2026-07-28",
+        "body": "Functions now run at the edge in 30+ regions by default. Cold starts are down 60%, and you can pin a function to a region from the dashboard."
+      },
+      {
+        "title": "One-click rollbacks",
+        "slug": "rollbacks",
+        "version": "v2.3",
+        "date": "2026-06-14",
+        "body": "Every deploy is now immutable and instantly restorable. Open any past deploy and promote it to production in a single click."
+      },
+      {
+        "title": "Realtime analytics dashboard",
+        "slug": "analytics-dashboard",
+        "version": "v2.2",
+        "date": "2026-05-02",
+        "body": "The new dashboard streams requests, latency and errors live. Filter by route, status or region and share any view with a link."
+      }
+    ]
+  }
+}

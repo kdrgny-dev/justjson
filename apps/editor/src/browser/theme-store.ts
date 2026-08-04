@@ -2,6 +2,7 @@
 // premium ThemeBundles (localStorage), plus the per-project selected theme.
 // Backend-free — see docs/theme-asset-architecture.md.
 import atelier from '../themes/atelier.json'
+import beacon from '../themes/beacon.json'
 import bold from '../themes/bold.json'
 import defaultTheme from '../themes/default.json'
 import editorial from '../themes/editorial.json'
@@ -18,6 +19,7 @@ export const BUNDLED_THEMES: ThemeBundle[] = [
   editorial as ThemeBundle,
   signal as ThemeBundle,
   atelier as ThemeBundle,
+  beacon as ThemeBundle,
 ]
 
 const IMPORTED_KEY = 'jj_imported_themes'
