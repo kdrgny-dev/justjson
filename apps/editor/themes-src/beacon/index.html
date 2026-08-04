@@ -18,15 +18,34 @@
         {{#hero.meta}}{{#href}}<a class="pill" href="{{href}}" data-magnetic>{{label}}</a>{{/href}}{{^href}}<span class="pill">{{value}}</span>{{/href}}{{/hero.meta}}
       </div>
       {{/hero.meta.length}}
+
+      <div class="stats" data-reveal>
+        <div class="stat"><div class="stat-n" data-count="4000" data-suffix="+">4,000+</div><div class="stat-l">Teams shipping</div></div>
+        <div class="stat"><div class="stat-n" data-count="30" data-suffix="+">30+</div><div class="stat-l">Edge regions</div></div>
+        <div class="stat"><div class="stat-n" data-count="99" data-suffix="%">99%</div><div class="stat-l">Uptime SLA</div></div>
+        <div class="stat"><div class="stat-n" data-count="60" data-suffix="%">60%</div><div class="stat-l">Faster deploys</div></div>
+      </div>
+
       {{#hero.cover}}
-      <figure class="hero-cover" data-reveal><img src="{{hero.cover}}" alt="{{hero.title}}" data-parallax data-speed="0.08"></figure>
+      <div class="hero-cover" data-reveal>
+        <span class="chip chip-a" data-parallax data-speed="0.05">Uptime 99.99%</span>
+        <span class="chip chip-b" data-parallax data-speed="0.09">Deployed · 12ms</span>
+        <figure class="hero-cover-inner"><img src="{{hero.cover}}" alt="{{hero.title}}" data-parallax data-speed="0.04"></figure>
+      </div>
       {{/hero.cover}}
     </div>
   </section>
 
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Ship faster</span><span>Deploy globally</span><span>Zero ops</span><span>Scale on demand</span><span>Preview every push</span>
+      <span>Ship faster</span><span>Deploy globally</span><span>Zero ops</span><span>Scale on demand</span><span>Preview every push</span>
+    </div>
+  </div>
+
   {{#hero.extras}}
   <section class="section" data-reveal>
-    <div class="sec-head"><span class="kicker">Pricing</span></div>
+    <div class="sec-head"><div><span class="kicker">Pricing</span><h2>Simple pricing that scales with you</h2></div></div>
     {{{hero.extras}}}
   </section>
   {{/hero.extras}}
@@ -35,7 +54,7 @@
   {{#items.length}}
   <section class="section" data-reveal>
     <div class="sec-head">
-      <div><span class="kicker">{{label}}</span></div>
+      <div><span class="kicker">{{label}}</span><h2>Everything you need, nothing you don't</h2></div>
       <a class="all-link" href="{{url}}">View all</a>
     </div>
     <div class="cards" data-stagger>
@@ -51,6 +70,17 @@
   </section>
   {{/items.length}}
   {{/sections}}
+
+  {{#hero.meta.length}}
+  <section class="section">
+    <div class="cta-band" data-reveal>
+      <h2 data-split>Start shipping in minutes</h2>
+      <div class="hero-meta">
+        {{#hero.meta}}{{#href}}<a class="pill" href="{{href}}" data-magnetic>{{label}}</a>{{/href}}{{/hero.meta}}
+      </div>
+    </div>
+  </section>
+  {{/hero.meta.length}}
 </main>
 
 <footer class="foot" data-reveal>
@@ -100,6 +130,24 @@
     }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' })
     document.querySelectorAll('[data-reveal], [data-split]').forEach(function (el) { io.observe(el) })
 
+    var counters = document.querySelectorAll('[data-count]')
+    if (counters.length) {
+      var cio = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (!e.isIntersecting) return
+          cio.unobserve(e.target)
+          var el = e.target, end = parseFloat(el.getAttribute('data-count')), suf = el.getAttribute('data-suffix') || '', t0 = null
+          requestAnimationFrame(function step (ts) {
+            if (t0 === null) t0 = ts
+            var p = Math.min((ts - t0) / 1500, 1), k = 1 - Math.pow(1 - p, 3)
+            el.textContent = Math.round(end * k).toLocaleString() + suf
+            if (p < 1) requestAnimationFrame(step)
+          })
+        })
+      }, { threshold: 0.5 })
+      counters.forEach(function (c) { cio.observe(c) })
+    }
+
     var px = [].slice.call(document.querySelectorAll('[data-parallax]'))
     if (px.length) {
       var tick = function () {
@@ -144,7 +192,7 @@
     var cv = document.querySelector('[data-gl]')
     if (cv) aurora(cv)
     function readAccent () {
-      var c = getComputedStyle(root).getPropertyValue('--accent').trim() || '#5b5bf5'
+      var c = getComputedStyle(root).getPropertyValue('--accent').trim() || '#6366f1'
       var t = document.createElement('canvas'); t.width = t.height = 1; var x = t.getContext('2d')
       x.fillStyle = c; x.fillRect(0, 0, 1, 1); var d = x.getImageData(0, 0, 1, 1).data
       return [d[0] / 255, d[1] / 255, d[2] / 255]

@@ -148,7 +148,11 @@ function rewriteCssClasses(source, map) {
 // rewriting can't corrupt filenames or string content. Returns [masked, restore].
 function maskCss(source) {
   const store = []
-  const masked = source.replace(/url\([^)]*\)|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, (m) => {
+  // Quoted url() is matched first so inner ')' (e.g. an SVG data-URI's
+  // filter='url(#n)') can't truncate the match and leak the rest of the CSS.
+  const urlOrString =
+    /url\(\s*"[^"]*"\s*\)|url\(\s*'[^']*'\s*\)|url\([^)]*\)|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g
+  const masked = source.replace(urlOrString, (m) => {
     store.push(m)
     return `${SENT}${store.length - 1}${SENT}`
   })
