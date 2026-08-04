@@ -12,7 +12,6 @@
       <p class="eyebrow hero-eyebrow" data-reveal>{{siteName}}</p>
       <h1 class="hero-title" data-split>{{hero.title}}</h1>
       {{#hero.lead}}<p class="hero-sub" data-reveal>{{hero.lead}}</p>{{/hero.lead}}
-      {{#hero.body}}<div class="hero-lead rt" data-reveal>{{{hero.body}}}</div>{{/hero.body}}
       {{#hero.meta.length}}
       <div class="hero-meta" data-reveal>
         {{#hero.meta}}{{#href}}<a class="pill" href="{{href}}" data-magnetic>{{label}}</a>{{/href}}{{^href}}<span class="pill">{{value}}</span>{{/href}}{{/hero.meta}}

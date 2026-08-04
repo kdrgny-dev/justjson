@@ -217,7 +217,7 @@ function getActiveThemeBundle(): ThemeBundle {
 // Design panel edits) is injected BEFORE the bundle css so the default theme —
 // and any bundle that opts into --jj-* — respects the user's palette/accent/font.
 function page(title: string, theme: Theme, bundle: ThemeBundle, body: string): string {
-  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>${themeCss(theme)}\n${bundle.css}</style></head><body>${body}<footer>Made with Just&#123;JSON&#125;</footer></body></html>`
+  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>${themeCss(theme)}\n${bundle.css}</style></head><body>${body}</body></html>`
 }
 
 // Built-in fallbacks so themes shipped before the multi-page contract (only
@@ -244,7 +244,10 @@ export function renderWithBundle(p: ProjectData, bundle: ThemeBundle): Record<st
   // display = the human label to show: the address/email/phone value itself, but
   // a link's label (e.g. "Instagram") instead of its raw URL.
   const contact: { label: string; value: string; display: string; href: string }[] = []
-  for (const sg of p.schema.singletons) {
+  for (const [i, sg] of p.schema.singletons.entries()) {
+    // The first singleton feeds the hero; its fields (title, tagline, CTAs) are
+    // already shown there and must not leak into the footer contact strip.
+    if (i === 0) continue
     const d = p.singletons[sg.name]
     if (!d) continue
     const isContactBlock = sg.fields.some(
