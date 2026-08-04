@@ -303,7 +303,7 @@ export function SchemaBuilder({
 
   return (
     <div className="flex h-full flex-col">
-      <header className="sticky top-0 z-10 shrink-0 border-b bg-card px-8 py-4">
+      <header className="sticky top-0 z-10 shrink-0 border-b bg-card px-4 py-4 sm:px-8">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
           <div>
             <h1 className="font-heading text-lg font-semibold text-foreground">{t('Schema')}</h1>
@@ -318,7 +318,7 @@ export function SchemaBuilder({
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
         <div className="mx-auto w-full max-w-4xl">
           {error && (
             <p className="mb-5 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -433,7 +433,7 @@ function SchemaEmpty({
 }) {
   return (
     <Card className="mx-auto max-w-md">
-      <CardContent className="flex flex-col items-center px-8 py-10 text-center">
+      <CardContent className="flex flex-col items-center px-4 py-10 sm:px-8 text-center">
         <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           <Boxes className="size-7" />
         </div>

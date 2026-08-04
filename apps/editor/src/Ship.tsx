@@ -134,7 +134,7 @@ export function Ship({ schema }: { schema: Schema }) {
         subtitle={t('Put your site online — on your own hosting. Nothing is stored here.')}
       />
       <PageBody>
-        <div className="mx-auto max-w-xl space-y-5 px-8 py-6">
+        <div className="mx-auto max-w-xl space-y-5 px-4 py-6 sm:px-8">
           <section className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
             <div className="flex items-center gap-2.5">
               <Globe className="size-5 text-primary" />

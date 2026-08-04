@@ -34,9 +34,14 @@ const svg = (paths: string) =>
     <div class="nav-r">
       {
         links.map((l) => (
-          <a class="btn btn-ghost" href={l.href} aria-current={active === l.key ? 'page' : undefined}>
+          <a
+            class="btn btn-ghost"
+            href={l.href}
+            aria-current={active === l.key ? 'page' : undefined}
+            aria-label={l.label}
+          >
             <Fragment set:html={svg(l.icon)} />
-            {l.label}
+            <span class="lbl">{l.label}</span>
           </a>
         ))
       }
@@ -53,13 +58,19 @@ const svg = (paths: string) =>
   .nav-r .btn svg {
     opacity: 0.8;
   }
-  @media (max-width: 560px) {
+  @media (max-width: 600px) {
     .nav-r {
       gap: 6px;
     }
+    /* icon-only below 600px so 4 links never overflow a phone */
+    .nav-r .lbl {
+      display: none;
+    }
     .nav-r .btn {
-      padding: 8px 11px;
-      font-size: 13px;
+      padding: 9px;
+    }
+    .nav-r .btn svg {
+      opacity: 1;
     }
   }
 </style>

@@ -20,8 +20,8 @@ export function PageHeader({
   toolbar?: ReactNode
 }) {
   return (
-    <header className="sticky top-0 z-20 shrink-0 border-b bg-card px-8 pt-4 pb-3.5">
-      <div className="flex items-start justify-between gap-6">
+    <header className="sticky top-0 z-20 shrink-0 border-b bg-card px-4 pt-4 pb-3.5 sm:px-8">
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
             <h1 className="truncate text-lg font-semibold leading-tight tracking-tight text-foreground">
@@ -35,7 +35,7 @@ export function PageHeader({
             </div>
           )}
         </div>
-        {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+        {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
       {toolbar && <div className="mt-3.5">{toolbar}</div>}
     </header>
@@ -47,7 +47,7 @@ export function PageBody({ children }: { children: ReactNode }) {
 }
 
 export function PagePane({ children }: { children: ReactNode }) {
-  return <div className="min-h-0 flex-1 overflow-hidden px-8 py-6">{children}</div>
+  return <div className="min-h-0 flex-1 overflow-hidden px-4 py-6 sm:px-8">{children}</div>
 }
 
 export function Surface({ className, children }: { className?: string; children: ReactNode }) {

@@ -302,7 +302,7 @@ export function Theme({ schema }: { schema: Schema }): JSX.Element {
             <Loader2 className="size-5 animate-spin" />
           </div>
         ) : (
-          <div className="grid gap-6 px-8 py-6 lg:grid-cols-[380px_minmax(0,1fr)]">
+          <div className="grid gap-6 px-4 py-6 sm:px-8 lg:grid-cols-[380px_minmax(0,1fr)]">
             <div className="space-y-6">
               <ThemePicker selected={selectedId} onSelect={selectTheme} />
 

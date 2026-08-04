@@ -344,6 +344,8 @@ export const tr: Record<string, string> = {
   'Everything is committed.': 'Her şey commit edilmiş.',
   'Put your site online — on your own hosting. Nothing is stored here.':
     'Siteni kendi barındırıcında yayına al. Burada hiçbir şey saklanmaz.',
+  'Open menu': 'Menüyü aç',
+  'Close menu': 'Menüyü kapat',
   Host: 'Barındırıcı',
   'Repository name': 'Depo adı',
   'Publishes to {owner}.github.io/{repo}/': '{owner}.github.io/{repo}/ adresine yayınlanır',

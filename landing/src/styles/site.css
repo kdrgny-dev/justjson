@@ -289,7 +289,7 @@ button:focus-visible {
 /* ---------- hero ---------- */
 .hero {
   position: relative;
-  padding: 86px 0 56px;
+  padding-block: 86px 56px;
   display: grid;
   grid-template-columns: 1.02fr 0.98fr;
   gap: 56px;
@@ -799,7 +799,7 @@ pre.json {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 40px;
-  padding: 48px 0;
+  padding-block: 48px;
 }
 .thesis h3 {
   font-family: var(--mono);
@@ -819,7 +819,7 @@ pre.json {
 }
 
 section.block {
-  padding: 84px 0;
+  padding-block: 84px;
 }
 .head {
   max-width: 52ch;
@@ -1224,7 +1224,7 @@ tbody tr {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  padding: 44px 0;
+  padding-block: 44px;
   text-align: center;
 }
 .stat {
@@ -1461,7 +1461,7 @@ tbody tr {
 /* ---------- closing / footer ---------- */
 .closing {
   text-align: center;
-  padding: 96px 0;
+  padding-block: 96px;
   border-top: 1px solid var(--line);
 }
 .closing h2 {
@@ -1597,7 +1597,7 @@ footer a:hover {
     grid-template-columns: 1fr;
   }
   .hero {
-    padding: 60px 0 40px;
+    padding-block: 60px 40px;
     gap: 40px;
   }
   .thesis {
@@ -1608,7 +1608,7 @@ footer a:hover {
   }
   .statband {
     gap: 16px;
-    padding: 32px 0;
+    padding-block: 32px;
   }
   .stat + .stat::before {
     left: -8px;
@@ -1670,7 +1670,7 @@ footer a:hover {
     gap: 6px;
   }
   section.block {
-    padding: 60px 0;
+    padding-block: 60px;
   }
 }
 

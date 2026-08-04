@@ -60,6 +60,7 @@ import {
   FolderGit2,
   Image as ImageIcon,
   Link2,
+  Menu,
   Palette,
   PencilRuler,
   Plus,
@@ -129,11 +130,18 @@ function AppShell() {
   const [gallery, setGallery] = useState(false)
   const [addSeq, setAddSeq] = useState(0)
   const [addKind, setAddKind] = useState<'collection' | 'singleton' | null>(null)
+  // Mobile: the sidebar is an off-canvas drawer; navigating closes it.
+  const [navOpen, setNavOpen] = useState(false)
 
   const reload = useCallback(async () => {
     const s = await api.getSchema()
     setSchema(s)
     return s
+  }, [])
+
+  const select = useCallback((s: Selection) => {
+    setSelection(s)
+    setNavOpen(false)
   }, [])
 
   const openSchema = useCallback((add?: 'collection' | 'singleton') => {
@@ -142,6 +150,7 @@ function AppShell() {
       setAddSeq((n) => n + 1)
     }
     setSelection({ kind: 'schema' })
+    setNavOpen(false)
   }, [])
 
   useEffect(() => {
@@ -203,22 +212,35 @@ function AppShell() {
 
   return (
     <div className="flex h-full bg-background">
+      {navOpen && (
+        <button
+          type="button"
+          aria-label={t('Close menu')}
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          onClick={() => setNavOpen(false)}
+        />
+      )}
       <Sidebar
         project={project}
         schema={schema}
         selection={selection}
-        onSelect={setSelection}
+        onSelect={select}
         onOpenSchema={openSchema}
         onExport={exportProject}
         onReset={resetSchema}
+        open={navOpen}
       />
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-muted/30">
-        <ContextBar project={project} crumbs={crumbsFor(schema, selection, setSelection)} />
+        <ContextBar
+          project={project}
+          crumbs={crumbsFor(schema, selection, select)}
+          onMenu={() => setNavOpen(true)}
+        />
         <div className="min-h-0 flex-1 overflow-hidden">
           <MainArea
             schema={schema}
             selection={selection}
-            onSelect={setSelection}
+            onSelect={select}
             onReload={reload}
             onOpenSchema={openSchema}
             addSeq={addSeq}
@@ -262,9 +284,25 @@ function crumbsFor(
   return [{ label: s?.label ?? selection.name, tag: t('singleton') }]
 }
 
-function ContextBar({ project, crumbs }: { project: api.ProjectInfo | null; crumbs: Crumb[] }) {
+function ContextBar({
+  project,
+  crumbs,
+  onMenu,
+}: {
+  project: api.ProjectInfo | null
+  crumbs: Crumb[]
+  onMenu: () => void
+}) {
   return (
-    <header className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b bg-card px-8 text-xs">
+    <header className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b bg-card px-4 text-xs sm:px-8">
+      <button
+        type="button"
+        aria-label={t('Open menu')}
+        onClick={onMenu}
+        className="-ml-1 mr-1 flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent md:hidden"
+      >
+        <Menu className="h-4 w-4" />
+      </button>
       <span
         title={project?.path}
         className="inline-flex shrink-0 items-center gap-1.5 text-muted-foreground"
@@ -313,6 +351,7 @@ function Sidebar({
   onOpenSchema,
   onExport,
   onReset,
+  open,
 }: {
   project: api.ProjectInfo | null
   schema: Schema
@@ -321,6 +360,7 @@ function Sidebar({
   onOpenSchema: (add?: 'collection' | 'singleton') => void
   onExport: () => void
   onReset: () => Promise<void>
+  open: boolean
 }) {
   const collectionActive = (name: string): boolean => {
     if (!selection) return false
@@ -331,7 +371,12 @@ function Sidebar({
   }
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r bg-card">
+    <aside
+      className={cn(
+        'fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r bg-card transition-transform duration-200 md:static md:z-auto md:translate-x-0',
+        open ? 'translate-x-0 shadow-xl' : '-translate-x-full',
+      )}
+    >
       <div className="flex h-12 shrink-0 items-center border-b px-5">
         <div className="font-mono text-[15px] font-bold tracking-tight text-foreground">
           Just<span className="text-primary">JSON</span>
@@ -837,7 +882,7 @@ function ProjectHome({
         subtitle={t('Edit your content, preview it, then publish.')}
       />
       <PageBody>
-        <div className="mx-auto max-w-3xl space-y-8 px-8 py-8">
+        <div className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:px-8">
           <div className="grid gap-3 sm:grid-cols-3">
             <ActionCard
               icon={<Eye className="h-5 w-5" />}
@@ -1030,7 +1075,7 @@ function JsonPreview({ path, data }: { path: string; data: Record<string, unknow
 function EditorLayout({ children }: { children: React.ReactNode }) {
   return (
     <PageBody>
-      <div className="mx-auto max-w-3xl space-y-5 px-8 py-6">{children}</div>
+      <div className="mx-auto max-w-3xl space-y-5 px-4 py-6 sm:px-8">{children}</div>
     </PageBody>
   )
 }
@@ -1117,7 +1162,7 @@ function ProjectJsonView({ schema }: { schema: Schema }) {
         }
       />
       <PageBody>
-        <div className="mx-auto max-w-3xl space-y-2 px-8 py-6">
+        <div className="mx-auto max-w-3xl space-y-2 px-4 py-6 sm:px-8">
           {error && <AlertPanel title={t('Could not load')}>{error}</AlertPanel>}
           {files === null && !error && (
             <p className="px-1 text-sm text-muted-foreground">{t('Loading…')}</p>
@@ -1551,7 +1596,7 @@ function EntryEditor({
       />
       <div className="flex min-h-0 flex-1">
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-2xl space-y-5 px-8 py-6">
+          <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8">
             {saveError && <AlertPanel title={t('Could not save')}>{saveError}</AlertPanel>}
             <FormCard>
               {isNew && (
@@ -1697,7 +1742,7 @@ function SingletonEditor({ schema, singleton }: { schema: Schema; singleton: Sin
       />
       <div className="flex min-h-0 flex-1">
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-2xl space-y-5 px-8 py-6">
+          <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8">
             <FormCard>
               <div className="space-y-6">
                 {singleton.fields.map((field) => (
