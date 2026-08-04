@@ -36,7 +36,22 @@ const adapter = new IdbAdapter()
 const EMPTY_SCHEMA: Schema = { version: 1, collections: [], singletons: [] }
 
 async function schema(): Promise<Schema> {
-  return (await loadSchema(adapter, CONTENT)) ?? EMPTY_SCHEMA
+  try {
+    return (await loadSchema(adapter, CONTENT)) ?? EMPTY_SCHEMA
+  } catch (strictErr) {
+    // A work-in-progress schema can fail strict validation (e.g. a select with
+    // no options yet, or a repeater with no subfields). The editor must still
+    // open it so the user can repair it — publishing validates strictly. Fall
+    // back to the raw structural shape; only a truly malformed file errors out.
+    const raw = await adapter.read(`${CONTENT}/_schema.json`)
+    if (raw) {
+      const j = JSON.parse(raw) as Schema
+      if (j?.version === 1 && Array.isArray(j.collections) && Array.isArray(j.singletons)) {
+        return j
+      }
+    }
+    throw strictErr
+  }
 }
 async function store(): Promise<ContentStore> {
   return new ContentStore(adapter, await schema(), CONTENT)

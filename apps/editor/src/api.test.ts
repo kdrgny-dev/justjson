@@ -82,4 +82,19 @@ describe('api client (IndexedDB-backed)', () => {
     await deleteEntry('posts', 'gone')
     expect(await getEntry('posts', 'gone')).toBeNull()
   })
+
+  // A work-in-progress schema can fail strict validation (e.g. a select with no
+  // options yet). The editor must still open it so the user can repair it —
+  // otherwise one bad field bricks the whole app.
+  it('opens a strict-invalid schema instead of bricking', async () => {
+    const invalid: Schema = {
+      version: 1,
+      collections: [
+        { name: 'svc', label: 'Svc', path: 'svc', fields: [{ key: 'plan', type: 'select' }] },
+      ],
+      singletons: [],
+    }
+    await putSchema(invalid)
+    await expect(getSchema()).resolves.toEqual(invalid)
+  })
 })

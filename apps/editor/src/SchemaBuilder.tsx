@@ -865,60 +865,82 @@ function GroupFieldsEditor({
     <div className="space-y-1.5 rounded-lg border border-dashed bg-muted/20 p-2.5">
       {subs.map((sub, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: alt alanlar konuma göre kimliklenir; key düzenlenirken remount/focus kaybını önler
-        <div key={i} className="flex items-center gap-1.5">
-          <Select
-            value={sub.type}
-            onValueChange={(v) =>
-              onChange((f) => {
-                const s = f.fields?.[i]
-                if (s) s.type = v as FieldType
-              })
-            }
-          >
-            <SelectTrigger className="h-8 w-[7.5rem] shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SUB_FIELD_TYPES.map(({ type, label }) => (
-                <SelectItem key={type} value={type}>
-                  {t(label)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Input
-            className="h-8 flex-1 font-mono text-xs"
-            value={sub.key}
-            placeholder={t('key')}
-            onChange={(e) =>
-              onChange((f) => {
-                const s = f.fields?.[i]
-                if (s) s.key = slugify(e.target.value)
-              })
-            }
-          />
-          <Input
-            className="h-8 flex-1"
-            value={sub.label ?? ''}
-            placeholder={t('Display name')}
-            onChange={(e) =>
-              onChange((f) => {
-                const s = f.fields?.[i]
-                if (s) s.label = e.target.value
-              })
-            }
-          />
-          <IconButton
-            label={t('Delete sub-field')}
-            danger
-            onClick={() =>
-              onChange((f) => {
-                if (f.fields) f.fields = f.fields.filter((_, idx) => idx !== i)
-              })
-            }
-          >
-            <X />
-          </IconButton>
+        <div key={i} className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <Select
+              value={sub.type}
+              onValueChange={(v) =>
+                onChange((f) => {
+                  const s = f.fields?.[i]
+                  if (s) {
+                    s.type = v as FieldType
+                    if (v !== 'select') s.options = undefined
+                  }
+                })
+              }
+            >
+              <SelectTrigger className="h-8 w-[7.5rem] shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUB_FIELD_TYPES.map(({ type, label }) => (
+                  <SelectItem key={type} value={type}>
+                    {t(label)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              className="h-8 flex-1 font-mono text-xs"
+              value={sub.key}
+              placeholder={t('key')}
+              onChange={(e) =>
+                onChange((f) => {
+                  const s = f.fields?.[i]
+                  if (s) s.key = slugify(e.target.value)
+                })
+              }
+            />
+            <Input
+              className="h-8 flex-1"
+              value={sub.label ?? ''}
+              placeholder={t('Display name')}
+              onChange={(e) =>
+                onChange((f) => {
+                  const s = f.fields?.[i]
+                  if (s) s.label = e.target.value
+                })
+              }
+            />
+            <IconButton
+              label={t('Delete sub-field')}
+              danger
+              onClick={() =>
+                onChange((f) => {
+                  if (f.fields) f.fields = f.fields.filter((_, idx) => idx !== i)
+                })
+              }
+            >
+              <X />
+            </IconButton>
+          </div>
+          {sub.type === 'select' && (
+            <Input
+              className="ml-[8rem] h-8 text-xs"
+              value={(sub.options ?? []).join(', ')}
+              placeholder={t('options (comma separated)')}
+              onChange={(e) =>
+                onChange((f) => {
+                  const s = f.fields?.[i]
+                  if (s)
+                    s.options = e.target.value
+                      .split(',')
+                      .map((o) => o.trim())
+                      .filter(Boolean)
+                })
+              }
+            />
+          )}
         </div>
       ))}
       <Button
