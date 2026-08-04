@@ -132,7 +132,10 @@ export function Ship({ schema }: { schema: Schema }) {
               </p>
             ) : (
               <div className="space-y-1.5">
-                <Label htmlFor="addr" className="text-xs uppercase tracking-wide text-muted-foreground">
+                <Label
+                  htmlFor="addr"
+                  className="text-xs uppercase tracking-wide text-muted-foreground"
+                >
                   {t('Address')}
                 </Label>
                 <div className="flex items-center">
@@ -155,13 +158,7 @@ export function Ship({ schema }: { schema: Schema }) {
             )}
 
             <Button onClick={publish} disabled={busy} className="w-full">
-              {busy ? (
-                <Loader2 className="animate-spin" />
-              ) : published ? (
-                <RefreshCw />
-              ) : (
-                <Rocket />
-              )}
+              {busy ? <Loader2 className="animate-spin" /> : published ? <RefreshCw /> : <Rocket />}
               {published ? t('Republish') : t('Connect Netlify & publish')}
             </Button>
 

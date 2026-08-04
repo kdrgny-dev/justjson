@@ -25,6 +25,7 @@ import cv from './templates/cv.json'
 import docs from './templates/docs.json'
 import event from './templates/event.json'
 import portfolio from './templates/portfolio.json'
+import psikolog from './templates/psikolog.json'
 import recipe from './templates/recipe.json'
 
 export type { EntryRow }
@@ -49,9 +50,15 @@ interface Template {
   samples: Record<string, Record<string, unknown>[] | Record<string, unknown>>
 }
 const templates: Record<string, Template> = {
-  blog: blog as Template, cv: cv as Template, portfolio: portfolio as Template,
-  docs: docs as Template, changelog: changelog as Template, recipe: recipe as Template,
-  event: event as Template, catalog: catalog as Template,
+  blog: blog as Template,
+  cv: cv as Template,
+  portfolio: portfolio as Template,
+  docs: docs as Template,
+  changelog: changelog as Template,
+  recipe: recipe as Template,
+  event: event as Template,
+  catalog: catalog as Template,
+  psikolog: psikolog as Template,
 }
 
 export interface TemplateMeta {
@@ -73,8 +80,11 @@ export interface ProjectInfo {
 export async function getProject(): Promise<ProjectInfo> {
   const s = await schema()
   return {
-    name: proj.activeProject().name, path: 'browser', contentDir: CONTENT,
-    collections: s.collections.length, singletons: s.singletons.length,
+    name: proj.activeProject().name,
+    path: 'browser',
+    contentDir: CONTENT,
+    collections: s.collections.length,
+    singletons: s.singletons.length,
   }
 }
 
@@ -90,7 +100,8 @@ export function deleteProject(id: string): void {
   proj.removeProject(id)
 }
 export const getSiteMeta = (id: string) => proj.getSite(id)
-export const setSiteMeta = (id: string, siteId: string, url: string) => proj.setSite(id, siteId, url)
+export const setSiteMeta = (id: string, siteId: string, url: string) =>
+  proj.setSite(id, siteId, url)
 
 export async function getSchema(): Promise<Schema> {
   return schema()
@@ -100,8 +111,13 @@ export async function listTemplates(): Promise<TemplateMeta[]> {
   return Object.entries(templates).map(([id, t]) => {
     const s = t.schema as Schema
     return {
-      id, title: t.title, description: t.description,
-      collections: s.collections.map((c) => ({ label: c.label ?? c.name, fields: c.fields.length })),
+      id,
+      title: t.title,
+      description: t.description,
+      collections: s.collections.map((c) => ({
+        label: c.label ?? c.name,
+        fields: c.fields.length,
+      })),
       singletons: s.singletons.map((sg) => ({ label: sg.label ?? sg.name })),
     }
   })
@@ -241,8 +257,13 @@ export type { Theme }
 // ---------- ship / preview (wired to host adapters in a later step) ----------
 export type Framework = 'astro' | 'next' | 'nuxt' | 'sveltekit' | 'vite' | 'node' | 'unknown'
 export interface GitStatus {
-  isRepo: boolean; branch: string | null; hasRemote: boolean; remoteUrl: string | null
-  pendingFiles: number; remoteWebUrl: string | null; hasGh: boolean
+  isRepo: boolean
+  branch: string | null
+  hasRemote: boolean
+  remoteUrl: string | null
+  pendingFiles: number
+  remoteWebUrl: string | null
+  hasGh: boolean
 }
 export interface ShipInfo {
   framework: Framework
@@ -251,17 +272,32 @@ export interface ShipInfo {
 export async function getShip(): Promise<ShipInfo> {
   return {
     framework: 'unknown',
-    git: { isRepo: false, branch: null, hasRemote: false, remoteUrl: null, pendingFiles: 0, remoteWebUrl: null, hasGh: false },
+    git: {
+      isRepo: false,
+      branch: null,
+      hasRemote: false,
+      remoteUrl: null,
+      pendingFiles: 0,
+      remoteWebUrl: null,
+      hasGh: false,
+    },
   }
 }
 const shipNA = (): never => {
   throw new Error('Publishing from the browser is coming next.')
 }
 export const shipScaffold = async (): Promise<{ written: string[]; skipped: string[] }> => shipNA()
-export const shipPublish = async (_message: string): Promise<{ committed: boolean; count: number; branch: string }> => shipNA()
-export const shipCommit = async (_message: string): Promise<{ committed: boolean; count: number }> => shipNA()
+export const shipPublish = async (
+  _message: string,
+): Promise<{ committed: boolean; count: number; branch: string }> => shipNA()
+export const shipCommit = async (
+  _message: string,
+): Promise<{ committed: boolean; count: number }> => shipNA()
 export const shipPush = async (): Promise<{ branch: string }> => shipNA()
-export const shipCreateRepo = async (_name: string, _isPrivate: boolean): Promise<{ name: string }> => shipNA()
+export const shipCreateRepo = async (
+  _name: string,
+  _isPrivate: boolean,
+): Promise<{ name: string }> => shipNA()
 
 export type PreviewState =
   | { status: 'idle' }

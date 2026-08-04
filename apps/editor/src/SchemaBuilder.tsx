@@ -88,6 +88,11 @@ function groupSeed(): { fields: Field[] } {
   return { fields: [{ key: 'field1', label: '', type: 'text' }] }
 }
 
+// group + repeater both hold sub-fields (repeater = an array of group rows).
+function hasSubfields(type: Field['type']): boolean {
+  return type === 'group' || type === 'repeater'
+}
+
 function uniqueName(base: string, taken: string[]): string {
   let n = 1
   while (taken.includes(`${base}${n}`)) n += 1
@@ -184,8 +189,8 @@ export function SchemaBuilder({
           'field',
           container.fields.map((f) => f.key),
         )
-        // group şema düzeyinde en az bir alt alan ister; boş eklenirse kaydedilemez.
-        container.fields.push({ key, label: '', type, ...(type === 'group' ? groupSeed() : {}) })
+        // group/repeater şema düzeyinde en az bir alt alan ister; boş eklenirse kaydedilemez.
+        container.fields.push({ key, label: '', type, ...(hasSubfields(type) ? groupSeed() : {}) })
         idList[picker.ci]?.fields.push(uid('f'))
       } else {
         const f = container.fields[picker.fi]
@@ -193,7 +198,7 @@ export function SchemaBuilder({
         f.type = type
         if (type !== 'select') f.options = undefined
         if (type !== 'relation') f.to = undefined
-        if (type !== 'group') f.fields = undefined
+        if (!hasSubfields(type)) f.fields = undefined
         else if (!f.fields || f.fields.length === 0) f.fields = groupSeed().fields
       }
     })
@@ -836,7 +841,7 @@ function FieldRow({
           </Select>
         </div>
       )}
-      {field.type === 'group' && (
+      {(field.type === 'group' || field.type === 'repeater') && (
         <div className="col-start-3 col-end-[-1] row-start-2 mt-1">
           <GroupFieldsEditor field={field} onChange={onChange} />
         </div>
@@ -845,8 +850,8 @@ function FieldRow({
   )
 }
 
-// group alanları tek seviye iç içe; sadeleştirmek için alt-alanlar 'group' olamaz.
-const SUB_FIELD_TYPES = FIELD_TYPES.filter((f) => f.type !== 'group')
+// tek seviye iç içe; alt-alanlar container (group/repeater) olamaz.
+const SUB_FIELD_TYPES = FIELD_TYPES.filter((f) => f.type !== 'group' && f.type !== 'repeater')
 
 function GroupFieldsEditor({
   field,

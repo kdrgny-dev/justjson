@@ -1,6 +1,7 @@
 // Theme registry for Studio: bundled (ship-with-Studio) themes + user-imported
 // premium ThemeBundles (localStorage), plus the per-project selected theme.
 // Backend-free — see docs/theme-asset-architecture.md.
+import atelier from '../themes/atelier.json'
 import bold from '../themes/bold.json'
 import defaultTheme from '../themes/default.json'
 import editorial from '../themes/editorial.json'
@@ -16,6 +17,7 @@ export const BUNDLED_THEMES: ThemeBundle[] = [
   bold as ThemeBundle,
   editorial as ThemeBundle,
   signal as ThemeBundle,
+  atelier as ThemeBundle,
 ]
 
 const IMPORTED_KEY = 'jj_imported_themes'

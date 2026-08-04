@@ -2,12 +2,15 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
 import { cn } from '@/lib/utils'
-import { PALETTES, type Theme as SiteTheme, THEME_FONTS, themeCss } from '@justjson/core'
+import { PALETTES, type Schema, type Theme as SiteTheme, THEME_FONTS } from '@justjson/core'
 import { Check, Loader2, Save, Upload, X } from 'lucide-react'
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import * as api from './api'
+import { gatherProject } from './browser/gather'
+import { renderWithBundle } from './browser/render'
 import type { ThemeBundle } from './browser/theme-bundle'
 import {
   BUNDLED_THEMES,
@@ -20,14 +23,79 @@ import {
 import { PageBody, PageHeader, PageShell } from './components/PageShell'
 import { t } from './i18n'
 
+const ALL_TOKENS = ['palette', 'accent', 'font', 'radius', 'density']
+const DEFAULT_BUNDLE = BUNDLED_THEMES[0] as ThemeBundle
+
+// Which Design knobs a theme honors. Declared themes win; otherwise the default
+// theme is fully token-driven, and every other (premium) theme ships a finished
+// look tweakable only via accent.
+function tokensFor(bundle: ThemeBundle | undefined): Set<string> {
+  if (bundle?.tokens) return new Set(bundle.tokens)
+  return new Set(bundle?.id === 'default' ? ALL_TOKENS : ['accent'])
+}
+
 const HEX = /^#[0-9a-f]{6}$/i
-const PREVIEW_CLASS = 'jj-preview'
 
 const DENSITIES: { id: SiteTheme['density']; label: string }[] = [
   { id: 'tight', label: 'Tight' },
   { id: 'normal', label: 'Cozy' },
   { id: 'roomy', label: 'Roomy' },
 ]
+
+// Real preview: the user's own content rendered through the SELECTED bundle with
+// the CURRENT (unsaved) theme tokens — the same renderer as publishing. Switching
+// theme or tweaking a knob updates it. Debounced; whole-project re-gather is fine
+// (projects are small).
+function DesignPreview({
+  schema,
+  theme,
+  bundleId,
+}: {
+  schema: Schema
+  theme: SiteTheme
+  bundleId: string
+}) {
+  const [html, setHtml] = useState<string | null>(null)
+  const frameRef = useRef<HTMLIFrameElement>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const id = setTimeout(async () => {
+      const project = await gatherProject(schema)
+      project.theme = theme
+      const bundle = allThemes().find((b) => b.id === bundleId) ?? DEFAULT_BUNDLE
+      const files = renderWithBundle(project, bundle)
+      if (!cancelled) setHtml(files['/index.html'] ?? '')
+    }, 250)
+    return () => {
+      cancelled = true
+      clearTimeout(id)
+    }
+  }, [schema, theme, bundleId])
+
+  const onLoad = () => {
+    const doc = frameRef.current?.contentDocument
+    if (!doc) return
+    doc.documentElement.removeAttribute('data-js')
+    for (const el of doc.querySelectorAll('[data-reveal]')) el.setAttribute('data-shown', '')
+  }
+
+  if (html === null)
+    return (
+      <div className="flex h-[74vh] items-center justify-center rounded-xl border bg-card">
+        <Loader2 className="size-5 animate-spin text-primary" />
+      </div>
+    )
+  return (
+    <iframe
+      ref={frameRef}
+      srcDoc={html}
+      onLoad={onLoad}
+      title={t('Live preview')}
+      className="h-[74vh] w-full rounded-xl border bg-white shadow-sm"
+    />
+  )
+}
 
 function sameTheme(a: SiteTheme, b: SiteTheme): boolean {
   return (
@@ -37,12 +105,6 @@ function sameTheme(a: SiteTheme, b: SiteTheme): boolean {
     a.radius === b.radius &&
     a.density === b.density
   )
-}
-
-// themeCss yazdığı :root bloğu editörün kendisini boyamasın diye önizleme
-// kapsayıcısının sınıfına daraltılır.
-function scopedThemeCss(theme: SiteTheme): string {
-  return themeCss(theme).replace(':root {', `.${PREVIEW_CLASS} {`)
 }
 
 // App.tsx'teki ColorInput dışa açık değil; buranın küçük yerel sürümü.
@@ -81,59 +143,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
-function PreviewSample() {
-  return (
-    <>
-      <h1>{t('The Quiet Ledger')}</h1>
-      <p className="lead">
-        {t(
-          'A small journal of things worth keeping. This is exactly how your generated site renders — same colors, type, spacing and corners.',
-        )}
-      </p>
-
-      <h2>{t('Recent entries')}</h2>
-      <ul>
-        <li>
-          <a href="#preview">{t('On keeping notes in plain files')}</a>
-          <div>
-            <time>2026-03-04</time>
-          </div>
-        </li>
-        <li>
-          <a href="#preview">{t('A field guide to small tools')}</a>
-          <div>
-            <time>2026-02-19</time>
-          </div>
-        </li>
-        <li>
-          <a href="#preview">{t('Why JSON, and nothing more')}</a>
-          <div>
-            <time>2026-01-28</time>
-          </div>
-        </li>
-      </ul>
-
-      <p>
-        {t('Built from')} <code>content/_theme.json</code>.{' '}
-        <a href="#preview">{t('Read the latest')}</a>
-      </p>
-
-      <span className="btn">{t('Subscribe')}</span>
-    </>
-  )
-}
-
 const BUNDLED_IDS = new Set(BUNDLED_THEMES.map((t) => t.id))
 
-function ThemePicker() {
+function ThemePicker({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) {
   const [themes, setThemes] = useState<ThemeBundle[]>(() => allThemes())
-  const [selected, setSelected] = useState<string>(() => getSelectedThemeId())
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const select = (id: string) => {
-    setSelectedThemeId(id)
-    setSelected(id)
-  }
+  const select = onSelect
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -214,11 +230,11 @@ function ThemePicker() {
   )
 }
 
-export function Theme(): JSX.Element {
+export function Theme({ schema }: { schema: Schema }): JSX.Element {
   const [theme, setTheme] = useState<SiteTheme | null>(null)
   const [saved, setSaved] = useState<SiteTheme | null>(null)
   const [saving, setSaving] = useState(false)
-  const styleId = useId()
+  const [selectedId, setSelectedId] = useState<string>(() => getSelectedThemeId())
 
   useEffect(() => {
     let alive = true
@@ -239,7 +255,15 @@ export function Theme(): JSX.Element {
     setTheme((prev) => (prev ? { ...prev, ...next } : prev))
   }, [])
 
-  const css = useMemo(() => (theme ? scopedThemeCss(theme) : ''), [theme])
+  const selectTheme = useCallback((id: string) => {
+    setSelectedThemeId(id)
+    setSelectedId(id)
+  }, [])
+
+  const tokens = useMemo(
+    () => tokensFor(allThemes().find((b) => b.id === selectedId)),
+    [selectedId],
+  )
   const dirty = theme !== null && saved !== null && !sameTheme(theme, saved)
 
   const save = async () => {
@@ -280,123 +304,131 @@ export function Theme(): JSX.Element {
         ) : (
           <div className="grid gap-6 px-8 py-6 lg:grid-cols-[380px_minmax(0,1fr)]">
             <div className="space-y-6">
-              <ThemePicker />
+              <ThemePicker selected={selectedId} onSelect={selectTheme} />
 
-              <Field label={t('Palette')}>
-                <div className="grid grid-cols-5 gap-2">
-                  {PALETTES.map((p) => {
-                    const active = p.id === theme.palette
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => patch({ palette: p.id })}
-                        aria-pressed={active}
-                        title={p.label}
-                        className={cn(
-                          'flex flex-col items-stretch overflow-hidden rounded-lg border text-left outline-none transition-shadow focus-visible:ring-3 focus-visible:ring-ring/50',
-                          active
-                            ? 'ring-2 ring-ring ring-offset-2 ring-offset-background'
-                            : 'hover:border-foreground/30',
-                        )}
-                        style={{ borderColor: p.border }}
-                      >
-                        <span
-                          className="flex h-11 items-center justify-center text-sm font-semibold"
-                          style={{ backgroundColor: p.bg, color: p.text }}
+              {!tokens.has('palette') && !tokens.has('font') && (
+                <p className="rounded-lg border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                  {t('This theme ships a finished design — tune the accent to match your brand.')}
+                </p>
+              )}
+
+              {tokens.has('palette') && (
+                <Field label={t('Palette')}>
+                  <div className="grid grid-cols-5 gap-2">
+                    {PALETTES.map((p) => {
+                      const active = p.id === theme.palette
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => patch({ palette: p.id })}
+                          aria-pressed={active}
+                          title={p.label}
+                          className={cn(
+                            'flex flex-col items-stretch overflow-hidden rounded-lg border text-left outline-none transition-shadow focus-visible:ring-3 focus-visible:ring-ring/50',
+                            active
+                              ? 'ring-2 ring-ring ring-offset-2 ring-offset-background'
+                              : 'hover:border-foreground/30',
+                          )}
+                          style={{ borderColor: p.border }}
                         >
-                          Aa
-                        </span>
-                        <span
-                          className="border-t px-1 py-1 text-center text-[10px] text-muted-foreground"
-                          style={{ borderColor: p.border, backgroundColor: p.bg, color: p.muted }}
+                          <span
+                            className="flex h-11 items-center justify-center text-sm font-semibold"
+                            style={{ backgroundColor: p.bg, color: p.text }}
+                          >
+                            Aa
+                          </span>
+                          <span
+                            className="border-t px-1 py-1 text-center text-[10px] text-muted-foreground"
+                            style={{ borderColor: p.border, backgroundColor: p.bg, color: p.muted }}
+                          >
+                            {p.label}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </Field>
+              )}
+
+              {tokens.has('accent') && (
+                <Field label={t('Accent')}>
+                  <ColorInput value={theme.accent} onChange={(accent) => patch({ accent })} />
+                </Field>
+              )}
+
+              {tokens.has('font') && (
+                <Field label={t('Font')}>
+                  <div className="grid grid-cols-2 gap-2">
+                    {THEME_FONTS.map((f) => {
+                      const active = f.id === theme.font
+                      return (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => patch({ font: f.id })}
+                          aria-pressed={active}
+                          style={{ fontFamily: f.stack }}
+                          className={cn(
+                            'flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50',
+                            active
+                              ? 'border-primary bg-primary/5 text-foreground'
+                              : 'border-border text-muted-foreground hover:bg-muted',
+                          )}
                         >
-                          {p.label}
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </Field>
+                          <span>{f.label}</span>
+                          {active && <Check className="size-3.5 shrink-0 text-primary" />}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </Field>
+              )}
 
-              <Field label={t('Accent')}>
-                <ColorInput value={theme.accent} onChange={(accent) => patch({ accent })} />
-              </Field>
+              {tokens.has('radius') && (
+                <Field label={t('Corners: {n}px', { n: theme.radius })}>
+                  <Slider
+                    min={0}
+                    max={24}
+                    step={1}
+                    value={[theme.radius]}
+                    onValueChange={([v]) => patch({ radius: v })}
+                    aria-label={t('Corner radius in pixels')}
+                    className="w-full"
+                  />
+                </Field>
+              )}
 
-              <Field label={t('Font')}>
-                <div className="grid grid-cols-2 gap-2">
-                  {THEME_FONTS.map((f) => {
-                    const active = f.id === theme.font
-                    return (
-                      <button
-                        key={f.id}
-                        type="button"
-                        onClick={() => patch({ font: f.id })}
-                        aria-pressed={active}
-                        style={{ fontFamily: f.stack }}
-                        className={cn(
-                          'flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50',
-                          active
-                            ? 'border-primary bg-primary/5 text-foreground'
-                            : 'border-border text-muted-foreground hover:bg-muted',
-                        )}
-                      >
-                        <span>{f.label}</span>
-                        {active && <Check className="size-3.5 shrink-0 text-primary" />}
-                      </button>
-                    )
-                  })}
-                </div>
-              </Field>
-
-              <Field label={t('Corners: {n}px', { n: theme.radius })}>
-                <input
-                  type="range"
-                  min={0}
-                  max={24}
-                  step={1}
-                  value={theme.radius}
-                  onChange={(e) => patch({ radius: Number(e.target.value) })}
-                  aria-label={t('Corner radius in pixels')}
-                  className="w-full accent-primary"
-                />
-              </Field>
-
-              <Field label={t('Density')}>
-                <div className="grid grid-cols-3 gap-2">
-                  {DENSITIES.map((d) => {
-                    const active = d.id === theme.density
-                    return (
-                      <button
-                        key={d.id}
-                        type="button"
-                        onClick={() => patch({ density: d.id })}
-                        aria-pressed={active}
-                        className={cn(
-                          'rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50',
-                          active
-                            ? 'border-primary bg-primary/5 text-foreground'
-                            : 'border-border text-muted-foreground hover:bg-muted',
-                        )}
-                      >
-                        {t(d.label)}
-                      </button>
-                    )
-                  })}
-                </div>
-              </Field>
+              {tokens.has('density') && (
+                <Field label={t('Density')}>
+                  <div className="grid grid-cols-3 gap-2">
+                    {DENSITIES.map((d) => {
+                      const active = d.id === theme.density
+                      return (
+                        <button
+                          key={d.id}
+                          type="button"
+                          onClick={() => patch({ density: d.id })}
+                          aria-pressed={active}
+                          className={cn(
+                            'rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50',
+                            active
+                              ? 'border-primary bg-primary/5 text-foreground'
+                              : 'border-border text-muted-foreground hover:bg-muted',
+                          )}
+                        >
+                          {t(d.label)}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </Field>
+              )}
             </div>
 
-            <div className="min-w-0">
+            <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
               <p className="mb-2 text-xs font-medium text-muted-foreground">{t('Live preview')}</p>
-              <style id={styleId}>{`${css}\n${PREVIEW_STYLES}`}</style>
-              <div className="overflow-hidden rounded-xl border shadow-sm">
-                <div className={cn(PREVIEW_CLASS, 'overflow-x-auto')}>
-                  <div className="jj-page">
-                    <PreviewSample />
-                  </div>
-                </div>
-              </div>
+              <DesignPreview schema={schema} theme={theme} bundleId={selectedId} />
             </div>
           </div>
         )}
@@ -404,53 +436,3 @@ export function Theme(): JSX.Element {
     </PageShell>
   )
 }
-
-// Üretilen sitenin (scaffold) eleman stilleri, önizleme sınıfına kapsanmış hali.
-const PREVIEW_STYLES = `
-.${PREVIEW_CLASS} {
-  background: var(--jj-bg);
-  color: var(--jj-text);
-  font-family: var(--jj-font);
-  line-height: var(--jj-lead);
-}
-.${PREVIEW_CLASS} .jj-page {
-  max-width: 44rem;
-  margin: 0 auto;
-  padding: var(--jj-page) 1.25rem;
-  font-size: 16px;
-}
-.${PREVIEW_CLASS} h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 0.35rem; }
-.${PREVIEW_CLASS} h2 {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--jj-muted);
-  margin: calc(var(--jj-page) * 0.8) 0 var(--jj-gap);
-}
-.${PREVIEW_CLASS} p { margin: 0 0 var(--jj-gap); }
-.${PREVIEW_CLASS} .lead { margin-bottom: var(--jj-page); }
-.${PREVIEW_CLASS} ul { list-style: none; margin: 0 0 var(--jj-gap); padding: 0; }
-.${PREVIEW_CLASS} li + li { margin-top: var(--jj-gap); }
-.${PREVIEW_CLASS} a { color: var(--jj-accent); text-decoration: none; }
-.${PREVIEW_CLASS} a:hover { text-decoration: underline; }
-.${PREVIEW_CLASS} time { color: var(--jj-muted); font-size: 0.9rem; }
-.${PREVIEW_CLASS} code {
-  background: color-mix(in oklab, var(--jj-text) 8%, transparent);
-  padding: 0.1em 0.35em;
-  border-radius: calc(var(--jj-radius) / 2);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-.${PREVIEW_CLASS} .btn {
-  display: inline-block;
-  margin-top: var(--jj-gap);
-  padding: 0.5em 1em;
-  background: var(--jj-accent);
-  color: var(--jj-bg);
-  border-radius: var(--jj-radius);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-@media (prefers-reduced-motion: reduce) {
-  .${PREVIEW_CLASS} * { transition: none !important; }
-}
-`

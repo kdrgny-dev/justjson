@@ -20,10 +20,17 @@ export async function gatherProject(schema: Schema): Promise<ProjectData> {
   for (const c of schema.collections) {
     const rows = await api.listRows(c.name)
     const list: { slug: string; data: Record<string, unknown> }[] = []
-    for (const r of rows) list.push({ slug: r.slug, data: (await api.getEntry(c.name, r.slug)) ?? {} })
+    for (const r of rows)
+      list.push({ slug: r.slug, data: (await api.getEntry(c.name, r.slug)) ?? {} })
     entries[c.name] = list
   }
   const singletons: ProjectData['singletons'] = {}
   for (const s of schema.singletons) singletons[s.name] = await api.getSingleton(s.name)
-  return { schema, entries, singletons, theme, siteName: pickName(singletons, activeProject().name) }
+  return {
+    schema,
+    entries,
+    singletons,
+    theme,
+    siteName: pickName(singletons, activeProject().name),
+  }
 }

@@ -53,6 +53,8 @@ function typeError(field: Field, value: unknown): string | null {
         return 'expected an object'
       }
       return null
+    case 'repeater':
+      return Array.isArray(value) ? null : 'expected a list of rows'
     case 'number':
       return typeof value === 'number' ? null : 'expected a number'
     case 'boolean':

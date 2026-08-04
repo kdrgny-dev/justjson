@@ -1,0 +1,49 @@
+<header class="site-head" data-reveal>
+  <a class="brand" href="{{homeUrl}}">{{siteName}}</a>
+  <nav class="nav-links">
+    {{#nav}}<a class="nav-link" href="{{url}}"{{#active}} aria-current="page"{{/active}}>{{label}}</a>{{/nav}}
+  </nav>
+</header>
+
+<main class="article-wrap">
+  <article class="article" data-reveal>
+    <h1 class="article-title page-title">{{slots.title}}</h1>
+    {{#slots.lead}}<p class="article-lead">{{slots.lead}}</p>{{/slots.lead}}
+    {{#slots.cover}}<figure class="article-cover"><img src="{{slots.cover}}" alt="{{slots.title}}"></figure>{{/slots.cover}}
+    <div class="article-body rt">{{{slots.body}}}</div>
+    {{{slots.extras}}}
+    {{#slots.meta.length}}
+    <div class="article-meta article-meta-foot">
+      {{#slots.meta}}{{#href}}<a href="{{href}}">{{value}}</a>{{/href}}{{^href}}<span>{{value}}</span>{{/href}}{{/slots.meta}}
+    </div>
+    {{/slots.meta.length}}
+  </article>
+</main>
+
+<footer class="foot" data-reveal>
+  <div class="foot-in">
+    <div class="foot-brand">
+      <p class="foot-mark">{{siteName}}</p>
+      <nav class="foot-nav">{{#nav}}<a href="{{url}}">{{label}}</a>{{/nav}}</nav>
+    </div>
+    {{#contact.length}}
+    <div class="foot-contact">
+      {{#contact}}{{#href}}<a class="foot-line" href="{{href}}">{{display}}</a>{{/href}}{{^href}}<span class="foot-line">{{display}}</span>{{/href}}{{/contact}}
+    </div>
+    {{/contact.length}}
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var r = document.documentElement
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    r.setAttribute('data-js', '')
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) { e.target.setAttribute('data-shown', ''); io.unobserve(e.target) }
+      })
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' })
+    document.querySelectorAll('[data-reveal]').forEach(function (el) { io.observe(el) })
+  })()
+</script>

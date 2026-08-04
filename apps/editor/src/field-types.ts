@@ -11,6 +11,7 @@ import {
   Link2,
   List,
   Palette,
+  Rows3,
   Tags,
   ToggleLeft,
   Type,
@@ -37,6 +38,12 @@ export const FIELD_TYPES: FieldTypeMeta[] = [
   { type: 'list', label: 'List', desc: 'Free-text tags', icon: Tags },
   { type: 'color', label: 'Color', desc: 'Hex color picker', icon: Palette },
   { type: 'group', label: 'Group', desc: 'Nested fields', icon: Boxes },
+  {
+    type: 'repeater',
+    label: 'Repeater',
+    desc: 'Repeatable rows (e.g. a price table)',
+    icon: Rows3,
+  },
 ]
 
 export const FIELD_META = Object.fromEntries(FIELD_TYPES.map((f) => [f.type, f])) as Record<

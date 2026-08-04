@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import {
   Dialog,
   DialogClose,
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -28,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Toaster } from '@/components/ui/sonner'
+import { Switch } from '@/components/ui/switch'
 import {
   Table,
   TableBody,
@@ -44,7 +47,11 @@ import {
   AlertTriangle,
   Boxes,
   Braces,
+  CalendarDays,
+  Check,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   ChevronsUpDown,
   Copy,
   Download,
@@ -67,6 +74,7 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { LivePreview } from './LivePreview'
 import { Preview } from './Preview'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
@@ -88,6 +96,7 @@ import {
 import { SKELETON_KEYS, Skeleton } from './components/Skeleton'
 import { FIELD_META } from './field-types'
 import { LANGS, getLang, setLang, t, tp, useLang } from './i18n'
+import { fileToWebpBase64 } from './lib/media'
 
 type Selection =
   | { kind: 'schema' }
@@ -334,39 +343,10 @@ function Sidebar({
         </div>
       )}
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pt-3 pb-4">
-        <SchemaNavItem active={selection?.kind === 'schema'} onClick={() => onOpenSchema()} />
-        <NavItem
-          icon={<Braces className="h-4 w-4" />}
-          active={selection?.kind === 'json'}
-          onClick={() => onSelect({ kind: 'json' })}
-        >
-          {t('Raw JSON')}
-        </NavItem>
-        <NavItem
-          icon={<Palette className="h-4 w-4" />}
-          active={selection?.kind === 'theme'}
-          onClick={() => onSelect({ kind: 'theme' })}
-        >
-          {t('Design')}
-        </NavItem>
-        <NavItem
-          icon={<Eye className="h-4 w-4" />}
-          active={selection?.kind === 'preview'}
-          onClick={() => onSelect({ kind: 'preview' })}
-        >
-          {t('Preview')}
-        </NavItem>
-        <NavItem
-          icon={<Rocket className="h-4 w-4" />}
-          active={selection?.kind === 'ship'}
-          onClick={() => onSelect({ kind: 'ship' })}
-        >
-          {t('Ship it')}
-        </NavItem>
-
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pt-1 pb-4">
+        {/* Content first — the everyday job for a non-technical author. */}
         <NavSection
-          label={t('Collections')}
+          label={t('Content')}
           addLabel={t('Add collection')}
           onAdd={() => onOpenSchema('collection')}
         >
@@ -389,7 +369,7 @@ function Sidebar({
         </NavSection>
 
         <NavSection
-          label={t('Singletons')}
+          label={t('Details')}
           addLabel={t('Add singleton')}
           onAdd={() => onOpenSchema('singleton')}
         >
@@ -409,6 +389,49 @@ function Sidebar({
               </NavItem>
             ))
           )}
+        </NavSection>
+
+        {/* Site tools */}
+        <NavSection label={t('Site')}>
+          <NavItem
+            icon={<Palette className="h-4 w-4" />}
+            active={selection?.kind === 'theme'}
+            onClick={() => onSelect({ kind: 'theme' })}
+          >
+            {t('Design')}
+          </NavItem>
+          <NavItem
+            icon={<Eye className="h-4 w-4" />}
+            active={selection?.kind === 'preview'}
+            onClick={() => onSelect({ kind: 'preview' })}
+          >
+            {t('Preview')}
+          </NavItem>
+          <NavItem
+            icon={<Rocket className="h-4 w-4" />}
+            active={selection?.kind === 'ship'}
+            onClick={() => onSelect({ kind: 'ship' })}
+          >
+            {t('Publish')}
+          </NavItem>
+        </NavSection>
+
+        {/* Advanced — structure + raw files; a non-dev rarely needs these. */}
+        <NavSection label={t('Advanced')}>
+          <NavItem
+            icon={<PencilRuler className="h-4 w-4" />}
+            active={selection?.kind === 'schema'}
+            onClick={() => onOpenSchema()}
+          >
+            {t('Structure')}
+          </NavItem>
+          <NavItem
+            icon={<Braces className="h-4 w-4" />}
+            active={selection?.kind === 'json'}
+            onClick={() => onSelect({ kind: 'json' })}
+          >
+            {t('Raw JSON')}
+          </NavItem>
         </NavSection>
       </nav>
     </aside>
@@ -616,32 +639,6 @@ function ProjectMenu({
   )
 }
 
-function SchemaNavItem({ active, onClick }: { active: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors',
-        active ? 'bg-accent text-primary' : 'text-muted-foreground hover:bg-accent/60',
-      )}
-    >
-      <PencilRuler className="h-4 w-4 shrink-0" />
-      <span className="min-w-0">
-        <span className="block text-sm font-medium leading-tight">{t('Schema')}</span>
-        <span
-          className={cn(
-            'block text-xs leading-tight',
-            active ? 'text-primary/70' : 'text-muted-foreground/70',
-          )}
-        >
-          {t('Content structure')}
-        </span>
-      </span>
-    </button>
-  )
-}
-
 function NavSection({
   label,
   addLabel,
@@ -649,8 +646,8 @@ function NavSection({
   children,
 }: {
   label: string
-  addLabel: string
-  onAdd: () => void
+  addLabel?: string
+  onAdd?: () => void
   children: React.ReactNode
 }) {
   return (
@@ -659,20 +656,22 @@ function NavSection({
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">
           {label}
         </p>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              onClick={onAdd}
-              className="text-muted-foreground hover:text-primary"
-            >
-              <Plus />
-              <span className="sr-only">{addLabel}</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{addLabel}</TooltipContent>
-        </Tooltip>
+        {onAdd && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                onClick={onAdd}
+                className="text-muted-foreground hover:text-primary"
+              >
+                <Plus />
+                <span className="sr-only">{addLabel}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{addLabel}</TooltipContent>
+          </Tooltip>
+        )}
       </div>
       <div className="space-y-0.5">{children}</div>
     </div>
@@ -739,20 +738,7 @@ function MainArea({
   onBrowseTemplates?: () => void
 }) {
   if (!selection)
-    return (
-      <EmptyState
-        icon={<Boxes className="h-6 w-6" />}
-        title={t('Start on the left')}
-        hint={t(
-          'Pick a collection or singleton to start editing. To change the structure, go to Schema.',
-        )}
-        action={
-          <Button onClick={() => onOpenSchema()}>
-            <PencilRuler /> {t('Open schema')}
-          </Button>
-        }
-      />
-    )
+    return <ProjectHome schema={schema} onSelect={onSelect} onOpenSchema={onOpenSchema} />
 
   if (selection.kind === 'schema') {
     return (
@@ -775,7 +761,7 @@ function MainArea({
   }
 
   if (selection.kind === 'theme') {
-    return <Theme />
+    return <Theme schema={schema} />
   }
 
   if (selection.kind === 'preview') {
@@ -801,6 +787,7 @@ function MainArea({
     return (
       <EntryEditor
         key={`${col.name}/${slug ?? 'new'}`}
+        schema={schema}
         collection={col}
         slug={slug}
         onSaved={(s) => onSelect({ kind: 'entry', collection: col.name, slug: s })}
@@ -811,7 +798,154 @@ function MainArea({
 
   const s = schema.singletons.find((x) => x.name === selection.name)
   if (!s) return <Centered>{t('This singleton no longer exists.')}</Centered>
-  return <SingletonEditor key={s.name} singleton={s} />
+  return <SingletonEditor key={s.name} schema={schema} singleton={s} />
+}
+
+// The project's home when nothing is selected: a friendly, non-technical
+// starting point — jump into content, or preview/publish — instead of an empty
+// "pick something on the left" void.
+function ProjectHome({
+  schema,
+  onSelect,
+  onOpenSchema,
+}: {
+  schema: Schema
+  onSelect: (s: Selection) => void
+  onOpenSchema: (add?: 'collection' | 'singleton') => void
+}) {
+  const empty = schema.collections.length === 0 && schema.singletons.length === 0
+  if (empty)
+    return (
+      <EmptyState
+        icon={<Boxes className="h-6 w-6" />}
+        title={t('Let’s set up your site')}
+        hint={t(
+          'Start from a template or define your own structure — then just fill in the content.',
+        )}
+        action={
+          <Button onClick={() => onOpenSchema()}>
+            <PencilRuler /> {t('Set up structure')}
+          </Button>
+        }
+      />
+    )
+
+  return (
+    <PageShell>
+      <PageHeader
+        title={t('Overview')}
+        subtitle={t('Edit your content, preview it, then publish.')}
+      />
+      <PageBody>
+        <div className="mx-auto max-w-3xl space-y-8 px-8 py-8">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <ActionCard
+              icon={<Eye className="h-5 w-5" />}
+              title={t('Preview')}
+              hint={t('See your live site')}
+              onClick={() => onSelect({ kind: 'preview' })}
+            />
+            <ActionCard
+              icon={<Palette className="h-5 w-5" />}
+              title={t('Design')}
+              hint={t('Theme & colors')}
+              onClick={() => onSelect({ kind: 'theme' })}
+            />
+            <ActionCard
+              icon={<Rocket className="h-5 w-5" />}
+              title={t('Publish')}
+              hint={t('Put it online')}
+              onClick={() => onSelect({ kind: 'ship' })}
+            />
+          </div>
+
+          {schema.collections.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">
+                {t('Content')}
+              </p>
+              <div className="divide-y overflow-hidden rounded-xl border bg-card">
+                {schema.collections.map((c) => (
+                  <HomeRow
+                    key={c.name}
+                    icon={<Boxes className="h-4 w-4" />}
+                    label={c.label ?? c.name}
+                    onClick={() => onSelect({ kind: 'collection', name: c.name })}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {schema.singletons.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">
+                {t('Details')}
+              </p>
+              <div className="divide-y overflow-hidden rounded-xl border bg-card">
+                {schema.singletons.map((s) => (
+                  <HomeRow
+                    key={s.name}
+                    icon={<FileCog className="h-4 w-4" />}
+                    label={s.label ?? s.name}
+                    onClick={() => onSelect({ kind: 'singleton', name: s.name })}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </PageBody>
+    </PageShell>
+  )
+}
+
+function ActionCard({
+  icon,
+  title,
+  hint,
+  onClick,
+}: {
+  icon: React.ReactNode
+  title: string
+  hint: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-col items-start gap-2 rounded-xl border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/40 hover:bg-accent/40"
+    >
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-primary">
+        {icon}
+      </span>
+      <span className="text-sm font-semibold text-foreground">{title}</span>
+      <span className="text-xs text-muted-foreground">{hint}</span>
+    </button>
+  )
+}
+
+function HomeRow({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: React.ReactNode
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/40"
+    >
+      <span className="text-muted-foreground/70">{icon}</span>
+      <span className="flex-1 text-sm font-medium text-foreground">{label}</span>
+      <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+    </button>
+  )
 }
 
 function EmptyState({
@@ -1243,7 +1377,11 @@ function StatusToggle({
       type="button"
       variant="outline"
       onClick={onToggle}
-      title={isDraft ? t('Draft — publish it') : t('Published — move back to draft')}
+      title={
+        isDraft
+          ? t('Draft — hidden on the published site. Click to include it.')
+          : t('Published — visible on the published site. Click to hide it.')
+      }
       className={cn(isDraft && 'border-dashed text-muted-foreground')}
     >
       <span
@@ -1257,12 +1395,30 @@ function StatusToggle({
   )
 }
 
+// Save state next to the file path: distinguishes "written to disk" from the
+// content-status pill and from deploy, so "is my work saved?" is unambiguous.
+function SaveState({ state }: { state: 'dirty' | 'saved' }) {
+  if (state === 'saved')
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+        <Check className="h-3 w-3 text-primary" /> {t('Saved')}
+      </span>
+    )
+  return (
+    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600">
+      <span className="inline-block size-1.5 rounded-full bg-amber-500" /> {t('Unsaved changes')}
+    </span>
+  )
+}
+
 function EntryEditor({
+  schema,
   collection,
   slug,
   onSaved,
   onDeleted,
 }: {
+  schema: Schema
   collection: Collection
   slug: string | null
   onSaved: (slug: string) => void
@@ -1278,6 +1434,17 @@ function EntryEditor({
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [showJson, setShowJson] = useState(false)
+
+  // Dirty tracking: baseline = last saved snapshot (set once on load, and after
+  // each save). New entries baseline to '{}', so any typed field marks dirty.
+  const currentJson = JSON.stringify(data)
+  const savedJson = useRef<string | null>(null)
+  useEffect(() => {
+    if (!loading && savedJson.current === null) savedJson.current = currentJson
+  }, [loading, currentJson])
+  const dirty = isNew
+    ? currentJson !== '{}'
+    : savedJson.current !== null && currentJson !== savedJson.current
 
   const setField = (key: string, value: unknown) =>
     setData((prev) => {
@@ -1301,6 +1468,7 @@ function EntryEditor({
         return
       }
       const saved = await api.putEntry(collection.name, effectiveSlug, data)
+      savedJson.current = JSON.stringify(data)
       toast.success(t('"{slug}" saved', { slug: saved }))
       onSaved(saved)
     } finally {
@@ -1351,7 +1519,13 @@ function EntryEditor({
             </Badge>
           ) : undefined
         }
-        subtitle={<PathChip>{`${collection.name}/${effectiveSlug}.json`}</PathChip>}
+        subtitle={
+          <>
+            <PathChip>{`${collection.name}/${effectiveSlug}.json`}</PathChip>
+            {dirty && <SaveState state="dirty" />}
+            {!dirty && !isNew && <SaveState state="saved" />}
+          </>
+        }
         actions={
           <>
             <StatusToggle
@@ -1369,55 +1543,83 @@ function EntryEditor({
                 <Trash2 /> {t('Delete')}
               </Button>
             )}
-            <Button onClick={save} disabled={saving || !result.ok}>
-              {saving ? t('Saving…') : t('Save')}
+            <Button onClick={save} disabled={saving || !result.ok || (!isNew && !dirty)}>
+              {saving ? t('Saving…') : !isNew && !dirty ? t('Saved') : t('Save')}
             </Button>
           </>
         }
       />
-      <EditorLayout>
-        {saveError && <AlertPanel title={t('Could not save')}>{saveError}</AlertPanel>}
-        {showJson && <JsonPreview path={`${collection.name}/${effectiveSlug}.json`} data={data} />}
-        <FormCard>
-          {isNew && (
-            <div className="mb-6 rounded-lg border bg-muted/40 p-4">
-              <FieldShell label={t('File name')} hint={`${effectiveSlug}.json`}>
-                <Input
-                  value={newSlug}
-                  onChange={(e) => setNewSlug(e.target.value)}
-                  placeholder={t('automatic')}
-                  className="bg-card font-mono"
-                />
-              </FieldShell>
-              <p className="mt-2 text-xs text-muted-foreground">
-                {t('Leave it empty to derive it from the title. It cannot change after saving.')}
-              </p>
-            </div>
-          )}
-          <div className="space-y-6">
-            {collection.fields.map((field) => (
-              <FieldEditor
-                key={field.key}
-                field={field}
-                value={data[field.key]}
-                onChange={setField}
-                context={collection.label ?? collection.name}
-              />
-            ))}
+      <div className="flex min-h-0 flex-1">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-2xl space-y-5 px-8 py-6">
+            {saveError && <AlertPanel title={t('Could not save')}>{saveError}</AlertPanel>}
+            <FormCard>
+              {isNew && (
+                <div className="mb-6 rounded-lg border bg-muted/40 p-4">
+                  <FieldShell label={t('File name')} hint={`${effectiveSlug}.json`}>
+                    <Input
+                      value={newSlug}
+                      onChange={(e) => setNewSlug(e.target.value)}
+                      placeholder={t('automatic')}
+                      className="bg-card font-mono"
+                    />
+                  </FieldShell>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {t(
+                      'Leave it empty to derive it from the title. It cannot change after saving.',
+                    )}
+                  </p>
+                </div>
+              )}
+              <div className="space-y-6">
+                {collection.fields.map((field) => (
+                  <FieldEditor
+                    key={field.key}
+                    field={field}
+                    value={data[field.key]}
+                    onChange={setField}
+                    context={collection.label ?? collection.name}
+                  />
+                ))}
+              </div>
+            </FormCard>
+            <Issues result={result} />
           </div>
-        </FormCard>
-        <Issues result={result} />
-      </EditorLayout>
+        </div>
+        <aside className="hidden min-h-0 w-1/2 shrink-0 flex-col border-l bg-muted/20 lg:flex">
+          {showJson ? (
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
+              <JsonPreview path={`${collection.name}/${effectiveSlug}.json`} data={data} />
+            </div>
+          ) : (
+            <LivePreview
+              schema={schema}
+              kind="entry"
+              name={collection.name}
+              path={collection.path}
+              slug={isNew ? '' : effectiveSlug}
+              data={data}
+            />
+          )}
+        </aside>
+      </div>
     </PageShell>
   )
 }
 
-function SingletonEditor({ singleton }: { singleton: Singleton }) {
+function SingletonEditor({ schema, singleton }: { schema: Schema; singleton: Singleton }) {
   const load = useCallback(() => api.getSingleton(singleton.name), [singleton.name])
   // tekil dosyası henüz yoksa boş form doğrudur; sadece istek hatasında uyarırız
   const { data, setData, loading, failed, retry } = useEntryData(load, false)
   const [saving, setSaving] = useState(false)
   const [showJson, setShowJson] = useState(false)
+
+  const currentJson = JSON.stringify(data)
+  const savedJson = useRef<string | null>(null)
+  useEffect(() => {
+    if (!loading && savedJson.current === null) savedJson.current = currentJson
+  }, [loading, currentJson])
+  const dirty = savedJson.current !== null && currentJson !== savedJson.current
 
   const setField = (key: string, value: unknown) =>
     setData((prev) => {
@@ -1433,6 +1635,7 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
     setSaving(true)
     try {
       await api.putSingleton(singleton.name, data)
+      savedJson.current = JSON.stringify(data)
       toast.success(t('{name} saved', { name: singleton.label ?? singleton.name }))
     } finally {
       setSaving(false)
@@ -1471,7 +1674,13 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
       <PageHeader
         title={title}
         badge={badge}
-        subtitle={<PathChip>{`${singleton.name}.json`}</PathChip>}
+        subtitle={
+          <>
+            <PathChip>{`${singleton.name}.json`}</PathChip>
+            {dirty && <SaveState state="dirty" />}
+            {!dirty && savedJson.current !== null && <SaveState state="saved" />}
+          </>
+        }
         actions={
           <>
             <Button
@@ -1480,29 +1689,41 @@ function SingletonEditor({ singleton }: { singleton: Singleton }) {
             >
               <Braces /> JSON
             </Button>
-            <Button onClick={save} disabled={saving || !result.ok}>
-              {saving ? t('Saving…') : t('Save')}
+            <Button onClick={save} disabled={saving || !result.ok || !dirty}>
+              {saving ? t('Saving…') : !dirty ? t('Saved') : t('Save')}
             </Button>
           </>
         }
       />
-      <EditorLayout>
-        {showJson && <JsonPreview path={`${singleton.name}.json`} data={data} />}
-        <FormCard>
-          <div className="space-y-6">
-            {singleton.fields.map((field) => (
-              <FieldEditor
-                key={field.key}
-                field={field}
-                value={data[field.key]}
-                onChange={setField}
-                context={singleton.label ?? singleton.name}
-              />
-            ))}
+      <div className="flex min-h-0 flex-1">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-2xl space-y-5 px-8 py-6">
+            <FormCard>
+              <div className="space-y-6">
+                {singleton.fields.map((field) => (
+                  <FieldEditor
+                    key={field.key}
+                    field={field}
+                    value={data[field.key]}
+                    onChange={setField}
+                    context={singleton.label ?? singleton.name}
+                  />
+                ))}
+              </div>
+            </FormCard>
+            <Issues result={result} />
           </div>
-        </FormCard>
-        <Issues result={result} />
-      </EditorLayout>
+        </div>
+        <aside className="hidden min-h-0 w-1/2 shrink-0 flex-col border-l bg-muted/20 lg:flex">
+          {showJson ? (
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
+              <JsonPreview path={`${singleton.name}.json`} data={data} />
+            </div>
+          ) : (
+            <LivePreview schema={schema} kind="singleton" name={singleton.name} data={data} />
+          )}
+        </aside>
+      </div>
     </PageShell>
   )
 }
@@ -1668,26 +1889,13 @@ function FieldInput({
       )
     case 'boolean':
       return (
-        <Button
-          type="button"
-          variant={value ? 'default' : 'outline'}
-          role="switch"
-          aria-checked={!!value}
-          onClick={() => onChange(k, !value)}
-          className="min-w-20"
-        >
-          {value ? t('Yes') : t('No')}
-        </Button>
+        <div className="inline-flex items-center gap-2.5">
+          <Switch checked={!!value} onCheckedChange={(c) => onChange(k, c)} />
+          <span className="text-sm text-muted-foreground">{value ? t('Yes') : t('No')}</span>
+        </div>
       )
     case 'date':
-      return (
-        <Input
-          type="date"
-          className="w-[240px]"
-          value={(value as string) ?? ''}
-          onChange={(e) => onChange(k, e.target.value)}
-        />
-      )
+      return <DateInput value={(value as string) ?? ''} onChange={(v) => onChange(k, v)} />
     case 'select':
       return (
         <div className="flex items-center gap-2">
@@ -1747,9 +1955,68 @@ function FieldInput({
       return <ListInput value={value} onChange={(v) => onChange(k, v)} />
     case 'group':
       return <GroupInput field={field} value={value} onChange={(v) => onChange(k, v)} />
+    case 'repeater':
+      return <RepeaterInput field={field} value={value} onChange={(v) => onChange(k, v)} />
     default:
       return <Input value={(value as string) ?? ''} onChange={(e) => onChange(k, e.target.value)} />
   }
+}
+
+function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const selected = value ? new Date(`${value}T00:00:00`) : undefined
+  const toISO = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const label = selected
+    ? selected.toLocaleDateString(getLang() === 'tr' ? 'tr-TR' : 'en-US', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      })
+    : t('Pick a date')
+  return (
+    <div className="flex items-center gap-2">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            className={cn(
+              'w-[240px] justify-start gap-2 font-normal',
+              !value && 'text-muted-foreground',
+            )}
+          >
+            <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
+            {label}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={selected}
+            defaultMonth={selected}
+            autoFocus
+            onSelect={(d) => {
+              onChange(d ? toISO(d) : '')
+              setOpen(false)
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+      {value && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => onChange('')}
+          className="text-muted-foreground"
+        >
+          <X />
+          <span className="sr-only">{t('Clear')}</span>
+        </Button>
+      )}
+    </div>
+  )
 }
 
 function ColorInput({
@@ -1888,6 +2155,109 @@ function GroupInput({
   )
 }
 
+function RepeaterInput({
+  field,
+  value,
+  onChange,
+}: {
+  field: Field
+  value: unknown
+  onChange: (value: unknown) => void
+}) {
+  const subs = field.fields ?? []
+  const rows: Record<string, unknown>[] = Array.isArray(value)
+    ? (value as Record<string, unknown>[])
+    : []
+  const commit = (next: Record<string, unknown>[]) => onChange(next.length ? next : '')
+  const setCell = (i: number, key: string, v: unknown) =>
+    commit(
+      rows.map((r, idx) => {
+        if (idx !== i) return r
+        const n = { ...r }
+        if (v === '' || v === undefined) delete n[key]
+        else n[key] = v
+        return n
+      }),
+    )
+  const addRow = () => commit([...rows, {}])
+  const removeRow = (i: number) => commit(rows.filter((_, idx) => idx !== i))
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir
+    if (j < 0 || j >= rows.length) return
+    const n = [...rows]
+    ;[n[i], n[j]] = [n[j] as Record<string, unknown>, n[i] as Record<string, unknown>]
+    commit(n)
+  }
+
+  return (
+    <div className="space-y-3">
+      {rows.map((row, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: satırların kararlı kimliği yok; sıra indeksi editör içi yeter
+        <div key={i} className="rounded-lg border bg-muted/30 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground">
+              {t('Row {n}', { n: i + 1 })}
+            </span>
+            <div className="flex items-center gap-0.5">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => move(i, -1)}
+                disabled={i === 0}
+                className="text-muted-foreground"
+              >
+                <ChevronUp />
+                <span className="sr-only">{t('Move up')}</span>
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => move(i, 1)}
+                disabled={i === rows.length - 1}
+                className="text-muted-foreground"
+              >
+                <ChevronDown />
+                <span className="sr-only">{t('Move down')}</span>
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => removeRow(i)}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 />
+                <span className="sr-only">{t('Remove row')}</span>
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {subs.map((sub) => (
+              <FieldShell
+                key={sub.key}
+                label={sub.label || sub.key}
+                required={sub.required}
+                type={sub.type}
+              >
+                <FieldInput
+                  field={sub}
+                  value={row[sub.key]}
+                  onChange={(key, v) => setCell(i, key, v)}
+                />
+              </FieldShell>
+            ))}
+          </div>
+        </div>
+      ))}
+      <Button type="button" variant="outline" onClick={addRow}>
+        <Plus /> {t('Add row')}
+      </Button>
+    </div>
+  )
+}
+
 function RelationInput({
   field,
   value,
@@ -1966,25 +2336,6 @@ function RelationInput({
       </DropdownMenu>
     </div>
   )
-}
-
-async function fileToWebpBase64(file: File, maxW = 1600): Promise<string> {
-  const bitmap = await createImageBitmap(file)
-  const scale = Math.min(1, maxW / bitmap.width)
-  const w = Math.round(bitmap.width * scale)
-  const h = Math.round(bitmap.height * scale)
-  const canvas = document.createElement('canvas')
-  canvas.width = w
-  canvas.height = h
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('no canvas context')
-  ctx.drawImage(bitmap, 0, 0, w, h)
-  const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/webp', 0.85))
-  if (!blob) throw new Error('conversion failed')
-  const bytes = new Uint8Array(await blob.arrayBuffer())
-  let binary = ''
-  for (const b of bytes) binary += String.fromCharCode(b)
-  return btoa(binary)
 }
 
 function ImageInput({ value, onChange }: { value: unknown; onChange: (v: unknown) => void }) {

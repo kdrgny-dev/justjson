@@ -1,0 +1,7 @@
+{
+  "version": "1.9.0",
+  "date": "2026-08-04",
+  "title": "Studio: themes, tables and a real live preview",
+  "order": -3,
+  "body": "**Studio grew up.** The backend-free browser editor now designs, previews and composes far more than before.\n\n- **Theme marketplace.** Pick a theme and see it rendered on *your own content* in a real live preview — no more generic mock. Premium themes ship a finished look you tune with a single accent; the Design panel now only shows the knobs a theme actually uses.\n- **Atelier** — a premium, multi-page theme that composes any project (portfolio, blog, business, therapist) without knowing your field names.\n- **Multi-page sites.** Home, standalone pages, collection lists and entry pages, with an automatic nav — not just a one-page layout.\n- **Repeater fields.** Build a price table, service list, team or feature grid by filling in rows — no Markdown, no HTML. Rendered as a clean, responsive table on every theme.\n- **Rich text** now takes inline **links and images** (images embed as self-contained data URLs — they work in preview and in the published site).\n- **A calmer editor.** Content-first sidebar, a project overview to start from, a live-preview split beside the form, an unambiguous *saved / unsaved* state, and native shadcn date-picker, toggle and slider controls."
+}

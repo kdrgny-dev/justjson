@@ -12,6 +12,7 @@ export type FieldType =
   | 'list'
   | 'color'
   | 'group'
+  | 'repeater'
 
 export interface Field {
   key: string
@@ -22,7 +23,7 @@ export interface Field {
   options?: string[]
   /** type === 'relation' için hedef koleksiyon adı */
   to?: string
-  /** type === 'group' için alt alanlar (özyinelemeli) */
+  /** type === 'group' | 'repeater' için alt alanlar (özyinelemeli) */
   fields?: Field[]
 }
 

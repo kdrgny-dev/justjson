@@ -1,0 +1,132 @@
+{
+  "title": "Psikolog",
+  "description": "Bir psikolog / terapist için hazır site: Hakkında, Hizmetler, SSS, İletişim ve Yazılar bölümleriyle sıcak ve güven veren bir başlangıç.",
+  "schema": {
+    "version": 1,
+    "collections": [
+      {
+        "name": "hizmetler",
+        "label": "Hizmetler",
+        "path": "hizmetler",
+        "fields": [
+          { "key": "baslik", "label": "Başlık", "type": "text", "required": true },
+          { "key": "aciklama", "label": "Açıklama", "type": "richtext" },
+          { "key": "sure", "label": "Süre", "type": "text" },
+          { "key": "ucret", "label": "Ücret", "type": "text" }
+        ]
+      },
+      {
+        "name": "sss",
+        "label": "Sıkça Sorulan Sorular",
+        "path": "sss",
+        "fields": [
+          { "key": "soru", "label": "Soru", "type": "text", "required": true },
+          { "key": "cevap", "label": "Cevap", "type": "richtext" }
+        ]
+      },
+      {
+        "name": "yazilar",
+        "label": "Yazılar",
+        "path": "yazilar",
+        "fields": [
+          { "key": "baslik", "label": "Başlık", "type": "text", "required": true },
+          { "key": "tarih", "label": "Tarih", "type": "date" },
+          { "key": "icerik", "label": "İçerik", "type": "richtext" }
+        ]
+      }
+    ],
+    "singletons": [
+      {
+        "name": "hakkinda",
+        "label": "Hakkında",
+        "path": "hakkinda.json",
+        "fields": [
+          { "key": "ad-soyad", "label": "Ad Soyad", "type": "text", "required": true },
+          { "key": "unvan", "label": "Unvan", "type": "text" },
+          { "key": "foto", "label": "Fotoğraf", "type": "image" },
+          { "key": "kisa-tanitim", "label": "Kısa Tanıtım", "type": "richtext" },
+          { "key": "yaklasim", "label": "Yaklaşımım", "type": "richtext" }
+        ]
+      },
+      {
+        "name": "iletisim",
+        "label": "İletişim",
+        "path": "iletisim.json",
+        "fields": [
+          { "key": "telefon", "label": "Telefon", "type": "text" },
+          { "key": "eposta", "label": "E-posta", "type": "email" },
+          { "key": "adres", "label": "Adres", "type": "text" },
+          { "key": "randevu-linki", "label": "Randevu Linki", "type": "url" },
+          { "key": "instagram", "label": "Instagram", "type": "url" }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "hakkinda": {
+      "ad-soyad": "Uzm. Psk. Elif Demir",
+      "unvan": "Klinik Psikolog",
+      "foto": "",
+      "kisa-tanitim": "Merhaba, ben Elif. On yılı aşkın süredir yetişkinlerle ve çiftlerle çalışan bir klinik psikoloğum. Bazen hayat, tek başımıza taşımakta zorlandığımız bir ağırlığa dönüşebiliyor; kaygı, ilişki güçlükleri ya da adını tam koyamadığımız bir tükenmişlik hissi olarak. Bu yolda yalnız yürümek zorunda değilsiniz. Terapiyi, yargılanmadan konuşabileceğiniz, kendinizi güvende hissedeceğiniz bir alan olarak görüyorum.",
+      "yaklasim": "Çalışmalarımda bütüncül bir yaklaşım benimsiyorum; ihtiyacınıza göre bilişsel davranışçı terapi (BDT), şema terapi ve kabul-kararlılık terapisinden (ACT) yararlanıyorum. Amacım size hazır çözümler sunmak değil, kendi kaynaklarınızı yeniden keşfetmenize eşlik etmek. İlk görüşmede acele etmeden tanışır, neye ihtiyaç duyduğunuzu birlikte anlamaya çalışırız. Her sürecin kendine özgü olduğuna, ve iyileşmenin bir yarış değil bir yolculuk olduğuna inanıyorum."
+    },
+    "iletisim": {
+      "telefon": "0212 000 00 00",
+      "eposta": "randevu@elifdemir.com",
+      "adres": "Bağdat Caddesi No: 000, Kadıköy / İstanbul",
+      "randevu-linki": "https://calendly.com/elifdemir",
+      "instagram": "https://instagram.com/psk.elifdemir"
+    },
+    "hizmetler": [
+      {
+        "baslik": "Bireysel Terapi",
+        "aciklama": "Kaygı, depresif duygudurum, özgüven, kayıp ve yas ya da yalnızca hayatınızda tıkandığınızı hissettiğiniz konular üzerine birlikte çalışıyoruz. Kendi hızınızda, size ait bir alanda ilerliyoruz.",
+        "sure": "50 dk",
+        "ucret": "Görüşmede paylaşılır"
+      },
+      {
+        "baslik": "Çift Terapisi",
+        "aciklama": "İletişimin tıkandığı, aynı tartışmaların döngüye dönüştüğü ya da aranızdaki mesafenin büyüdüğü dönemlerde; birbirinizi yeniden duyabileceğiniz güvenli bir zemin kuruyoruz.",
+        "sure": "80 dk",
+        "ucret": "Görüşmede paylaşılır"
+      },
+      {
+        "baslik": "Online Terapi",
+        "aciklama": "Şehir dışında ya da yurt dışında olsanız da sürece devam edebilirsiniz. Görüntülü görüşmelerle, yüz yüze terapinin sağladığı bağı koruyarak, size en uygun saatte buluşuyoruz.",
+        "sure": "50 dk",
+        "ucret": "Görüşmede paylaşılır"
+      },
+      {
+        "baslik": "İlk Tanışma Görüşmesi",
+        "aciklama": "Terapiye başlamadan önce birbirimizi tanımak, beklentilerinizi konuşmak ve nasıl çalışacağımıza birlikte karar vermek için ayırdığımız bir buluşma. Bir şeye karar vermek zorunda değilsiniz; sadece tanışıyoruz.",
+        "sure": "30 dk",
+        "ucret": "Ücretsiz"
+      }
+    ],
+    "sss": [
+      {
+        "soru": "İlk görüşmede ne oluyor?",
+        "cevap": "İlk görüşme bir tanışma. Sizi neyin buraya getirdiğini, neye ihtiyaç duyduğunuzu konuşuyoruz. Her şeyi anlatmak zorunda değilsiniz; ne kadarını, ne zaman paylaşacağınıza siz karar veriyorsunuz. Bu görüşmenin sonunda birlikte çalışıp çalışmayacağımıza rahatça karar verebilirsiniz."
+      },
+      {
+        "soru": "Görüşmeler ne sıklıkta yapılıyor?",
+        "cevap": "Genellikle haftada bir görüşmeyle başlıyoruz. Süreç ilerledikçe ve ihtiyaçlarınız değiştikçe bu sıklığı birlikte yeniden değerlendiriyoruz. Amaç, size iyi gelen ve sürdürülebilir bir ritim bulmak."
+      },
+      {
+        "soru": "Anlattıklarım gizli kalıyor mu?",
+        "cevap": "Evet. Paylaştığınız her şey mesleki etik ilkeleri ve gizlilik kuralları çerçevesinde tamamen gizli tutulur. Kendinizi güvende hissetmeniz, bu çalışmanın temeli."
+      },
+      {
+        "soru": "Terapi ne kadar sürer?",
+        "cevap": "Bunun tek bir cevabı yok; herkesin süreci kendine özgü. Kimileri için birkaç ay, kimileri için daha uzun bir yolculuk olabilir. Baştan bir hedef koymuyoruz; nereye gittiğimizi ve ne zaman iyi hissettiğinizi süreç içinde birlikte görüyoruz."
+      }
+    ],
+    "yazilar": [
+      {
+        "baslik": "Kaygıyı susturmak yerine dinlemek",
+        "tarih": "2026-01-15",
+        "icerik": "Kaygı çoğu zaman bize kötü bir şey söylüyormuş gibi gelir; oysa çoğu kez korumaya çalıştığı bir yanımız vardır. Bu yazıda kaygıyı bir düşman gibi değil, anlamaya çalıştığımız bir mesaj gibi ele almanın nasıl bir fark yarattığına bakıyoruz."
+      }
+    ]
+  }
+}

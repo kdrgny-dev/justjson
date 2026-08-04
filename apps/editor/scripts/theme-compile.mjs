@@ -16,7 +16,16 @@ import * as esbuild from 'esbuild'
 
 // Classes the renderer emits with FIXED names (render.ts contract). Themes
 // style them but must never rename them, or field HTML loses its styling.
-const RESERVED = new Set(['fld', 'fld-label', 'rt', 'img', 'swatch', 'group'])
+const RESERVED = new Set([
+  'fld',
+  'fld-label',
+  'rt',
+  'img',
+  'swatch',
+  'group',
+  'jj-table',
+  'jj-table-wrap',
+])
 
 // Sentinel used to mask url()/strings while scanning CSS for class names. A NUL
 // char never appears in real CSS, so it can't collide with values like ` 0 `.
@@ -37,15 +46,27 @@ const read = (f) => readFileSync(join(srcDir, f), 'utf8')
 
 const meta = JSON.parse(read('meta.json'))
 let css = read('styles.css')
-const indexHtml = read('index.html')
-const entryHtml = read('entry.html')
+
+// index + entry are required; list + page are optional (renderer falls back).
+const REQUIRED = ['index', 'entry']
+const OPTIONAL = ['list', 'page']
+const src = {}
+for (const t of REQUIRED) src[t] = read(`${t}.html`)
+for (const t of OPTIONAL) {
+  try {
+    src[t] = read(`${t}.html`)
+  } catch {
+    /* optional template not authored */
+  }
+}
+const templateNames = Object.keys(src)
 
 // 1. Tailwind: if the source uses @tailwind/@apply, resolve it to plain CSS via
 //    the tailwind CLI (scanning the templates for content) before mangling.
 //    ponytail: only @apply-in-styles is supported; utility classes in the HTML
 //    are not (they'd be un-mangleable utility soup). Author with @apply.
 if (/@tailwind\b|@apply\b/.test(css)) {
-  css = compileTailwind(css, [indexHtml, entryHtml])
+  css = compileTailwind(css, Object.values(src))
 }
 
 // 2. Collect mangle-able class names: union of template class tokens + CSS
@@ -54,8 +75,7 @@ if (/@tailwind\b|@apply\b/.test(css)) {
 const [maskedCss, restoreCss] = maskCss(css)
 
 const names = new Set()
-for (const tok of templateClassTokens(indexHtml)) names.add(tok)
-for (const tok of templateClassTokens(entryHtml)) names.add(tok)
+for (const html of Object.values(src)) for (const tok of templateClassTokens(html)) names.add(tok)
 for (const m of maskedCss.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) names.add(m[1])
 for (const r of RESERVED) names.delete(r)
 
@@ -66,14 +86,17 @@ const map = new Map(sorted.map((name, i) => [name, `h${i}`]))
 // 4. Rewrite CSS selectors + template class attrs from the SAME map (kept in
 //    sync). Word-boundary-safe: `.foo` never touches `.foobar`.
 const outCss = restoreCss(rewriteCssClasses(maskedCss, map))
-const outIndex = rewriteTemplateClasses(indexHtml, map)
-const outEntry = rewriteTemplateClasses(entryHtml, map)
+const out = {}
+for (const t of templateNames) out[t] = rewriteTemplateClasses(src[t], map)
 
 // 5. Minify (esbuild, build-time only, not shipped).
 const minCss = esbuild.transformSync(outCss, { loader: 'css', minify: true }).code.trim()
 
 // Safety net: no original semantic name may leak as a class token.
-assertNoLeak(minCss, outIndex, outEntry, sorted)
+assertNoLeak(minCss, out, sorted)
+
+const templates = {}
+for (const t of templateNames) templates[t] = collapse(out[t])
 
 const bundle = {
   id: meta.id,
@@ -82,10 +105,7 @@ const bundle = {
   license: meta.license ?? 'commercial',
   thumb: meta.thumb ?? '',
   css: minCss,
-  templates: {
-    index: collapse(outIndex),
-    entry: collapse(outEntry),
-  },
+  templates,
 }
 
 const outPath = join(editorRoot, 'src', 'themes', `${id}.json`)
@@ -165,16 +185,13 @@ function collapse(html) {
   return html.replace(/>\s+</g, '><').trim()
 }
 
-function assertNoLeak(minCss, index, entry, originals) {
+function assertNoLeak(minCss, outTemplates, originals) {
   for (const name of originals) {
     const cssRe = new RegExp(`\\.${escapeRe(name)}(?![\\w-])`)
     if (cssRe.test(minCss)) throw new Error(`leak: original class .${name} still in css`)
     const clsRe = new RegExp(`class\\s*=\\s*["'][^"']*\\b${escapeRe(name)}\\b`)
-    for (const pair of [
-      ['index', index],
-      ['entry', entry],
-    ]) {
-      if (clsRe.test(pair[1])) throw new Error(`leak: original class ${name} still in ${pair[0]} template`)
+    for (const [t, html] of Object.entries(outTemplates)) {
+      if (clsRe.test(html)) throw new Error(`leak: original class ${name} still in ${t} template`)
     }
   }
 }

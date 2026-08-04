@@ -1,53 +1,85 @@
+import 'fake-indexeddb/auto'
 import type { Schema } from '@justjson/core'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { deleteEntry, getEntry, listEntries, putEntry, putSchema } from './api'
+import { IDBFactory } from 'fake-indexeddb'
+import { beforeEach, describe, expect, it } from 'vitest'
 
-function mockFetch(status: number, body: unknown) {
-  return vi.fn(async () => new Response(status === 204 ? null : JSON.stringify(body), { status }))
+// api.ts is backed by IndexedDB (IdbAdapter) + a localStorage project registry.
+// Provide an in-memory localStorage and a fresh IndexedDB per test.
+class MemStorage {
+  private m = new Map<string, string>()
+  get length() {
+    return this.m.size
+  }
+  key(i: number) {
+    return [...this.m.keys()][i] ?? null
+  }
+  getItem(k: string) {
+    return this.m.has(k) ? (this.m.get(k) as string) : null
+  }
+  setItem(k: string, v: string) {
+    this.m.set(k, String(v))
+  }
+  removeItem(k: string) {
+    this.m.delete(k)
+  }
+  clear() {
+    this.m.clear()
+  }
+}
+globalThis.localStorage = new MemStorage() as unknown as Storage
+
+import { deleteEntry, getEntry, getSchema, listEntries, putEntry, putSchema } from './api'
+
+const schema: Schema = {
+  version: 1,
+  collections: [
+    {
+      name: 'posts',
+      label: 'Posts',
+      path: 'posts',
+      fields: [
+        { key: 'title', type: 'text' },
+        { key: 'body', type: 'richtext' },
+      ],
+    },
+  ],
+  singletons: [],
 }
 
-afterEach(() => {
-  vi.restoreAllMocks()
+beforeEach(async () => {
+  globalThis.indexedDB = new IDBFactory()
+  localStorage.clear()
+  await putSchema(schema)
 })
 
-describe('api client', () => {
-  it('listEntries item satırlarını slug listesine indirger', async () => {
-    vi.stubGlobal(
-      'fetch',
-      mockFetch(200, {
-        items: [
-          { slug: 'a', title: 'A', updatedAt: null },
-          { slug: 'b', title: 'B', updatedAt: null },
-        ],
-      }),
-    )
-    expect(await listEntries('posts')).toEqual(['a', 'b'])
+describe('api client (IndexedDB-backed)', () => {
+  it('round-trips the schema', async () => {
+    expect(await getSchema()).toEqual(schema)
   })
 
-  it('getEntry 404 için null döner', async () => {
-    vi.stubGlobal('fetch', mockFetch(404, { error: 'yok' }))
-    expect(await getEntry('posts', 'yok')).toBeNull()
+  it('writes and reads an entry back', async () => {
+    const slug = await putEntry('posts', 'hello', { title: 'Hello', body: '# Hi' })
+    expect(slug).toBe('hello')
+    expect(await getEntry('posts', 'hello')).toEqual({ title: 'Hello', body: '# Hi' })
   })
 
-  it('putEntry sunucunun döndürdüğü slug ile çözülür', async () => {
-    vi.stubGlobal('fetch', mockFetch(200, { ok: true, slug: 'yeni-yazi' }))
-    expect(await putEntry('posts', 'Yeni Yazı', { title: 'X' })).toBe('yeni-yazi')
+  it('derives a slug from the title when none is given', async () => {
+    expect(await putEntry('posts', '', { title: 'Yeni Yazı' })).toBe('yeni-yazi')
   })
 
-  it('deleteEntry hata durumunda throw eder', async () => {
-    vi.stubGlobal('fetch', mockFetch(500, { error: 'x' }))
-    await expect(deleteEntry('posts', 'a')).rejects.toThrow()
+  it('lists entry slugs for a collection', async () => {
+    await putEntry('posts', 'a', { title: 'A' })
+    await putEntry('posts', 'b', { title: 'B' })
+    expect((await listEntries('posts')).sort()).toEqual(['a', 'b'])
   })
 
-  it('putSchema başarılıysa çözülür', async () => {
-    vi.stubGlobal('fetch', mockFetch(200, { ok: true }))
-    const schema: Schema = { version: 1, collections: [], singletons: [] }
-    await expect(putSchema(schema)).resolves.toBeUndefined()
+  it('returns null for a missing entry', async () => {
+    expect(await getEntry('posts', 'nope')).toBeNull()
   })
 
-  it('putSchema 400 mesajını fırlatır', async () => {
-    vi.stubGlobal('fetch', mockFetch(400, { error: 'invalid' }))
-    const schema: Schema = { version: 1, collections: [], singletons: [] }
-    await expect(putSchema(schema)).rejects.toThrow('invalid')
+  it('deletes an entry', async () => {
+    await putEntry('posts', 'gone', { title: 'Gone' })
+    await deleteEntry('posts', 'gone')
+    expect(await getEntry('posts', 'gone')).toBeNull()
   })
 })

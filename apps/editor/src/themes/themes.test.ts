@@ -2,6 +2,7 @@ import type { Schema } from '@justjson/core'
 import { describe, expect, it } from 'vitest'
 import { type ProjectData, renderWithBundle } from '../browser/render'
 import type { ThemeBundle } from '../browser/theme-bundle'
+import atelierJson from './atelier.json'
 import boldJson from './bold.json'
 import editorialJson from './editorial.json'
 import signalJson from './signal.json'
@@ -20,14 +21,24 @@ const schema: Schema = {
     },
   ],
   singletons: [
-    { name: 'about', label: 'About', path: 'about.json', fields: [{ key: 'bio', type: 'richtext' }] },
+    {
+      name: 'about',
+      label: 'About',
+      path: 'about.json',
+      fields: [{ key: 'bio', type: 'richtext' }],
+    },
   ],
 }
 
 const data: ProjectData = {
   schema,
   entries: {
-    projects: [{ slug: 'aurora', data: { title: 'Aurora', summary: '# Overview\n\nA **realtime** canvas.' } }],
+    projects: [
+      {
+        slug: 'aurora',
+        data: { title: 'Aurora', summary: '# Overview\n\nA **realtime** canvas.' },
+      },
+    ],
   },
   singletons: { about: { bio: 'Ten years of shipping.' } },
   theme: { palette: 'ink', accent: '#FF2E88', font: 'sans', radius: 4, density: 'normal' },
@@ -71,7 +82,18 @@ describe.each(bundles)('theme bundle: %s', (_id, bundle) => {
 describe('compiled theme: signal (mangled)', () => {
   const bundle = signalJson as ThemeBundle
   // Original semantic names authored in themes-src/signal — none may leak.
-  const semantic = ['shell', 'topbar', 'brand', 'brand-dot', 'hero', 'hero-title', 'card-grid', 'card', 'article', 'article-body']
+  const semantic = [
+    'shell',
+    'topbar',
+    'brand',
+    'brand-dot',
+    'hero',
+    'hero-title',
+    'card-grid',
+    'card',
+    'article',
+    'article-body',
+  ]
 
   it('mangles semantic classes to .hN in both css and templates', () => {
     expect(bundle.css).toMatch(/\.h\d+\{/)
@@ -114,5 +136,70 @@ describe('compiled theme: signal (mangled)', () => {
       // a whole class token like class="...shell..." must not appear
       expect(idx).not.toMatch(new RegExp(`class="[^"]*\\b${name}\\b`))
     }
+  })
+})
+
+// The flagship "atelier" bundle proves the multi-page slot contract end to end:
+// a generic theme (four templates, bound to slots/nav — never sector fields)
+// renders home/list/entry across any schema, mangled, with animations intact.
+describe('compiled theme: atelier (generic slot theme, multi-page)', () => {
+  const bundle = atelierJson as ThemeBundle
+  const semantic = [
+    'site-head',
+    'brand',
+    'nav-link',
+    'hero',
+    'hero-title',
+    'block',
+    'cards',
+    'card',
+    'card-title',
+    'article',
+    'article-title',
+    'foot',
+  ]
+  const files = renderWithBundle(data, bundle)
+  const dec = (k: string) => (files[k] ?? '').replace(/&#x2F;/g, '/')
+
+  it('provides all four templates', () => {
+    for (const t of ['index', 'entry', 'list', 'page'] as const) {
+      expect((bundle.templates as Record<string, string>)[t]?.length ?? 0).toBeGreaterThan(0)
+    }
+  })
+
+  it('mangles semantic classes, keeps renderer-contract classes, leaks none', () => {
+    expect(bundle.css).toMatch(/\.h\d+\{/)
+    for (const reserved of ['.fld{', '.rt{', '.img{', '.swatch{', '.group{']) {
+      expect(bundle.css).toContain(reserved)
+    }
+    for (const name of semantic) {
+      expect(bundle.css).not.toMatch(new RegExp(`\\.${name}(?![\\w-])`))
+    }
+  })
+
+  it('preserves data-attr reveal hooks and the observer script', () => {
+    expect(bundle.css).toContain('[data-js] [data-reveal]')
+    expect(bundle.templates.index).toMatch(/class="h\d+" data-reveal/)
+    expect(bundle.templates.index).toContain('IntersectionObserver')
+  })
+
+  it('composes the home from slots (site name, entry card link, no semantic leak)', () => {
+    const idx = dec('/index.html')
+    expect(idx).toContain('Studio Nova')
+    expect(idx).toContain('Aurora')
+    expect(idx).toContain('projects/aurora.html')
+    for (const name of semantic) {
+      expect(idx).not.toMatch(new RegExp(`class="[^"]*\\b${name}\\b`))
+    }
+  })
+
+  it('emits a collection list page', () => {
+    expect(dec('/projects/index.html')).toContain('Aurora')
+  })
+
+  it('renders an entry from slots with richtext HTML', () => {
+    const entry = files['/projects/aurora.html'] as string
+    expect(entry).toContain('Aurora')
+    expect(entry).toContain('<strong>realtime</strong>')
   })
 })

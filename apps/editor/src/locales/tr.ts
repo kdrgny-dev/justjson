@@ -4,6 +4,26 @@ export const tr: Record<string, string> = {
   Save: 'Kaydet',
   'Saving…': 'Kaydediliyor…',
   Cancel: 'Vazgeç',
+  // --- Sidebar / navigasyon ---
+  Content: 'İçerik',
+  Details: 'Bilgiler',
+  Site: 'Site',
+  Advanced: 'Gelişmiş',
+  Publish: 'Yayınla',
+  Structure: 'Yapı',
+  Overview: 'Genel bakış',
+  Link: 'Bağlantı',
+  'Insert image': 'Görsel ekle',
+  'Pick a date': 'Tarih seç',
+  'This theme ships a finished design — tune the accent to match your brand.':
+    'Bu tema hazır tasarımla gelir — markana göre yalnızca aksanı ayarla.',
+  'Edit your content, preview it, then publish.': 'İçeriğini düzenle, önizle, sonra yayınla.',
+  'Let’s set up your site': 'Siteni kuralım',
+  'Set up structure': 'Yapıyı kur',
+  'Start from a template or define your own structure — then just fill in the content.':
+    'Bir şablonla başla ya da kendi yapını tanımla — sonra sadece içeriği doldur.',
+  'See your live site': 'Canlı siteni gör',
+  'Theme & colors': 'Tema ve renkler',
   Delete: 'Sil',
   Add: 'Ekle',
   Open: 'Aç',
@@ -86,6 +106,11 @@ export const tr: Record<string, string> = {
   Published: 'Yayında',
   'Draft — publish it': 'Taslak — yayına al',
   'Published — move back to draft': 'Yayında — taslağa çevir',
+  'Draft — hidden on the published site. Click to include it.':
+    'Taslak — yayınlanan sitede gizli. Dahil etmek için tıkla.',
+  'Published — visible on the published site. Click to hide it.':
+    'Yayında — yayınlanan sitede görünür. Gizlemek için tıkla.',
+  Saved: 'Kaydedildi',
   'File name': 'Dosya adı',
   'Leave it empty to derive it from the title. It cannot change after saving.':
     'Boş bırakırsan başlıktan üretilir. Kaydettikten sonra değişmez.',

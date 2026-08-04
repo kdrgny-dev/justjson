@@ -1,1 +1,1 @@
-{ "title": "More field types", "status": "planned", "order": 9, "body": "MDX / component blocks, slug-from-title, repeatable groups, conditional fields." }
+{ "title": "Rich field types", "status": "shipped", "order": 6, "body": "Repeater rows for price tables, team lists and feature grids — plus rich text (with links and images), image, date, select and more, all in the visual builder." }

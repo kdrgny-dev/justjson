@@ -16,6 +16,7 @@ const fieldTypes = [
   'list',
   'color',
   'group',
+  'repeater',
 ] as const
 
 const zField: z.ZodType<Field> = z.lazy(() =>
@@ -36,8 +37,14 @@ const zField: z.ZodType<Field> = z.lazy(() =>
       if (field.type === 'relation' && !field.to) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'a relation field requires "to"' })
       }
-      if (field.type === 'group' && (!field.fields || field.fields.length === 0)) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'a group field requires fields' })
+      if (
+        (field.type === 'group' || field.type === 'repeater') &&
+        (!field.fields || field.fields.length === 0)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `a ${field.type} field requires fields`,
+        })
       }
     }),
 )
