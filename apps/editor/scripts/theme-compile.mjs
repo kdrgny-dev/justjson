@@ -144,14 +144,18 @@ function rewriteCssClasses(source, map) {
   return out
 }
 
-// Replace url()/quoted strings with SENT-delimited indices so class scanning and
-// rewriting can't corrupt filenames or string content. Returns [masked, restore].
+// Replace comments/url()/quoted strings with SENT-delimited indices so class
+// scanning and rewriting can't corrupt filenames or string content.
+// Returns [masked, restore].
 function maskCss(source) {
   const store = []
-  // Quoted url() is matched first so inner ')' (e.g. an SVG data-URI's
-  // filter='url(#n)') can't truncate the match and leak the rest of the CSS.
+  // Comments go FIRST: an apostrophe in prose ("the product's own metaphor")
+  // would otherwise open a bogus string literal and swallow the CSS after it —
+  // those rules then escape mangling and leak their original class names.
+  // Quoted url() is matched before bare url() so inner ')' (e.g. an SVG
+  // data-URI's filter='url(#n)') can't truncate the match and leak the rest.
   const urlOrString =
-    /url\(\s*"[^"]*"\s*\)|url\(\s*'[^']*'\s*\)|url\([^)]*\)|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g
+    /\/\*[\s\S]*?\*\/|url\(\s*"[^"]*"\s*\)|url\(\s*'[^']*'\s*\)|url\([^)]*\)|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g
   const masked = source.replace(urlOrString, (m) => {
     store.push(m)
     return `${SENT}${store.length - 1}${SENT}`

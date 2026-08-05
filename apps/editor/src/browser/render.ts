@@ -71,10 +71,24 @@ function repeaterTableHtml(f: Field, value: unknown): string {
   const rows = (Array.isArray(value) ? value : []) as Record<string, unknown>[]
   if (rows.length === 0 || subs.length === 0) return ''
   const head = subs.map((s) => `<th>${esc(s.label ?? s.key)}</th>`).join('')
+  // data-label carries the column name onto every cell, so a theme can drop the
+  // header row and lay the rows out as cards (pricing tiers, packages) without
+  // losing which value is which.
   const body = rows
-    .map((r) => `<tr>${subs.map((s) => `<td>${cellHtml(s, r[s.key])}</td>`).join('')}</tr>`)
+    .map(
+      (r) =>
+        `<tr>${subs
+          .map(
+            (s) =>
+              `<td data-label="${esc(String(s.label ?? s.key))}">${cellHtml(s, r[s.key])}</td>`,
+          )
+          .join('')}</tr>`,
+    )
     .join('')
-  return `<div class="jj-table-wrap"><table class="jj-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`
+  // The field's own label as <caption> — the only honest heading a theme has for
+  // a repeater block ("Pricing", "Seanslar"). Themes may hide it.
+  const caption = f.label ? `<caption>${esc(String(f.label))}</caption>` : ''
+  return `<div class="jj-table-wrap"><table class="jj-table">${caption}<thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`
 }
 
 // Produces SAFE HTML per field (escaped text, marked for richtext). Themes only
