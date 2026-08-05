@@ -1,20 +1,20 @@
 {
   "order": 1,
-  "name": "Local",
-  "tagline": "Everything you need to build on your own machine.",
+  "name": "Free",
+  "tagline": "The CMS, the editor and three themes — yours, forever.",
   "price": "$0",
-  "period": "free forever",
+  "period": "MIT licensed",
   "badge": "MIT",
   "status": "live",
   "featured": false,
-  "cta": "npx @kdrgny/justjson",
-  "ctaUrl": "/docs/getting-started",
+  "cta": "Open Studio",
+  "ctaUrl": "/studio/",
   "features": [
-    "Visual schema builder",
-    "Content editor with live preview",
-    "Typed output + one-line Astro loader",
-    "CI validation, draft/publish, i18n",
-    "Designed templates + self-deploy",
+    "The CLI, typed output and the Astro loader",
+    "Studio in your browser — schema, content, live preview",
+    "Three themes: Default, Bold and Editorial",
+    "Publish to Netlify, Vercel or GitHub Pages",
+    "Content stays plain JSON you can export any time",
     "Community support"
   ]
 }
