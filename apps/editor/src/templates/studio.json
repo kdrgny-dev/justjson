@@ -9,20 +9,57 @@
         "label": "Studio",
         "path": "studio.json",
         "fields": [
-          { "key": "siteName", "label": "Site name", "type": "text" },
-          { "key": "title", "label": "Headline", "type": "text", "required": true },
-          { "key": "tagline", "label": "Tagline", "type": "text" },
-          { "key": "cover", "label": "Hero image", "type": "image" },
-          { "key": "intro", "label": "Manifesto", "type": "richtext" },
-          { "key": "enquire", "label": "Start a project", "type": "url" },
-          { "key": "book", "label": "Book a visit", "type": "url" },
+          {
+            "key": "siteName",
+            "label": "Site name",
+            "type": "text"
+          },
+          {
+            "key": "title",
+            "label": "Headline",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "tagline",
+            "label": "Tagline",
+            "type": "text"
+          },
+          {
+            "key": "cover",
+            "label": "Hero image",
+            "type": "image"
+          },
+          {
+            "key": "intro",
+            "label": "Manifesto",
+            "type": "richtext"
+          },
+          {
+            "key": "enquire",
+            "label": "Start a project",
+            "type": "url"
+          },
+          {
+            "key": "book",
+            "label": "Book a visit",
+            "type": "url"
+          },
           {
             "key": "values",
             "label": "Values",
             "type": "repeater",
             "fields": [
-              { "key": "value", "label": "Value", "type": "text" },
-              { "key": "detail", "label": "Detail", "type": "text" }
+              {
+                "key": "value",
+                "label": "Value",
+                "type": "text"
+              },
+              {
+                "key": "detail",
+                "label": "Detail",
+                "type": "text"
+              }
             ]
           }
         ]
@@ -32,9 +69,21 @@
         "label": "Contact",
         "path": "contact.json",
         "fields": [
-          { "key": "email", "label": "Email", "type": "email" },
-          { "key": "instagram", "label": "Instagram", "type": "url" },
-          { "key": "studioAddress", "label": "Studio", "type": "text" }
+          {
+            "key": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "key": "instagram",
+            "label": "Instagram",
+            "type": "url"
+          },
+          {
+            "key": "studioAddress",
+            "label": "Studio",
+            "type": "text"
+          }
         ]
       }
     ],
@@ -44,14 +93,65 @@
         "label": "Projects",
         "path": "projects",
         "fields": [
-          { "key": "name", "label": "Project", "type": "text", "required": true },
-          { "key": "slug", "label": "Slug", "type": "text", "required": true },
-          { "key": "summary", "label": "Summary", "type": "text" },
-          { "key": "cover", "label": "Cover", "type": "image" },
-          { "key": "location", "label": "Location", "type": "text" },
-          { "key": "year", "label": "Year", "type": "text" },
-          { "key": "status", "label": "Status", "type": "text" },
-          { "key": "body", "label": "Body", "type": "richtext" }
+          {
+            "key": "name",
+            "label": "Project",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "type": "text"
+          },
+          {
+            "key": "cover",
+            "label": "Cover",
+            "type": "image"
+          },
+          {
+            "key": "location",
+            "label": "Location",
+            "type": "text"
+          },
+          {
+            "key": "year",
+            "label": "Year",
+            "type": "text"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "type": "text"
+          },
+          {
+            "key": "body",
+            "label": "Body",
+            "type": "richtext"
+          },
+          {
+            "key": "gallery",
+            "label": "Gallery",
+            "type": "repeater",
+            "fields": [
+              {
+                "key": "image",
+                "label": "Image",
+                "type": "image"
+              },
+              {
+                "key": "caption",
+                "label": "Caption",
+                "type": "text"
+              }
+            ]
+          }
         ]
       },
       {
@@ -59,11 +159,33 @@
         "label": "Practice",
         "path": "practice",
         "fields": [
-          { "key": "title", "label": "Title", "type": "text", "required": true },
-          { "key": "slug", "label": "Slug", "type": "text", "required": true },
-          { "key": "summary", "label": "Summary", "type": "text" },
-          { "key": "cover", "label": "Cover", "type": "image" },
-          { "key": "body", "label": "Body", "type": "richtext" }
+          {
+            "key": "title",
+            "label": "Title",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "type": "text"
+          },
+          {
+            "key": "cover",
+            "label": "Cover",
+            "type": "image"
+          },
+          {
+            "key": "body",
+            "label": "Body",
+            "type": "richtext"
+          }
         ]
       }
     ]
@@ -110,7 +232,17 @@
         "location": "Sundmark",
         "year": "2025",
         "status": "Completed",
-        "body": "**Sundmark · 2025 · Completed**\n\nThe plot sits behind a low ridge, which is the only reason anything can stand there. We kept the house on the sheltered side and turned the windows inland, so the water is something you hear at night rather than watch all day.\n\nThe plan is a single run of five rooms off one corridor, with the kitchen at the warm end and a workshop at the cold end. Walls are lime-rendered blockwork, floors are ash over sand-filled joists, and the roof is a shallow zinc fold that sheds the westerly without catching it.\n\n- 128 m² on one level\n- Lime render on block\n- Completed spring 2025\n\nLiving there is quieter than the site suggested it would be. The owners report that the loudest thing in the house is the front door."
+        "body": "**Sundmark · 2025 · Completed**\n\nThe plot sits behind a low ridge, which is the only reason anything can stand there. We kept the house on the sheltered side and turned the windows inland, so the water is something you hear at night rather than watch all day.\n\nThe plan is a single run of five rooms off one corridor, with the kitchen at the warm end and a workshop at the cold end. Walls are lime-rendered blockwork, floors are ash over sand-filled joists, and the roof is a shallow zinc fold that sheds the westerly without catching it.\n\n- 128 m² on one level\n- Lime render on block\n- Completed spring 2025\n\nLiving there is quieter than the site suggested it would be. The owners report that the loudest thing in the house is the front door.",
+        "gallery": [
+          {
+            "image": "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=1600&q=80&auto=format&fit=crop",
+            "caption": "The long window that follows the kitchen bench"
+          },
+          {
+            "image": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1600&q=80&auto=format&fit=crop",
+            "caption": "Morning in the main room, before the sun clears the hedge"
+          }
+        ]
       },
       {
         "name": "Nine Windows",
@@ -150,7 +282,21 @@
         "location": "Storvik",
         "year": "2027",
         "status": "Coming soon",
-        "body": "**Storvik · 2027 · Coming soon**\n\nThe ground floor has to stay working. It stores and repairs boats through the winter, which means big doors, a wet floor and no interest in being pretty. We designed it as infrastructure and put the housing on top of it rather than pretending it was not there.\n\nSix apartments share one open deck facing the water, reached by an external stair. Every flat is dual-aspect, every flat has a store big enough for what people on a quay actually own, and the deck is wide enough that two neighbours can pass without turning sideways.\n\nGroundwork starts in the spring. We are building it ourselves, which is the only reason the boat store can keep running through the whole thing."
+        "body": "**Storvik · 2027 · Coming soon**\n\nThe ground floor has to stay working. It stores and repairs boats through the winter, which means big doors, a wet floor and no interest in being pretty. We designed it as infrastructure and put the housing on top of it rather than pretending it was not there.\n\nSix apartments share one open deck facing the water, reached by an external stair. Every flat is dual-aspect, every flat has a store big enough for what people on a quay actually own, and the deck is wide enough that two neighbours can pass without turning sideways.\n\nGroundwork starts in the spring. We are building it ourselves, which is the only reason the boat store can keep running through the whole thing.",
+        "gallery": [
+          {
+            "image": "https://images.unsplash.com/photo-1615529182904-14819c35db37?w=1600&q=80&auto=format&fit=crop",
+            "caption": "The stair hall, lit from the roof light above it"
+          },
+          {
+            "image": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1600&q=80&auto=format&fit=crop",
+            "caption": "A living room on the third floor, looking back at the quay"
+          },
+          {
+            "image": "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1600&q=80&auto=format&fit=crop",
+            "caption": "The boat store doors, kept and rehung"
+          }
+        ]
       },
       {
         "name": "Two Roofs",
