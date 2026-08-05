@@ -49,6 +49,11 @@
             "key": "tagline",
             "label": "Tagline",
             "type": "text"
+          },
+          {
+            "key": "intro",
+            "label": "Intro",
+            "type": "richtext"
           }
         ]
       }
@@ -60,12 +65,49 @@
         "title": "Getting started",
         "slug": "getting-started",
         "order": 1,
-        "body": "Welcome aboard."
+        "body": "Relay forwards webhooks from the services you use to the endpoints you control, and keeps a record of every delivery. This page gets you from nothing to a delivered event in about five minutes.\n\n## Install the CLI\n\n```bash\nnpm install -g @relay/cli\nrelay login\n```\n\n`relay login` opens a browser once and stores a token in `~/.relay/config.json`. Everything after this works offline until the token expires.\n\n## Create your first endpoint\n\nAn endpoint is a URL Relay delivers to, plus the events it should receive.\n\n```bash\nrelay endpoints create \\\n  --url https://api.example.com/hooks/stripe \\\n  --events payment.succeeded,payment.failed\n```\n\nRelay answers with an endpoint id and a signing secret. Store the secret the way you store database passwords — you need it to verify that a request really came from Relay.\n\n## Send a test event\n\n```bash\nrelay send payment.succeeded --data '{\"amount\": 4200}'\n```\n\nWatch it arrive with `relay tail`. If the endpoint returns anything other than a 2xx, Relay retries on the schedule described in [Retries and delivery](retries.html)."
+      },
+      {
+        "title": "Authentication",
+        "slug": "authentication",
+        "order": 2,
+        "body": "Every request to the Relay API carries an API key in the `Authorization` header. Keys belong to a project, never to a person, so removing a teammate never breaks a running integration.\n\n## Using a key\n\n```bash\ncurl https://api.relay.dev/v1/endpoints \\\n  -H \"Authorization: Bearer rl_live_8f3a…\"\n```\n\nKeys are prefixed so you can tell at a glance what you are holding: `rl_live_` for production, `rl_test_` for the sandbox. Test keys accept the same calls but never deliver to real endpoints.\n\n## Rotating a key\n\nCreate the new key first, deploy it, then delete the old one:\n\n```bash\nrelay keys create --name \"api-2026-08\"\nrelay keys delete rl_live_8f3a…\n```\n\nDeletion takes effect immediately and cannot be undone. A deleted key returns `401 invalid_key`, which your client should treat as fatal rather than retrying.\n\n## Verifying deliveries\n\nRelay signs every delivery with the endpoint's secret. Compute the HMAC over the raw request body — not the parsed JSON — and compare it in constant time:\n\n```js\nconst expected = crypto\n  .createHmac('sha256', secret)\n  .update(rawBody)\n  .digest('hex')\n```"
+      },
+      {
+        "title": "Sending events",
+        "slug": "events",
+        "order": 3,
+        "body": "An event is a name and a JSON payload. Relay does not inspect the payload beyond its size, so the shape is yours to define.\n\n```bash\ncurl https://api.relay.dev/v1/events \\\n  -H \"Authorization: Bearer $RELAY_KEY\" \\\n  -d '{\"name\":\"order.shipped\",\"data\":{\"order\":\"A-1183\"}}'\n```\n\n## Naming events\n\nUse `noun.verb`, past tense, lowercase: `order.shipped`, `invoice.paid`, `user.deleted`. Subscribers can then match on a prefix (`order.*`) instead of enumerating every name you might add later.\n\n## Payload limits\n\n- 256 KB per event body\n- 40 events per second per project, bursting to 200\n- 30 days of history on the free plan, 12 months on paid\n\nAnything larger than 256 KB should be a reference — an object key, a row id — that the receiver fetches. Webhooks are notifications, not a transport for files.\n\n## Idempotency\n\nInclude an `idempotency_key` and Relay drops duplicates for 24 hours. Retries of your own request are then free of consequences, which matters when a timeout leaves you unsure whether the first call landed."
+      },
+      {
+        "title": "Retries and delivery",
+        "slug": "retries",
+        "order": 4,
+        "body": "A delivery attempt succeeds when your endpoint answers `2xx` within 10 seconds. Everything else is a failure, and Relay retries.\n\n## The schedule\n\nAttempts back off: immediately, then after 30 seconds, 5 minutes, 30 minutes, 2 hours, 6 hours, and finally 24 hours. After the last attempt the event is marked `undelivered` and stays available for replay.\n\n## Replaying\n\n```bash\nrelay replay --endpoint ep_2f8c --since 2026-08-01\n```\n\nReplay sends the original payload with a new signature and a new `attempt` number. Receivers that respect `idempotency_key` can replay a month of history without side effects.\n\n## Circuit breaking\n\nTwenty consecutive failures pause an endpoint and email the project owners. Nothing is lost — paused endpoints keep queueing — but Relay stops hammering a service that is clearly down. Resume with `relay endpoints resume ep_2f8c`.\n\n## Ordering\n\nRelay does not guarantee order. Two events emitted a millisecond apart can arrive in either sequence, and a retry can land after a newer event. Include a timestamp or a version in your payload and ignore anything older than what you have already processed."
+      },
+      {
+        "title": "The CLI",
+        "slug": "cli",
+        "order": 5,
+        "body": "The CLI is a thin wrapper over the same API the dashboard uses. Anything you can click, you can script.\n\n## Tailing traffic\n\n```bash\nrelay tail --endpoint ep_2f8c --status failed\n```\n\nOutput is one line per attempt: timestamp, event name, response status, duration. Add `--json` to pipe it into `jq`.\n\n## Local development\n\n`relay forward` receives events on your machine without a public URL:\n\n```bash\nrelay forward --to http://localhost:3000/hooks\n```\n\nThe tunnel closes with the process. Events that arrive while it is down are queued and delivered when you reconnect, so you can stop and start the server freely.\n\n## Configuration as files\n\n`relay pull` writes your endpoints to `relay.json`; `relay push` applies changes. Commit the file and your webhook configuration lives in review alongside the code that depends on it."
+      },
+      {
+        "title": "Rate limits",
+        "slug": "rate-limits",
+        "order": 6,
+        "body": "Limits are per project and reset on a rolling window. The response headers tell you where you stand:\n\n```\nX-RateLimit-Limit: 40\nX-RateLimit-Remaining: 12\nX-RateLimit-Reset: 1786012800\n```\n\n## When you exceed them\n\nThe API returns `429 rate_limited` with a `Retry-After` header in seconds. Respect it; retrying sooner extends the window. The CLI already does this for you.\n\n## Raising a limit\n\nPaid projects start at 200 events per second. Beyond that, write to support with a rough shape of your traffic — steady rate, expected burst, and the endpoints involved. Limits are raised per project, not per key."
+      },
+      {
+        "title": "Errors",
+        "slug": "errors",
+        "order": 7,
+        "body": "Errors are JSON, with a stable `code` you can branch on and a `message` written for a human reading a log.\n\n```json\n{\n  \"error\": {\n    \"code\": \"endpoint_not_found\",\n    \"message\": \"No endpoint with id ep_9xk1 in this project.\"\n  }\n}\n```\n\n## Codes worth handling\n\n- `invalid_key` — the key was deleted or belongs to another project. Fatal; do not retry.\n- `rate_limited` — back off for `Retry-After` seconds.\n- `payload_too_large` — the body exceeded 256 KB. Send a reference instead.\n- `endpoint_paused` — the circuit breaker tripped. The event is queued, not lost.\n\n## What we never do\n\nWe never return a `2xx` for a failed operation, and we never change an error's `code` once it has shipped. Messages get clearer over time; codes are a contract."
       }
     ],
     "settings": {
-      "title": "Docs",
-      "tagline": "Everything you need to know"
+      "title": "Relay docs",
+      "tagline": "A webhook relay you can reason about",
+      "intro": "Relay forwards webhooks from the services you use to the endpoints you control, retries what fails, and keeps every attempt on record so you can replay it later.\n\nStart with [Getting started](getting-started.html) for a delivered event in five minutes, or jump to [Authentication](authentication.html) if you are wiring up a production key."
     }
   }
 }

@@ -9,6 +9,8 @@
     "build:studio": "pnpm themes:fetch && vite build --base=/studio/ --outDir ../../landing/public/studio --emptyOutDir",
     "dev": "vite",
     "preview": "vite preview",
+    "demos": "node scripts/build-theme-demos.mjs",
+    "thumbs": "node scripts/build-theme-thumbs.mjs",
     "themes:fetch": "node scripts/fetch-premium-themes.mjs",
     "theme:compile": "node scripts/theme-compile.mjs",
     "test": "vitest run --passWithNoTests",

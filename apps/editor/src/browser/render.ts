@@ -20,6 +20,9 @@ export interface ProjectData {
   singletons: Record<string, Record<string, unknown>>
   theme: Theme
   siteName: string
+  /** BCP-47 language of the CONTENT, not the editor. Drives <html lang>, which
+   *  CSS `text-transform: uppercase` obeys — under `tr`, "i" uppercases to "İ". */
+  lang?: string
 }
 
 interface FieldVM {
@@ -230,8 +233,9 @@ function getActiveThemeBundle(): ThemeBundle {
 // Page shell wraps each template's output. themeCss(theme) (the --jj-* block the
 // Design panel edits) is injected BEFORE the bundle css so the default theme —
 // and any bundle that opts into --jj-* — respects the user's palette/accent/font.
-function page(title: string, theme: Theme, bundle: ThemeBundle, body: string): string {
-  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>${themeCss(theme)}\n${bundle.css}</style></head><body>${body}</body></html>`
+function page(title: string, p: ProjectData, bundle: ThemeBundle, body: string): string {
+  const lang = p.lang || 'tr'
+  return `<!doctype html><html lang="${esc(lang)}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>${themeCss(p.theme)}\n${bundle.css}</style></head><body>${body}</body></html>`
 }
 
 // Built-in fallbacks so themes shipped before the multi-page contract (only
@@ -376,7 +380,7 @@ export function renderWithBundle(p: ProjectData, bundle: ThemeBundle): Record<st
     const hero = firstS ? slots(firstS.fields, p.singletons[firstS.name] ?? {}) : EMPTY_SLOTS
     files['/index.html'] = page(
       p.siteName,
-      p.theme,
+      p,
       bundle,
       Mustache.render(bundle.templates.index, { ...c, hero }),
     )
@@ -389,7 +393,7 @@ export function renderWithBundle(p: ProjectData, bundle: ThemeBundle): Record<st
       const sl = slots(pagesCol.fields, r.data)
       files[`/${r.slug}.html`] = page(
         sl.title || p.siteName,
-        p.theme,
+        p,
         bundle,
         Mustache.render(bundle.templates.page ?? FALLBACK_PAGE, {
           ...c,
@@ -407,7 +411,7 @@ export function renderWithBundle(p: ProjectData, bundle: ThemeBundle): Record<st
     const listCtx = ctx(base, listUrl(col.path))
     files[`/${col.path}/index.html`] = page(
       String(col.label ?? col.name),
-      p.theme,
+      p,
       bundle,
       Mustache.render(bundle.templates.list ?? FALLBACK_LIST, {
         ...listCtx,
@@ -421,7 +425,7 @@ export function renderWithBundle(p: ProjectData, bundle: ThemeBundle): Record<st
       const sl = slots(col.fields, r.data)
       files[`/${col.path}/${r.slug}.html`] = page(
         sl.title || p.siteName,
-        p.theme,
+        p,
         bundle,
         Mustache.render(bundle.templates.entry, {
           ...c,

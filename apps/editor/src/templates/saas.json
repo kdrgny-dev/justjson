@@ -77,9 +77,21 @@
       "cta": "https://example.com/signup",
       "docs": "https://example.com/docs",
       "pricing": [
-        { "plan": "Starter", "price": "$0 / mo", "includes": "1 project · community support · 10k requests" },
-        { "plan": "Pro", "price": "$29 / mo", "includes": "Unlimited projects · email support · 5M requests · previews" },
-        { "plan": "Scale", "price": "$99 / mo", "includes": "SSO · SLA · audit logs · unlimited requests · priority support" }
+        {
+          "plan": "Starter",
+          "price": "$0 / mo",
+          "includes": "1 project · community support · 10k requests"
+        },
+        {
+          "plan": "Pro",
+          "price": "$29 / mo",
+          "includes": "Unlimited projects · email support · 5M requests · previews"
+        },
+        {
+          "plan": "Scale",
+          "price": "$99 / mo",
+          "includes": "SSO · SLA · audit logs · unlimited requests · priority support"
+        }
       ]
     },
     "contact": {

@@ -84,16 +84,67 @@
   "samples": {
     "projects": [
       {
-        "title": "Sample project",
-        "slug": "sample-project",
-        "summary": "A short description.",
+        "title": "Ferry timetable, rebuilt",
+        "slug": "ferry-timetable",
+        "summary": "A regional ferry operator's schedule, redrawn so a commuter can read it from the pier in bad light.",
+        "cover": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80&auto=format&fit=crop",
+        "url": "https://example.com/ferry",
         "kind": "Web",
-        "body": "Project details go here."
+        "body": "The old timetable was a PDF per route, updated twice a year and unreadable on a phone. Ridership data showed most visits happened within twenty minutes of a departure, standing outside, one-handed.\n\nSo the page answers one question first: what leaves next, from here. Everything else — the full day, the seasonal routes, the fare table — sits below that answer rather than in front of it.\n\nThe schedule is a set of JSON files the operator edits themselves. No CMS to log into, no ticket to file when a sailing changes; they edit a file and the site rebuilds.",
+        "date": "2026-05-18"
+      },
+      {
+        "title": "Kestrel design system",
+        "slug": "kestrel",
+        "summary": "Type, colour and spacing for a fintech with four products and no shared language between them.",
+        "cover": "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1200&q=80&auto=format&fit=crop",
+        "kind": "Design",
+        "body": "Four teams had drifted into four visual languages: three greys called \"grey-500\", two type scales, buttons in seven heights. Kestrel is the smallest set of decisions that stops the drift without turning into a committee.\n\nIt ships as tokens, not components — colour, type, spacing, radius and motion — so each product keeps its own framework. Adoption was measured in deleted CSS: 6,400 lines in the first quarter.\n\nThe documentation is one page. Anything that needed a second page was a sign the decision wasn't clear enough yet.",
+        "date": "2026-03-02"
+      },
+      {
+        "title": "Tide",
+        "slug": "tide",
+        "summary": "A tracker for cold-water swimmers: temperature, duration, and how it felt afterwards.",
+        "cover": "https://images.unsplash.com/photo-1545670723-196ed0954986?w=1200&q=80&auto=format&fit=crop",
+        "url": "https://example.com/tide",
+        "kind": "Mobile",
+        "body": "Swimmers were logging sessions in notes apps and spreadsheets: water temperature, time in, how the rest of the day went. Tide keeps that shape — three fields and a note — because the people who do this every morning did not want a fitness app.\n\nEntry takes under ten seconds with cold hands: large targets, no keyboard for the common case, and nothing that requires unlocking a phone with wet fingers twice.\n\nThe interesting screen turned out not to be the log but the year: 340 swims drawn as one column per day, colour by temperature. It is the only part people share.",
+        "date": "2026-01-24"
+      },
+      {
+        "title": "Nordkyn Coffee",
+        "slug": "nordkyn",
+        "summary": "Packaging and a small shop for a roaster who sells four bags and nothing else.",
+        "cover": "https://images.unsplash.com/photo-1526947425960-945c6e72858f?w=1200&q=80&auto=format&fit=crop",
+        "url": "https://example.com/nordkyn",
+        "kind": "Design",
+        "body": "Four coffees, one grinder setting printed on each bag, no subscription funnel. The brief was to make a small range look deliberate rather than sparse.\n\nThe labels carry a single large numeral for the roast and a hand-set origin line; the shelf reads as a set from three metres away, which is where the buying decision happens.\n\nOnline it is a five-page site: four products and a page about the farms. Checkout is a hosted link. The roaster updates prices in a JSON file between roasts.",
+        "date": "2025-11-11"
+      },
+      {
+        "title": "Atlas field notes",
+        "slug": "atlas",
+        "summary": "Offline-first notes for surveyors working three valleys from the nearest cell tower.",
+        "cover": "https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?w=1200&q=80&auto=format&fit=crop",
+        "kind": "Mobile",
+        "body": "Fieldwork happens without a connection, often in gloves, often in rain. Atlas assumes offline is the normal state: everything is local first, sync is a background detail, and nothing blocks on a spinner.\n\nConflicts were the hard part. Two surveyors editing the same site on the same day is common, so the app keeps both versions and asks later, on a big screen, instead of guessing in the field.\n\nThe entire data layer is files on disk, which made the migration from the previous system a copy rather than an import.",
+        "date": "2025-09-30"
+      },
+      {
+        "title": "Studio Halden identity",
+        "slug": "studio-halden",
+        "summary": "A wordmark, a grid and a set of rules loose enough that two designers can both use them.",
+        "cover": "https://images.unsplash.com/photo-1481487196290-c152efe083f5?w=1200&q=80&auto=format&fit=crop",
+        "kind": "Design",
+        "body": "A two-person studio that had been borrowing its clients' visual languages for six years. The work was to find something specific enough to recognise but quiet enough to sit behind other people's brands.\n\nOne wordmark, one grotesk at two weights, a paper stock, and a rule about photography: never crop a person out of their context. Nine pages of guidelines, most of them examples.\n\nThey have since redrawn the wordmark once, without asking, which is the outcome I wanted — a system they own rather than one they maintain.",
+        "date": "2025-07-08"
       }
     ],
     "about": {
-      "name": "Ada Lovelace",
-      "bio": "I build things for the web."
+      "name": "Mira Solberg",
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1200&q=80&auto=format&fit=crop",
+      "bio": "I design interfaces and the small systems that keep them consistent — mostly for teams shipping something practical: transport, tools, a roastery with four bags of coffee.\n\nFifteen years in, I have stopped separating design from the files it ends up in. I work in the browser early, write the copy alongside the layout, and hand over something a team can maintain without me.\n\nBased in Oslo, working across Europe. Currently taking projects for early 2027."
     }
   }
 }
