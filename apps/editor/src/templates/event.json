@@ -1,88 +1,240 @@
 {
-  "title": "Event schedule",
-  "description": "An event agenda of sessions with date, time and speaker.",
+  "title": "Event / Festival",
+  "description": "A festival or conference site: program, speakers, passes and venue.",
   "schema": {
     "version": 1,
-    "collections": [
-      {
-        "name": "sessions",
-        "label": "Sessions",
-        "path": "sessions",
-        "fields": [
-          {
-            "key": "title",
-            "label": "Title",
-            "type": "text",
-            "required": true
-          },
-          {
-            "key": "slug",
-            "label": "Slug",
-            "type": "text",
-            "required": true
-          },
-          {
-            "key": "date",
-            "label": "Date",
-            "type": "date"
-          },
-          {
-            "key": "time",
-            "label": "Time",
-            "type": "text"
-          },
-          {
-            "key": "speaker",
-            "label": "Speaker",
-            "type": "text"
-          },
-          {
-            "key": "room",
-            "label": "Room",
-            "type": "text"
-          },
-          {
-            "key": "description",
-            "label": "Description",
-            "type": "richtext"
-          }
-        ]
-      }
-    ],
     "singletons": [
       {
         "name": "event",
         "label": "Event",
         "path": "event.json",
         "fields": [
+          { "key": "siteName", "label": "Site name", "type": "text" },
+          { "key": "title", "label": "Headline", "type": "text", "required": true },
+          { "key": "tagline", "label": "Tagline", "type": "text" },
+          { "key": "cover", "label": "Hero image", "type": "image" },
+          { "key": "intro", "label": "Intro", "type": "richtext" },
+          { "key": "tickets", "label": "Get passes", "type": "url" },
+          { "key": "program", "label": "Browse the program", "type": "url" },
           {
-            "key": "title",
-            "label": "Event name",
-            "type": "text"
-          },
-          {
-            "key": "tagline",
-            "label": "Tagline",
-            "type": "text"
+            "key": "passes",
+            "label": "Passes",
+            "type": "repeater",
+            "fields": [
+              { "key": "pass", "label": "Pass", "type": "text" },
+              { "key": "price", "label": "Price", "type": "text" },
+              { "key": "includes", "label": "Includes", "type": "text" }
+            ]
           }
+        ]
+      },
+      {
+        "name": "contact",
+        "label": "Contact",
+        "path": "contact.json",
+        "fields": [
+          { "key": "email", "label": "Email", "type": "email" },
+          { "key": "instagram", "label": "Instagram", "type": "url" },
+          { "key": "press", "label": "Press kit", "type": "url" }
+        ]
+      }
+    ],
+    "collections": [
+      {
+        "name": "speakers",
+        "label": "Artists & Speakers",
+        "path": "speakers",
+        "fields": [
+          { "key": "name", "label": "Name", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "role", "label": "Role", "type": "text" },
+          { "key": "cover", "label": "Portrait", "type": "image" },
+          { "key": "bio", "label": "Bio", "type": "richtext" }
+        ]
+      },
+      {
+        "name": "sessions",
+        "label": "Program",
+        "path": "sessions",
+        "fields": [
+          { "key": "title", "label": "Title", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "summary", "label": "Summary", "type": "text" },
+          { "key": "cover", "label": "Cover", "type": "image" },
+          { "key": "date", "label": "Date", "type": "date" },
+          { "key": "time", "label": "Time", "type": "text" },
+          { "key": "stage", "label": "Stage", "type": "text" },
+          { "key": "speaker", "label": "With", "type": "text" },
+          { "key": "description", "label": "Description", "type": "richtext" }
         ]
       }
     ]
   },
   "samples": {
-    "sessions": [
+    "event": {
+      "siteName": "Lumen",
+      "title": "Three nights, lit from within",
+      "tagline": "Light, music and ideas in the Sundvik harbor district — 18–20 June 2027",
+      "cover": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&q=80&auto=format&fit=crop",
+      "intro": "Lumen starts when the sun goes down and the harbor turns into a listening room. For three nights, light artists, musicians and researchers take over the quays, warehouses and greenhouses of Sundvik — not to dazzle, but to slow the city down enough to look at it again. Everything is walkable, most of it is outdoors, and the program is built so you can drift between a talk, a live score and a bowl of soup without checking a map twice.",
+      "tickets": "https://example.com/tickets",
+      "program": "https://example.com/program",
+      "passes": [
+        {
+          "pass": "Day pass",
+          "price": "€49",
+          "includes": "One evening of your choice · all stages · the nightly light walk"
+        },
+        {
+          "pass": "Full pass",
+          "price": "€119",
+          "includes": "All three nights · all stages · workshops (first come, first in) · festival map & zine"
+        },
+        {
+          "pass": "Patron pass",
+          "price": "€290",
+          "includes": "All three nights · reserved workshop seats · the Glasshouse dinner · your name in the closing projection"
+        }
+      ]
+    },
+    "contact": {
+      "email": "hello@lumen.example",
+      "instagram": "https://instagram.com/",
+      "press": "https://example.com/press"
+    },
+    "speakers": [
       {
-        "title": "Opening keynote",
-        "slug": "opening-keynote",
-        "time": "09:00",
-        "speaker": "Ada Lovelace",
-        "room": "Main hall",
-        "description": "Welcome to the event."
+        "name": "Vera Lindqvist",
+        "slug": "vera-lindqvist",
+        "role": "Light artist, Rotterdam",
+        "cover": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=1600&q=80&auto=format&fit=crop",
+        "bio": "Vera builds installations out of the light a city already wastes — sodium glare, ferry headlights, the flicker of vending machines. Her pieces rarely add new fixtures; they redirect, filter and time what is already there, usually with mirrors, scrap glass and a lot of patient rigging.\n\nFor Lumen she has spent the spring mapping Sundvik's harbor lighting circuit by circuit. Her opening-night walk turns that map into a route: forty minutes of the district seen through its own lamps, re-aimed."
+      },
+      {
+        "name": "Tomas Brandt",
+        "slug": "tomas-brandt",
+        "role": "Composer, Gothenburg",
+        "cover": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=1600&q=80&auto=format&fit=crop",
+        "bio": "Tomas writes for small ensembles and large rooms — grain silos, swimming halls, a decommissioned ferry deck. He scores to the reverb of a space first and the melody second, and tunes each performance on site during the day it happens.\n\nAt Lumen he premieres a piece for brass quartet and harbor fog horns, written for the Vault's eleven-second echo. He asks that you sit anywhere except the middle."
+      },
+      {
+        "name": "Dr. Selin Aydan",
+        "slug": "selin-aydan",
+        "role": "Chronobiologist, Vienna",
+        "cover": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1600&q=80&auto=format&fit=crop",
+        "bio": "Selin studies what artificial light does to sleep, mood and cities. Her lab work tracks how streetlight spectra shift circadian rhythms; her field work involves convincing municipalities to dim things and measuring what happens next.\n\nShe talks the way she publishes: concrete numbers, no scare stories, and a standing offer to be proven wrong. Her Lumen talk covers what three European cities learned when they turned their lights down after midnight."
+      },
+      {
+        "name": "Joris Vandermeer",
+        "slug": "joris-vandermeer",
+        "role": "Chef, Antwerp",
+        "cover": "https://images.unsplash.com/photo-1552058544-f2b08422138a?w=1600&q=80&auto=format&fit=crop",
+        "bio": "Joris cooks over open fire and serves in the dark — or close to it. His dinners run at candle level, on the theory that when you can barely see the plate, you taste in a different order. The menus are short, seasonal and cooked within sight of the table.\n\nHe grew up in his family's harbor-side canteen and still builds menus around what a working port eats: smoked fish, root vegetables, bread that keeps. The Glasshouse dinner at Lumen is his first collaboration with a lighting designer instead of an electrician."
+      },
+      {
+        "name": "Noor El-Amin",
+        "slug": "noor-el-amin",
+        "role": "Filmmaker, Marseille",
+        "cover": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=1600&q=80&auto=format&fit=crop",
+        "bio": "Noor makes documentaries shot almost entirely at night, on the streets and in the workplaces most films skip: container terminals, bakeries at 3 a.m., toll booths. She works with available light and a two-person crew, and her films are as much about sound as image.\n\nAt Lumen she screens her harbor triptych with the score performed live, and stays for a conversation about filming people whose working day ends when everyone else's begins."
+      },
+      {
+        "name": "Anton Reisz",
+        "slug": "anton-reisz",
+        "role": "Lighting systems engineer, Prague",
+        "cover": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1600&q=80&auto=format&fit=crop",
+        "bio": "Anton designs the control systems behind large public light works — the timing, the failsafes, the unglamorous cabling that decides whether a piece runs for one night or one decade. He has wired installations onto bridges, cooling towers and one very uncooperative cathedral.\n\nHis workshop at Lumen is hands-on: a table of controllers, LEDs and salvaged fixtures, and two hours to make something blink exactly when you want it to. No experience needed; he is firm about that."
       }
     ],
-    "event": {
-      "title": "My event",
-      "tagline": "One day, one track"
-    }
+    "sessions": [
+      {
+        "title": "The Harbor, Re-aimed",
+        "slug": "harbor-re-aimed",
+        "summary": "Opening-night light walk through Sundvik's own lamps, redirected.",
+        "cover": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1600&q=80&auto=format&fit=crop",
+        "date": "2027-06-18",
+        "time": "22:00",
+        "stage": "Quayside route",
+        "speaker": "Vera Lindqvist",
+        "description": "**22:00 — Quayside route · with Vera Lindqvist**\n\nLumen opens on foot. Vera Lindqvist has spent months with the harbor's existing lighting — crane floods, navigation beacons, the sodium lamps along the fish quay — and re-aimed it into a forty-minute route from the ferry terminal to the Glasshouse.\n\nNothing new has been installed. Every effect on the walk is a lamp the district already owned, filtered, mirrored or retimed. Walkers set their own pace; stewards with dim torches mark the turns.\n\n- Starts at the ferry terminal gates, every 15 minutes from 22:00\n- Flat route, about 2 km, wheelchair accessible throughout\n- The last group leaves at 23:30"
+      },
+      {
+        "title": "What Cities Learn in the Dark",
+        "slug": "what-cities-learn-in-the-dark",
+        "summary": "A chronobiologist on what happened when three cities dimmed their nights.",
+        "cover": "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=1600&q=80&auto=format&fit=crop",
+        "date": "2027-06-18",
+        "time": "20:30",
+        "stage": "Vault",
+        "speaker": "Dr. Selin Aydan",
+        "description": "**20:30 — Vault · with Dr. Selin Aydan**\n\nBefore the first light walk, a grounding. Selin Aydan presents field results from three European cities that reduced street lighting after midnight — what changed in sleep, in traffic, in how safe people said they felt versus how safe they were.\n\nThe findings are messier and more interesting than the headlines on either side. Selin walks through the data slowly, names what is still unknown, and takes questions for as long as the room wants to stay."
+      },
+      {
+        "title": "Foghorn Quartet",
+        "slug": "foghorn-quartet",
+        "summary": "A brass premiere written for the Vault's eleven-second echo.",
+        "cover": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1600&q=80&auto=format&fit=crop",
+        "date": "2027-06-19",
+        "time": "21:30",
+        "stage": "Vault",
+        "speaker": "Tomas Brandt",
+        "description": "**21:30 — Vault · with Tomas Brandt**\n\nThe Vault is a former grain store with an echo you can set a metronome by. Tomas Brandt has written a piece that treats that echo as a fifth instrument: four brass players, spaced across the floor, playing into and against an eleven-second decay — with the harbor's real fog horns scored in as punctuation.\n\nThe performance runs about fifty minutes without interval. Doors close at 21:25 and stay closed; the piece depends on the room staying sealed. Come early and pick your spot — Tomas suggests anywhere but the center."
+      },
+      {
+        "title": "Make It Blink",
+        "slug": "make-it-blink",
+        "summary": "A hands-on lighting control workshop — controllers, LEDs, no experience needed.",
+        "cover": "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=1600&q=80&auto=format&fit=crop",
+        "date": "2027-06-19",
+        "time": "16:00",
+        "stage": "Slipway Workshop",
+        "speaker": "Anton Reisz",
+        "description": "**16:00 — Slipway Workshop · with Anton Reisz**\n\nEvery light work at Lumen depends on the layer Anton Reisz builds: timing, control and the cabling nobody photographs. In this two-hour session he puts that layer on the table.\n\nEach participant gets a controller, a strip of LEDs and a box of salvaged fixtures. By the end you will have built a small piece that blinks, fades or chases exactly when you tell it to — and you will know why big installations fail, and how his failsafes catch them.\n\n- 24 seats, first come for Full pass holders, reserved for Patrons\n- All tools and parts provided; take your build home\n- Ages 12 and up welcome with an adult"
+      },
+      {
+        "title": "Night Shift: A Triptych",
+        "slug": "night-shift-triptych",
+        "summary": "Three short harbor documentaries, screened with their score performed live.",
+        "cover": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80&auto=format&fit=crop",
+        "date": "2027-06-19",
+        "time": "23:00",
+        "stage": "Harbor Stage",
+        "speaker": "Noor El-Amin, Tomas Brandt",
+        "description": "**23:00 — Harbor Stage · with Noor El-Amin, Tomas Brandt**\n\nNoor El-Amin's triptych follows three working nights: a container terminal crew, a harbor pilot, and the last bakery inside the port fence. Shot with available light over two winters, the films let the harbor's own lamps do the cinematography.\n\nFor Lumen, the score is performed live by musicians from Tomas Brandt's ensemble, sitting below the screen. After the screening Noor stays on stage for a conversation about filming people whose shift ends at sunrise — and why she never adds light to a scene."
+      },
+      {
+        "title": "Dinner at Candle Level",
+        "slug": "dinner-at-candle-level",
+        "summary": "A fire-cooked dinner in the Glasshouse, lit only as much as it needs to be.",
+        "cover": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&q=80&auto=format&fit=crop",
+        "date": "2027-06-20",
+        "time": "19:00",
+        "stage": "Glasshouse",
+        "speaker": "Joris Vandermeer",
+        "description": "**19:00 — Glasshouse · with Joris Vandermeer**\n\nJoris Vandermeer cooks over open fire at one end of the Glasshouse; you eat at long tables at the other, under a lighting plan he built with Vera Lindqvist instead of his usual electrician. The room starts at dusk-bright and dims course by course until dessert arrives at candle level.\n\nThe menu is short and portside: smoked fish, roots from two farms up the coast, bread baked that afternoon. Vegetarian and gluten-free lines run the full menu — mention it when you book.\n\nSeats are limited and included with the Patron pass; a small number are released to Full pass holders in early June."
+      },
+      {
+        "title": "Second Night, Open Decks",
+        "slug": "second-night-open-decks",
+        "summary": "Late sets on the Harbor Stage after the installations dim.",
+        "cover": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1600&q=80&auto=format&fit=crop",
+        "date": "2027-06-20",
+        "time": "23:30",
+        "stage": "Harbor Stage",
+        "speaker": "Tomas Brandt",
+        "description": "**23:30 — Harbor Stage · with Tomas Brandt**\n\nWhen the installations power down for the night, the Harbor Stage stays on. Tomas Brandt curates the late slot: musicians from the festival's live scores, unbilled guests, and long unhurried sets that lean into the open air.\n\nThere is no schedule past the first act on purpose. Come after the light walk, stay as long as the night holds — food stalls on the quay run until 02:00, and the last shuttle to the city center leaves at 02:30."
+      },
+      {
+        "title": "Lights Out, Slowly",
+        "slug": "lights-out-slowly",
+        "summary": "The closing: one projection, the whole district dimming in sequence.",
+        "cover": "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1600&q=80&auto=format&fit=crop",
+        "date": "2027-06-20",
+        "time": "23:45",
+        "stage": "Quayside route",
+        "speaker": "Vera Lindqvist, Anton Reisz",
+        "description": "**23:45 — Quayside route · with Vera Lindqvist, Anton Reisz**\n\nLumen ends the way it began: with the harbor's own light. At 23:45 a single projection appears on the grain silo — the festival's closing sequence, carrying the names of this year's patrons — and then, block by block, Vera Lindqvist and Anton Reisz dim the district in choreographed order, from the ferry terminal down to the water.\n\nThe sequence takes about twenty minutes. When the last quay lamp fades, the harbor sits dark for one full minute before the city grid comes back up. Find somewhere with a long view — the fish quay steps are the local favorite — and let your eyes adjust."
+      }
+    ]
   }
 }

@@ -1,0 +1,224 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lumen</title><style>:root {
+  --jj-bg: #faf9f5;
+  --jj-text: #1c1a17;
+  --jj-muted: #6b6558;
+  --jj-border: #e4e0d5;
+  --jj-accent: #ff7a59;
+  --jj-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --jj-radius: 14px;
+  --jj-gap: 0.75rem;
+  --jj-page: 3rem;
+  --jj-lead: 1.65;
+}
+@font-face{font-family:Zodiak;font-weight:400;font-display:swap;src:url(https://cdn.fontshare.com/wf/ECUEQQ5BLZLFJS3PPLWOEEVS7SQONQMH/WNTXEMDDVWUVWDURRKDXCJC6G7TMP277/TBWKTFSYABV4KN4GNIJMAOQUOTYBUWB3.woff2) format("woff2")}@font-face{font-family:Zodiak;font-weight:700;font-display:swap;src:url(https://cdn.fontshare.com/wf/63K42MQSJZ57SBX4XJ4J7L4M5IM6V2HQ/DTT4Y5AJV6DYRVZQST5O4K2E6SESQNV3/VGG36BIEB6ODAX4ZN7UV43FK742PFGDV.woff2) format("woff2")}@font-face{font-family:Archivo;font-weight:100 900;font-display:swap;src:url(https://fonts.gstatic.com/s/archivo/v25/k3kPo8UDI-1M0wlSV9XAw6lQkqWY8Q82sLydOxKsv4Rn.woff2) format("woff2")}:root{--acc: var(--jj-accent, #ff7a59);--bg: #191022;--panel: #221631;--cream: #f2ecdf;--body-c: #cfc6da;--dim: #93879f;--line: rgba(242, 236, 223, .14);--line2: rgba(242, 236, 223, .32);--serif: "Zodiak", Georgia, "Times New Roman", serif;--sans: "Archivo", "Helvetica Neue", Arial, sans-serif;--wrapw: 76rem}*{box-sizing:border-box}html{scroll-behavior:smooth}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}body{margin:0;background:var(--bg);color:var(--body-c);font-family:var(--sans);font-weight:400;font-size:1.0525rem;line-height:1.68;-webkit-font-smoothing:antialiased;overflow-x:hidden}img{max-width:100%;display:block}a{color:var(--cream);text-decoration:none}:focus-visible{outline:2px solid var(--acc);outline-offset:3px}::selection{background:color-mix(in srgb,var(--acc) 40%,transparent);color:var(--cream)}h1,h2,h3{font-family:var(--serif);font-weight:400;color:var(--cream);line-height:1.08;margin:0}.h59{max-width:var(--wrapw);margin:0 auto;padding:0 clamp(1.25rem,4vw,2.5rem)}.h52{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;gap:2rem;padding:1rem clamp(1.25rem,4vw,2.5rem);transition:background .35s ease,border-color .35s ease,padding .35s ease;border-bottom:1px solid transparent}[data-scrolled] .h52{background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(14px);border-bottom-color:var(--line);padding-block:.7rem}.h10{display:inline-flex;align-items:baseline;gap:.55rem;font-family:var(--serif);font-size:1.35rem;color:var(--cream)}.h10:before{content:"";width:9px;height:9px;border-radius:50%;background:var(--acc);align-self:center}.h37{position:absolute;width:1px;height:1px;opacity:0}.h35{display:none;margin-left:auto;width:44px;height:44px;flex-direction:column;justify-content:center;align-items:center;gap:6px;cursor:pointer;border:1px solid var(--line2);border-radius:999px}.h35 span{width:16px;height:1.5px;background:var(--cream);transition:transform .25s ease}.h37:focus-visible+.h35{outline:2px solid var(--acc);outline-offset:3px}.h38{margin-left:auto;display:flex;align-items:center;gap:1.8rem}.h39{font-size:.88rem;font-weight:500;letter-spacing:.02em;color:var(--body-c);padding:.25rem 0;border-bottom:1px solid transparent;transition:color .2s ease,border-color .2s ease}.h39:hover{color:var(--cream)}.h39[aria-current]{color:var(--cream);border-bottom-color:var(--acc)}@media(max-width:840px){.h35{display:flex}.h38{position:fixed;inset:0 0 auto;padding:5.2rem 1.5rem 1.6rem;flex-direction:column;align-items:flex-start;gap:0;background:var(--bg);border-bottom:1px solid var(--line);opacity:0;transform:translateY(-10px);pointer-events:none;transition:opacity .25s ease,transform .25s ease;z-index:-1}.h39{width:100%;padding:.9rem 0;font-size:1.15rem;border-bottom:1px solid var(--line)}.h37:checked~.h38{opacity:1;transform:none;pointer-events:auto}.h37:checked~.h35 span:first-child{transform:translateY(3.75px) rotate(45deg)}.h37:checked~.h35 span:last-child{transform:translateY(-3.75px) rotate(-45deg)}}.h40{display:inline-flex;align-items:center;gap:.6rem;font-family:var(--sans);font-weight:600;font-size:.92rem;padding:.9rem 1.9rem;border-radius:999px;background:var(--cream);color:#241830;border:1px solid var(--cream);transition:background .25s ease,color .25s ease,transform .25s ease}.h40:hover{background:var(--acc);border-color:var(--acc);color:#241830}.h41{background:transparent;color:var(--cream);border-color:var(--line2)}.h41:hover{background:transparent;border-color:var(--acc);color:var(--cream)}.h17{display:inline-flex;gap:.5rem;align-items:baseline;font-size:.78rem;font-weight:500;letter-spacing:.02em;border:1px solid var(--line);border-radius:999px;padding:.38rem .9rem;color:var(--body-c)}.h17 b{font-weight:500;color:var(--dim)}a.h17:hover{border-color:var(--acc);color:var(--cream)}.h21{display:inline-flex;align-items:center;gap:.6rem;font-size:.78rem;font-weight:600;letter-spacing:.16em;text-transform:none;color:var(--dim);margin:0 0 1.3rem}.h21:before{content:"";width:8px;height:8px;background:var(--acc);border-radius:50%}.h53{position:relative;min-height:100svh;display:grid;place-items:center;text-align:center;overflow:hidden;padding:6rem 1.25rem 5rem}.h56{position:absolute;inset:-12% 0;z-index:0;pointer-events:none}.h56 img{width:100%;height:100%;object-fit:cover;will-change:transform}.h56:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(25,16,34,.55),rgba(25,16,34,.15) 35%,rgba(25,16,34,.28) 70%,var(--bg) 98%)}.h54{position:relative;z-index:1;max-width:62rem}.h58{font-size:clamp(3.2rem,11vw,9rem);letter-spacing:-.015em;text-wrap:balance;text-shadow:0 4px 60px rgba(12,6,18,.55)}.h55{max-width:34rem;margin:1.6rem auto 0;font-size:1.06rem;color:color-mix(in srgb,var(--cream) 88%,transparent);text-shadow:0 2px 30px rgba(12,6,18,.6)}.h57{display:flex;flex-wrap:wrap;justify-content:center;gap:.8rem;margin-top:2.4rem}.h57 .h40:not(:first-child){background:#19102259;backdrop-filter:blur(8px);color:var(--cream);border-color:var(--line2)}.h57 .h40:not(:first-child):hover{border-color:var(--acc);background:#1910228c;color:var(--cream)}.h20{position:absolute;bottom:2.2rem;left:50%;z-index:1;width:1px;height:52px;background:linear-gradient(to bottom,transparent,var(--cream));opacity:.6}[data-js] .h20{animation:cue 2.4s ease-in-out infinite}@keyframes cue{0%,to{transform:translateY(0);opacity:.6}50%{transform:translateY(10px);opacity:.25}}@media(prefers-reduced-motion:reduce){[data-js] .h20{animation:none}}.h49{padding:clamp(5rem,12vw,9rem) 0 clamp(3rem,8vw,5rem)}.h47{display:grid;grid-template-columns:1.4fr .6fr;gap:clamp(2.5rem,6vw,5rem);align-items:start}@media(max-width:860px){.h47{grid-template-columns:1fr}}.h48{counter-reset:sti;border-top:1px solid var(--line)}.h51{counter-increment:sti;display:flex;align-items:baseline;gap:1rem;padding:1.15rem .2rem;border-bottom:1px solid var(--line);font-family:var(--serif);font-size:1.35rem;color:var(--cream);transition:color .2s ease,padding-left .3s cubic-bezier(.16,1,.3,1)}.h51:before{content:"0" counter(sti);font-family:var(--sans);font-size:.72rem;font-weight:600;letter-spacing:.14em;color:var(--acc)}.h51:after{content:"\2192";margin-left:auto;color:var(--dim);transition:color .2s ease}.h51:hover{color:var(--acc);padding-left:.7rem}.h51:hover:after{color:var(--acc)}@media(prefers-reduced-motion:reduce){.h51:hover{padding-left:.2rem}}.h50 p{font-family:var(--serif);font-size:clamp(1.7rem,4.2vw,3.1rem);line-height:1.28;color:var(--cream);letter-spacing:-.005em;margin:0 0 1em;max-width:56rem}.h50 p:last-child{margin-bottom:0}.h50 a{color:var(--acc)}.h7{position:relative;overflow:hidden;margin:clamp(3rem,8vw,6rem) 0;padding:clamp(4rem,9vw,7rem) 0}.h8{position:absolute;inset:-14% 0;z-index:0;pointer-events:none}.h8 img{width:100%;height:100%;object-fit:cover;filter:brightness(.32) saturate(.85);will-change:transform}.h8:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--bg),transparent 22%,transparent 78%,var(--bg))}.h9{position:relative;z-index:1}.h7 .jj-table-wrap{overflow:visible;margin:0}.h7 .jj-table{display:block;width:100%;border-collapse:collapse}.h7 caption{display:block;text-align:left;font-family:var(--serif);font-size:clamp(2rem,5vw,3.4rem);color:var(--cream);padding:0 0 2.2rem}.h7 thead{display:none}.h7 tbody{display:block;counter-reset:pass;border-top:1px solid rgba(242,236,223,.26)}.h7 tr{counter-increment:pass;display:grid;grid-template-columns:3.2rem 1.1fr 1.6fr auto;gap:1.6rem;align-items:baseline;padding:1.5rem 1.4rem;border-bottom:1px solid rgba(242,236,223,.26);background:color-mix(in srgb,var(--bg) 45%,transparent);backdrop-filter:blur(9px);transition:background .25s ease,padding-left .35s cubic-bezier(.16,1,.3,1)}.h7 tr:hover{background:color-mix(in srgb,var(--bg) 68%,transparent);padding-left:2rem}@media(prefers-reduced-motion:reduce){.h7 tr:hover{padding-left:1.4rem}}.h7 tr:before{content:"0" counter(pass);font-size:.75rem;font-weight:600;letter-spacing:.14em;color:var(--acc)}.h7 td{display:block;padding:0;border:0}.h7 td:before{display:none}.h7 td:first-child{font-family:var(--serif);font-size:clamp(1.5rem,3vw,2.1rem);color:var(--cream)}.h7 td:nth-child(2){order:4;font-weight:600;color:var(--cream);font-size:1.15rem;text-align:right}.h7 td:nth-child(3){order:3;color:color-mix(in srgb,var(--cream) 72%,transparent);font-size:.92rem}@media(max-width:700px){.h7 tr{grid-template-columns:2.4rem 1fr auto;gap:.8rem 1rem}.h7 td:nth-child(3){grid-column:2 / -1}}.h42{padding:clamp(4rem,9vw,7rem) 0 0}.h43{display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;margin-bottom:2.6rem}.h45{font-size:clamp(2.2rem,5.5vw,4rem);letter-spacing:-.01em}.h45 a{color:var(--cream);transition:color .2s ease}.h45 a:hover{color:var(--acc)}.h44{flex-shrink:0;font-size:.88rem;font-weight:600;color:var(--dim);border-bottom:1px solid var(--line2);padding-bottom:.2rem;transition:color .2s ease,border-color .2s ease;white-space:nowrap}.h44:hover{color:var(--cream);border-color:var(--acc)}.h44:after{content:"\a0\2192"}.h31{display:grid;gap:1.1rem;counter-reset:cc}.h12{counter-increment:cc;position:relative;display:flex;flex-direction:column;background:var(--panel);overflow:hidden;transition:border-color .25s ease}.h15{margin:0;overflow:hidden}.h15 img{width:100%;height:100%;object-fit:cover;transition:transform 1.1s cubic-bezier(.16,1,.3,1);will-change:transform}.h12:hover .h15 img{transform:scale(1.055)}@media(prefers-reduced-motion:reduce){.h12:hover .h15 img{transform:none}}.h12:before{content:"0" counter(cc);position:absolute;top:.9rem;left:.9rem;z-index:2;font-size:.72rem;font-weight:600;letter-spacing:.14em;color:var(--cream);background:#1910228c;backdrop-filter:blur(6px);padding:.3rem .65rem;border-radius:999px}.h13{display:flex;flex-direction:column;gap:.3rem}.h16{font-family:var(--serif);font-size:1.5rem;line-height:1.15;color:var(--cream)}.h14{font-size:.9rem;color:var(--body-c)}.h30 .h12,.h46 .h42:nth-of-type(odd) .h12{aspect-ratio:3 / 4}.h30 .h12 .h15,.h46 .h42:nth-of-type(odd) .h12 .h15{position:absolute;inset:0}.h30 .h12 .h13,.h46 .h42:nth-of-type(odd) .h12 .h13{position:absolute;inset:auto 0 0;z-index:1;padding:3.6rem 1.2rem 1.2rem;background:linear-gradient(180deg,transparent,rgba(20,12,28,.88))}.h30 .h12 .h14,.h46 .h42:nth-of-type(odd) .h12 .h14{color:color-mix(in srgb,var(--cream) 74%,transparent);font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.h30{grid-template-columns:repeat(auto-fill,minmax(min(250px,100%),1fr))}.h46 .h42:nth-of-type(odd){display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(2rem,5vw,4rem);align-items:start}.h46 .h42:nth-of-type(odd) .h43{order:2;position:sticky;top:6.5rem;display:block;margin:0}.h46 .h42:nth-of-type(odd) .h43 .h44{display:inline-block;margin-top:1.6rem}.h46 .h42:nth-of-type(odd) .h31{order:1;grid-template-columns:1fr 1fr}.h46 .h42:nth-of-type(odd) .h12:nth-child(n+5){display:none}@media(max-width:860px){.h46 .h42:nth-of-type(odd){grid-template-columns:1fr}.h46 .h42:nth-of-type(odd) .h43{order:0;position:static;margin-bottom:2rem}}.h29 .h12,.h46 .h42:nth-of-type(2n) .h12{display:grid;grid-template-columns:1.05fr .95fr;border:1px solid var(--line);min-height:300px}.h29 .h12:hover,.h46 .h42:nth-of-type(2n) .h12:hover{border-color:color-mix(in srgb,var(--acc) 55%,var(--line))}.h29 .h12 .h15,.h46 .h42:nth-of-type(2n) .h12 .h15{order:2;height:100%;min-height:260px;border-left:1px solid var(--line)}.h29 .h12 .h13,.h46 .h42:nth-of-type(2n) .h12 .h13{order:1;padding:1.7rem 1.6rem 1.5rem;gap:.9rem}.h29 .h12 .h16,.h46 .h42:nth-of-type(2n) .h12 .h16{font-size:clamp(1.5rem,2.4vw,1.95rem)}.h29 .h12:hover .h16,.h46 .h42:nth-of-type(2n) .h12:hover .h16{color:var(--acc)}.h29 .h12 .h14,.h46 .h42:nth-of-type(2n) .h12 .h14{border-top:1px solid var(--line);padding-top:.95rem;margin-top:auto}.h29 .h12 .h13:after,.h46 .h42:nth-of-type(2n) .h12 .h13:after{content:"\2192";display:inline-grid;place-items:center;width:42px;height:42px;border:1px solid var(--line2);border-radius:999px;color:var(--cream);transition:background .25s ease,border-color .25s ease,color .25s ease}.h29 .h12:hover .h13:after,.h46 .h42:nth-of-type(2n) .h12:hover .h13:after{background:var(--acc);border-color:var(--acc);color:#241830}.h29 .h12:before,.h46 .h42:nth-of-type(2n) .h12:before{display:none}.h29,.h46 .h42:nth-of-type(2n) .h31{grid-template-columns:repeat(auto-fill,minmax(min(480px,100%),1fr))}@media(max-width:560px){.h29 .h12,.h46 .h42:nth-of-type(2n) .h12{grid-template-columns:1fr;min-height:0}.h29 .h12 .h15,.h46 .h42:nth-of-type(2n) .h12 .h15{order:0;min-height:0;aspect-ratio:16 / 10;border-left:0;border-bottom:1px solid var(--line)}}.h25{margin-top:clamp(5rem,12vw,9rem);border-top:1px solid var(--line);padding:clamp(3.5rem,8vw,6rem) 0 2.4rem}.h27{display:grid;grid-template-columns:auto 1fr auto;gap:clamp(2rem,6vw,5rem);align-items:start}.h11{font-size:clamp(1.8rem,4vw,2.6rem)}.h27 .h24{justify-self:center}@media(max-width:760px){.h27{grid-template-columns:1fr}.h27 .h24{justify-self:start}}.h24{display:flex;flex-direction:column;gap:.4rem;align-items:flex-start}.h23{font-family:var(--serif);font-size:clamp(1.9rem,4.5vw,3rem);color:var(--cream);transition:color .25s ease,transform .35s cubic-bezier(.16,1,.3,1)}.h23:before{content:"+\a0";color:var(--acc)}.h23:hover{color:var(--acc);transform:translate(10px)}@media(prefers-reduced-motion:reduce){.h23:hover{transform:none}}.h28{display:flex;flex-direction:column;gap:.7rem}.h22{font-size:.9rem;color:var(--dim)}a.h22:hover{color:var(--cream)}.h26{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-top:3.5rem;padding-top:1.6rem;border-top:1px solid var(--line)}.h18{margin:0;font-size:.78rem;letter-spacing:.06em;color:var(--dim)}.h0{padding:8.5rem 0 2rem}.h4{max-width:52rem;margin:0 auto 2.6rem}.h19{font-size:.85rem;font-weight:600;margin:0 0 1.5rem}.h19 a{color:var(--acc)}.h19 a:hover{color:var(--cream)}.h19 a:before{content:"\2190\a0"}.h6{font-size:clamp(2.4rem,6.5vw,4.6rem);letter-spacing:-.012em}.h5{font-size:1.22rem;line-height:1.55;color:var(--body-c);margin:1.2rem 0 0}.h36{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1.6rem}.h2{max-width:var(--wrapw);margin:0 auto 3rem;overflow:hidden}.h2 img{width:100%;max-height:72svh;object-fit:cover}.h1,.h3{max-width:52rem;margin:0 auto}.h3{margin-top:3rem}.h32{padding:8.5rem 0 2rem}.h33{margin-bottom:2.6rem}.h34{font-size:clamp(2.4rem,6vw,4.2rem)}.rt{color:var(--body-c)}.rt h2,.rt h3{letter-spacing:-.008em;margin:2.1em 0 .55em}.rt h2{font-size:1.9rem}.rt h3{font-size:1.35rem}.rt p{margin:0 0 1.25em}.rt a{color:var(--acc);border-bottom:1px solid color-mix(in srgb,var(--acc) 40%,transparent)}.rt a:hover{border-bottom-color:var(--acc)}.rt strong{color:var(--cream);font-weight:600}.rt ul,.rt ol{padding-left:1.3em;margin:0 0 1.25em}.rt li{margin:.35em 0}.rt li::marker{color:var(--acc)}.rt blockquote{margin:1.8em 0;padding:.3em 0 .3em 1.4em;border-left:2px solid var(--acc);font-family:var(--serif);font-size:1.3em;color:var(--cream)}.rt code{font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:.86em;background:var(--panel);border:1px solid var(--line);padding:.12em .4em;color:var(--cream)}.rt pre{background:#140c1d;border:1px solid var(--line);padding:1.2rem 1.4rem;overflow-x:auto;margin:1.6em 0}.rt pre code{background:none;border:0;padding:0;font-size:.85rem;line-height:1.7}.rt img{margin:1.6em 0}.rt hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}.fld{margin:0 0 1.4rem}.fld-label{font-size:.72rem;font-weight:600;letter-spacing:.12em;color:var(--dim);margin-bottom:.3rem}.swatch{display:inline-block;width:14px;height:14px;border:1px solid var(--line2);border-radius:3px;vertical-align:-2px}.group{border-left:1px solid var(--line);padding-left:1.2rem}.jj-table-wrap{overflow-x:auto;margin:1.6em 0}.jj-table{width:100%;border-collapse:collapse;font-size:.94rem}.jj-table caption{text-align:left;font-family:var(--serif);font-size:1.4rem;color:var(--cream);padding-bottom:1rem}.jj-table th{font-size:.72rem;font-weight:600;letter-spacing:.1em;color:var(--dim);text-align:left;padding:.6rem .9rem;border-bottom:1px solid var(--line2)}.jj-table td{padding:.8rem .9rem;border-bottom:1px solid var(--line);vertical-align:top}.jj-table td:first-child{font-family:var(--serif);font-size:1.05em;color:var(--cream)}[data-js] [data-rv]{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .9s cubic-bezier(.16,1,.3,1)}[data-js] [data-rv][data-in]{opacity:1;transform:none}[data-js] [data-rv] .h15 img,[data-js] [data-rv].h12 .h15 img,[data-js] [data-rv] img.img:only-child{scale:1.12;transition:scale 1.4s cubic-bezier(.16,1,.3,1) .1s}[data-js] [data-rv][data-in] .h15 img,[data-js] [data-rv][data-in].h12 .h15 img,[data-js] [data-rv][data-in] img.img:only-child{scale:1}@media(prefers-reduced-motion:reduce){[data-js] [data-rv]{opacity:1;transform:none;transition:none}[data-js] [data-rv] .h15 img,[data-js] [data-rv].h12 .h15 img,[data-js] [data-rv] img.img:only-child{scale:1;transition:none}}[data-js] [data-w]{opacity:.12;transition:opacity .5s ease;transition-delay:calc(var(--wi) * 28ms)}[data-js] [data-in] [data-w],[data-js] [data-w][data-in]{opacity:1}@media(prefers-reduced-motion:reduce){[data-js] [data-w]{opacity:1;transition:none}}[data-wd]{display:inline-block;white-space:nowrap}[data-m]{display:inline-block;overflow:hidden;vertical-align:top}[data-c]{display:inline-block;will-change:transform}</style></head><body><header class="h52"><a class="h10" href="index.html">Lumen</a><input id="jj-m" class="h37" type="checkbox"><label class="h35" for="jj-m" aria-label="Menu"><span></span><span></span></label><nav class="h38">
+    <a class="h39" aria-current="page" href="index.html">Home</a><a class="h39"  href="speakers&#x2F;index.html">Artists &amp; Speakers</a><a class="h39"  href="sessions&#x2F;index.html">Program</a>
+  </nav></header><main><section class="h53">
+    <div class="h56" data-plx="0.26" data-zoom><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1492684223066-81342ee5ff30?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt=""></div>
+    <div class="h54"><h1 class="h58" data-chars>Three nights, lit from within</h1>
+      <p class="h55" data-rv>Light, music and ideas in the Sundvik harbor district — 18–20 June 2027</p>
+      <div class="h57" data-rv>
+        <a class="h40" href="https:&#x2F;&#x2F;example.com&#x2F;tickets">Get passes</a><a class="h40" href="https:&#x2F;&#x2F;example.com&#x2F;program">Browse the program</a>
+      </div></div><div class="h20" aria-hidden="true"></div></section>
+
+  <section class="h49 h59"><div class="h47"><div><p class="h21" data-rv>Lumen</p><div class="rt h50" data-kinetic data-wv><p>Lumen starts when the sun goes down and the harbor turns into a listening room. For three nights, light artists, musicians and researchers take over the quays, warehouses and greenhouses of Sundvik — not to dazzle, but to slow the city down enough to look at it again. Everything is walkable, most of it is outdoors, and the program is built so you can drift between a talk, a live score and a bowl of soup without checking a map twice.</p>
+</div></div><nav class="h48" data-rv aria-label="Lumen">
+        <a class="h51" href="speakers&#x2F;index.html">Artists &amp; Speakers</a><a class="h51" href="sessions&#x2F;index.html">Program</a>
+      </nav></div></section>
+
+  <section class="h7">
+    <div class="h8" data-plx="0.16"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1492684223066-81342ee5ff30?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt=""></div>
+    <div class="h9 h59" data-rv><div class="jj-table-wrap"><table class="jj-table"><caption>Passes</caption><thead><tr><th>Pass</th><th>Price</th><th>Includes</th></tr></thead><tbody><tr><td data-label="Pass">Day pass</td><td data-label="Price">€49</td><td data-label="Includes">One evening of your choice · all stages · the nightly light walk</td></tr><tr><td data-label="Pass">Full pass</td><td data-label="Price">€119</td><td data-label="Includes">All three nights · all stages · workshops (first come, first in) · festival map &amp; zine</td></tr><tr><td data-label="Pass">Patron pass</td><td data-label="Price">€290</td><td data-label="Includes">All three nights · reserved workshop seats · the Glasshouse dinner · your name in the closing projection</td></tr></tbody></table></div></div></section>
+
+  <div class="h46 h59">
+    <section class="h42"><header class="h43" data-rv><h2 class="h45">Artists &amp; Speakers</h2><a class="h44" href="speakers&#x2F;index.html">Artists &amp; Speakers</a></header><div class="h31">
+        <a class="h12" href="speakers&#x2F;vera-lindqvist.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1508214751196-bcfd4ca60f91?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Vera Lindqvist"></figure>
+          <span class="h13"><span class="h16">Vera Lindqvist</span>
+            <span class="h14">Light artist, Rotterdam</span>
+          </span></a>
+        <a class="h12" href="speakers&#x2F;tomas-brandt.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1506794778202-cad84cf45f1d?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Tomas Brandt"></figure>
+          <span class="h13"><span class="h16">Tomas Brandt</span>
+            <span class="h14">Composer, Gothenburg</span>
+          </span></a>
+        <a class="h12" href="speakers&#x2F;selin-aydan.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1573496359142-b8d87734a5a2?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Dr. Selin Aydan"></figure>
+          <span class="h13"><span class="h16">Dr. Selin Aydan</span>
+            <span class="h14">Chronobiologist, Vienna</span>
+          </span></a>
+        <a class="h12" href="speakers&#x2F;joris-vandermeer.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1552058544-f2b08422138a?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Joris Vandermeer"></figure>
+          <span class="h13"><span class="h16">Joris Vandermeer</span>
+            <span class="h14">Chef, Antwerp</span>
+          </span></a>
+        <a class="h12" href="speakers&#x2F;noor-el-amin.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1580489944761-15a19d654956?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Noor El-Amin"></figure>
+          <span class="h13"><span class="h16">Noor El-Amin</span>
+            <span class="h14">Filmmaker, Marseille</span>
+          </span></a>
+        <a class="h12" href="speakers&#x2F;anton-reisz.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1507003211169-0a1dd7228f2d?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Anton Reisz"></figure>
+          <span class="h13"><span class="h16">Anton Reisz</span>
+            <span class="h14">Lighting systems engineer, Prague</span>
+          </span></a>
+      </div></section>
+    <section class="h42"><header class="h43" data-rv><h2 class="h45">Program</h2><a class="h44" href="sessions&#x2F;index.html">Program</a></header><div class="h31">
+        <a class="h12" href="sessions&#x2F;harbor-re-aimed.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1518709268805-4e9042af9f23?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="The Harbor, Re-aimed"></figure>
+          <span class="h13"><span class="h16">The Harbor, Re-aimed</span>
+            <span class="h14">Opening-night light walk through Sundvik&#39;s own lamps, redirected.</span>
+          </span></a>
+        <a class="h12" href="sessions&#x2F;what-cities-learn-in-the-dark.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1475721027785-f74eccf877e2?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="What Cities Learn in the Dark"></figure>
+          <span class="h13"><span class="h16">What Cities Learn in the Dark</span>
+            <span class="h14">A chronobiologist on what happened when three cities dimmed their nights.</span>
+          </span></a>
+        <a class="h12" href="sessions&#x2F;foghorn-quartet.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1516450360452-9312f5e86fc7?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Foghorn Quartet"></figure>
+          <span class="h13"><span class="h16">Foghorn Quartet</span>
+            <span class="h14">A brass premiere written for the Vault&#39;s eleven-second echo.</span>
+          </span></a>
+        <a class="h12" href="sessions&#x2F;make-it-blink.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1513364776144-60967b0f800f?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Make It Blink"></figure>
+          <span class="h13"><span class="h16">Make It Blink</span>
+            <span class="h14">A hands-on lighting control workshop — controllers, LEDs, no experience needed.</span>
+          </span></a>
+        <a class="h12" href="sessions&#x2F;night-shift-triptych.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1540575467063-178a50c2df87?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Night Shift: A Triptych"></figure>
+          <span class="h13"><span class="h16">Night Shift: A Triptych</span>
+            <span class="h14">Three short harbor documentaries, screened with their score performed live.</span>
+          </span></a>
+        <a class="h12" href="sessions&#x2F;dinner-at-candle-level.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1414235077428-338989a2e8c0?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Dinner at Candle Level"></figure>
+          <span class="h13"><span class="h16">Dinner at Candle Level</span>
+            <span class="h14">A fire-cooked dinner in the Glasshouse, lit only as much as it needs to be.</span>
+          </span></a>
+        <a class="h12" href="sessions&#x2F;second-night-open-decks.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1470225620780-dba8ba36b745?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Second Night, Open Decks"></figure>
+          <span class="h13"><span class="h16">Second Night, Open Decks</span>
+            <span class="h14">Late sets on the Harbor Stage after the installations dim.</span>
+          </span></a>
+        <a class="h12" href="sessions&#x2F;lights-out-slowly.html" data-rv>
+          <figure class="h15"><img class="img" src="https:&#x2F;&#x2F;images.unsplash.com&#x2F;photo-1533174072545-7a4b6ad7a6c3?w&#x3D;1600&amp;q&#x3D;80&amp;auto&#x3D;format&amp;fit&#x3D;crop" alt="Lights Out, Slowly"></figure>
+          <span class="h13"><span class="h16">Lights Out, Slowly</span>
+            <span class="h14">The closing: one projection, the whole district dimming in sequence.</span>
+          </span></a>
+      </div></section>
+  </div></main><footer class="h25"><div class="h59"><div class="h27"><a class="h10 h11" href="index.html">Lumen</a><nav class="h24" aria-label="Lumen">
+        <a class="h23" href="index.html">Home</a><a class="h23" href="speakers&#x2F;index.html">Artists &amp; Speakers</a><a class="h23" href="sessions&#x2F;index.html">Program</a>
+      </nav><div class="h28">
+        <a class="h22" href="mailto:hello@lumen.example">hello@lumen.example</a><a class="h22" href="https:&#x2F;&#x2F;instagram.com&#x2F;">Instagram</a><a class="h22" href="https:&#x2F;&#x2F;example.com&#x2F;press">Press kit</a>
+      </div></div><div class="h26"><p class="h18">Built with JustJSON</p></div></div></footer><script>
+(function () {
+  'use strict';
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var root = document.documentElement;
+  root.setAttribute('data-js', '');
+
+  /* motion core: one rAF drives tweens + parallax */
+  var TW = [];
+  function EXPO(p) { return p === 1 ? 1 : 1 - Math.pow(2, -10 * p); }
+  function tween(o) { o.t0 = performance.now() + (o.delay || 0); TW.push(o); }
+
+  document.querySelectorAll('[data-kinetic]').forEach(function (el) {
+    var wi = 0, walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), nodes = [];
+    while (walker.nextNode()) if (walker.currentNode.nodeValue.trim()) nodes.push(walker.currentNode);
+    nodes.forEach(function (n) {
+      var frag = document.createDocumentFragment();
+      n.nodeValue.split(/(\s+)/).forEach(function (part) {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+        var s = document.createElement('span');
+        s.setAttribute('data-w', '');
+        s.style.setProperty('--wi', wi++);
+        s.textContent = part;
+        frag.appendChild(s);
+      });
+      n.parentNode.replaceChild(frag, n);
+    });
+  });
+
+  document.querySelectorAll('[data-chars]').forEach(function (el) {
+    var text = el.textContent;
+    el.setAttribute('aria-label', text.trim());
+    el.textContent = '';
+    var frag = document.createDocumentFragment();
+    text.split(/(\s+)/).forEach(function (part) {
+      if (!part) return;
+      if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+      var w = document.createElement('span');
+      w.setAttribute('data-wd', '');
+      for (var k = 0; k < part.length; k++) {
+        var m = document.createElement('span');
+        m.setAttribute('data-m', '');
+        m.setAttribute('aria-hidden', 'true');
+        var c = document.createElement('span');
+        c.setAttribute('data-c', '');
+        c.textContent = part[k];
+        c.style.transform = 'translateY(114%)';
+        m.appendChild(c);
+        w.appendChild(m);
+      }
+      frag.appendChild(w);
+    });
+    el.appendChild(frag);
+  });
+
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (e.isIntersecting) { e.target.setAttribute('data-in', ''); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.16, rootMargin: '0px 0px -6% 0px' });
+  document.querySelectorAll('[data-rv],[data-wv]').forEach(function (el) { io.observe(el); });
+
+  function onScroll() {
+    if (scrollY > 40) root.setAttribute('data-scrolled', '');
+    else root.removeAttribute('data-scrolled');
+  }
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* parallax media: image drifts against scroll inside its clipped box */
+  var plx = [];
+  document.querySelectorAll('[data-plx]').forEach(function (el) {
+    var img = el.querySelector('img');
+    if (img) plx.push({ el: el, img: img, f: parseFloat(el.getAttribute('data-plx')) || 0.2, z: el.hasAttribute('data-zoom') ? 1.14 : 1 });
+  });
+
+  (function frame() {
+    requestAnimationFrame(frame);
+    var now = performance.now();
+    for (var q = TW.length - 1; q >= 0; q--) {
+      var o = TW[q], p = (now - o.t0) / o.dur;
+      if (p < 0) continue;
+      if (p >= 1) { o.step(o.ease(1)); TW.splice(q, 1); o.end && o.end(); continue; }
+      o.step(o.ease(p));
+    }
+    for (var k = 0; k < plx.length; k++) {
+      var x = plx[k], r = x.el.getBoundingClientRect();
+      if (r.bottom < -80 || r.top > innerHeight + 80) continue;
+      var shift = (r.top + r.height / 2 - innerHeight / 2) * -x.f;
+      x.img.style.transform = 'translate3d(0,' + shift.toFixed(1) + 'px,0) scale(' + x.z.toFixed(4) + ')';
+    }
+  })();
+
+  function riseChars() {
+    [].forEach.call(document.querySelectorAll('[data-c]'), function (c, k) {
+      tween({
+        dur: 950, delay: 180 + k * 22, ease: EXPO,
+        step: function (e) { c.style.transform = 'translateY(' + 114 * (1 - e) + '%)'; },
+        end: function () { c.style.transform = ''; }
+      });
+    });
+    document.querySelectorAll('[data-zoom]').forEach(function (el) {
+      var obj = null;
+      for (var k = 0; k < plx.length; k++) if (plx[k].el === el) obj = plx[k];
+      if (obj) tween({ dur: 2000, ease: EXPO, step: function (e) { obj.z = 1.14 - 0.14 * e; } });
+    });
+  }
+  var started = false;
+  function start() { if (!started) { started = true; riseChars(); } }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(start);
+  setTimeout(start, 900);
+})();
+</script></body></html>

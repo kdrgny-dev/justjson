@@ -159,6 +159,7 @@ const THEME_FIT: Record<string, string> = {
   editorial: 'Long-form reading',
   // premium theme labels go here as each ships, keyed by its id
   apogee: 'SaaS & developer platforms',
+  mainstage: 'Festivals, conferences & events',
 }
 
 function ThemePicker({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) {
