@@ -402,10 +402,6 @@ export const tr: Record<string, string> = {
   'Any site — a clean starting point': 'Her site — sade bir başlangıç',
   'A loud, high-contrast voice': 'Yüksek kontrastlı, gür bir ses',
   'Long-form reading': 'Uzun metin okuma',
-  'SaaS & product launches': 'SaaS ve ürün lansmanları',
-  'Docs & multi-page content': 'Dokümanlar ve çok sayfalı içerik',
-  'Design & work portfolios': 'Tasarım ve iş portfolyoları',
-  'Practices & small businesses': 'Muayenehaneler ve küçük işletmeler',
   'Style your generated site. Changes preview live and save to _theme.json.':
     'Üretilen siteni biçimlendir. Değişiklikler anında önizlenir ve _theme.json’a kaydedilir.',
   'Unsaved changes': 'Kaydedilmemiş değişiklikler',

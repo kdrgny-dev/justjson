@@ -267,7 +267,7 @@ Everything in this repository is MIT, including the free Studio themes
 (`default`, `bold`, `editorial`) and the theme compiler — author your own themes
 with it and keep them.
 
-The first-party **premium themes** (Beacon, Atelier, Signal, Psikolog) are a
+The first-party **premium themes** are a
 commercial product and are **not part of this repository**: neither their source
 nor their compiled bundles are here. A Studio build only ships them when it is
 given access to the private theme repository, so a build from this repo — yours

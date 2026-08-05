@@ -1,9 +1,0 @@
-The files under landing/public/themes/ are generated marketing demos of
-JustJSON's commercial themes (Beacon, Atelier, Signal, Psikolog).
-
-They are NOT covered by the MIT license of this repository and may not be
-redistributed, resold or republished. The theme sources are kept in a private
-repository and are licensed separately; a demo page contains only minified,
-class-mangled output.
-
-Regenerate with: pnpm --filter @justjson/editor demos

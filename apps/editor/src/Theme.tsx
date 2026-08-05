@@ -157,10 +157,7 @@ const THEME_FIT: Record<string, string> = {
   default: 'Any site — a clean starting point',
   bold: 'A loud, high-contrast voice',
   editorial: 'Long-form reading',
-  beacon: 'SaaS & product launches',
-  atelier: 'Docs & multi-page content',
-  signal: 'Design & work portfolios',
-  psikolog: 'Practices & small businesses',
+  // premium theme labels go here as each ships, keyed by its id
 }
 
 function ThemePicker({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) {

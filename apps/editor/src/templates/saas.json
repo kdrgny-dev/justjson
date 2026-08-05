@@ -1,7 +1,6 @@
 {
   "title": "SaaS / Startup",
-  "description": "A product landing with hero, pricing table, feature grid and a changelog — paired with the Beacon theme.",
-  "theme": { "bundle": "beacon", "accent": "#5b5bf5" },
+  "description": "A product landing with hero, pricing table, feature grid and a changelog.",
   "schema": {
     "version": 1,
     "singletons": [

@@ -22,13 +22,9 @@ const repoRoot = join(editorRoot, '..', '..')
 const outRoot = join(repoRoot, 'landing', 'public', 'themes')
 
 // Theme ↔ template pairing. A demo only sells the theme if the content fits it.
-const DEMOS = [
-  { theme: 'beacon', template: 'saas', accent: '#4c7fff', lang: 'en' },
-  { theme: 'atelier', template: 'docs', lang: 'en' },
-  // signal styles --jj-accent with no fallback, so it has no colour of its own
-  { theme: 'signal', template: 'portfolio', accent: '#1f6feb', lang: 'en' },
-  { theme: 'psikolog', template: 'psikolog', lang: 'tr' },
-]
+// Add one row per premium theme as it ships: { theme, template, accent?, lang }.
+// (Premium themes were reset 2026-08-05 — see themes-src/CLAUDE.md §7.)
+const DEMOS = []
 
 const die = (msg) => {
   console.error(`\ndemos: ${msg}\n`)
