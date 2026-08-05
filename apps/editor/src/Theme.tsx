@@ -145,6 +145,24 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const BUNDLED_IDS = new Set(BUNDLED_THEMES.map((t) => t.id))
 
+// What each first-party theme is built for. A guide, never a gate — every theme
+// renders any schema (the renderer binds to generic slots, not sector fields),
+// so the label just sets expectations before the live preview confirms them.
+// Unknown (imported) themes carry no label. A dynamic "this theme misfits your
+// schema" note was tried and dropped: any coarse rule (e.g. landing theme + ≥2
+// collections) fires on the intended pairing too — the SaaS template ships two
+// collections and Beacon is its theme. The label plus the live preview is the
+// honest signal; classifying the schema is guesswork.
+const THEME_FIT: Record<string, string> = {
+  default: 'Any site — a clean starting point',
+  bold: 'A loud, high-contrast voice',
+  editorial: 'Long-form reading',
+  beacon: 'SaaS & product launches',
+  atelier: 'Docs & multi-page content',
+  signal: 'Design & work portfolios',
+  psikolog: 'Practices & small businesses',
+}
+
 function ThemePicker({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) {
   const [themes, setThemes] = useState<ThemeBundle[]>(() => allThemes())
   const fileRef = useRef<HTMLInputElement>(null)
@@ -183,20 +201,27 @@ function ThemePicker({ selected, onSelect }: { selected: string; onSelect: (id: 
                 onClick={() => select(th.id)}
                 aria-pressed={active}
                 className={cn(
-                  'flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50',
+                  'flex w-full flex-col gap-0.5 rounded-lg border px-3 py-2 text-left text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50',
                   active
                     ? 'border-primary bg-primary/5 text-foreground'
                     : 'border-border text-muted-foreground hover:bg-muted',
                 )}
               >
-                <span className="truncate">{th.name}</span>
-                {th.license === 'commercial' ? (
-                  <Badge variant="secondary" className="shrink-0">
-                    {t('Premium')}
-                  </Badge>
-                ) : active ? (
-                  <Check className="size-3.5 shrink-0 text-primary" />
-                ) : null}
+                <span className="flex w-full items-center justify-between gap-2">
+                  <span className="truncate font-medium">{th.name}</span>
+                  {th.license === 'commercial' ? (
+                    <Badge variant="secondary" className="shrink-0">
+                      {t('Premium')}
+                    </Badge>
+                  ) : active ? (
+                    <Check className="size-3.5 shrink-0 text-primary" />
+                  ) : null}
+                </span>
+                {THEME_FIT[th.id] && (
+                  <span className="truncate text-xs text-muted-foreground">
+                    {t(THEME_FIT[th.id] as string)}
+                  </span>
+                )}
               </button>
               {!BUNDLED_IDS.has(th.id) && (
                 <button

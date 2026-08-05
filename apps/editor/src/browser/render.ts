@@ -190,9 +190,16 @@ function slots(fields: Field[], data: Record<string, unknown>): Slots {
   const nonEmpty = (f: Field) => val(f.key) != null && val(f.key) !== ''
   const usable = (f: Field) => nonEmpty(f) && !IGNORED_SLOT_KEYS.has(f.key)
 
+  // A record's heading: its title/name field if it has one; else its siteName
+  // (a homepage singleton names the site, not a random text field), which frees
+  // the first prose field to become the lead; else the first text field. This
+  // keeps a personal-site hero showing the person's name with their title as the
+  // subtitle, instead of promoting the job title to the H1.
+  const namedField = fields.find((f) => f.key === 'title' || f.key === 'name')
+  const siteName = typeof data.siteName === 'string' ? data.siteName : ''
   const titleField =
-    fields.find((f) => f.key === 'title' || f.key === 'name') ??
-    fields.find((f) => f.type === 'text' && usable(f))
+    namedField ?? (siteName ? undefined : fields.find((f) => f.type === 'text' && usable(f)))
+  const titleValue = titleField ? String(val(titleField.key) ?? '') : siteName
   const leadField = fields.find((f) => f.type === 'text' && f !== titleField && usable(f))
   const coverField = fields.find((f) => f.type === 'image' && usable(f))
 
@@ -216,7 +223,7 @@ function slots(fields: Field[], data: Record<string, unknown>): Slots {
     .join('\n')
 
   return {
-    title: titleField ? String(val(titleField.key) ?? '') : '',
+    title: titleValue,
     lead: leadField ? String(val(leadField.key) ?? '') : '',
     cover: coverField ? String(val(coverField.key) ?? '') : '',
     body,

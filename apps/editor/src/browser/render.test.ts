@@ -113,6 +113,60 @@ describe('renderSite', () => {
   })
 })
 
+describe('hero heading slot', () => {
+  const bundle: ThemeBundle = {
+    id: 'h',
+    name: 'H',
+    version: '1.0.0',
+    license: 'commercial',
+    css: '',
+    templates: { index: '<h1>{{hero.title}}</h1><p>{{hero.lead}}</p>', entry: '<i>{{title}}</i>' },
+  }
+  const base = (fields: { key: string; type: string }[], singleton: Record<string, unknown>) => ({
+    schema: {
+      version: 1 as const,
+      collections: [],
+      // biome-ignore lint/suspicious/noExplicitAny: minimal field shapes for the test
+      singletons: [{ name: 'home', label: 'Home', path: 'home.json', fields: fields as any }],
+    },
+    entries: {},
+    singletons: { home: singleton },
+    theme: {
+      palette: 'paper',
+      accent: '#000',
+      font: 'sans',
+      radius: 6,
+      density: 'normal',
+    } as const,
+    siteName: String(singleton.siteName ?? 'Site'),
+  })
+
+  it('uses siteName as the heading when there is no title/name field, freeing the lead', () => {
+    const data = base(
+      [
+        { key: 'siteName', type: 'text' },
+        { key: 'role', type: 'text' },
+      ],
+      { siteName: 'Deniz Aslan', role: 'Product designer' },
+    )
+    const out = renderWithBundle(data, bundle)['/index.html'] as string
+    expect(out).toContain('<h1>Deniz Aslan</h1>')
+    expect(out).toContain('<p>Product designer</p>')
+  })
+
+  it('lets an explicit title field win over siteName', () => {
+    const data = base(
+      [
+        { key: 'siteName', type: 'text' },
+        { key: 'title', type: 'text' },
+      ],
+      { siteName: 'Beacon', title: 'Ship features, not infrastructure' },
+    )
+    const out = renderWithBundle(data, bundle)['/index.html'] as string
+    expect(out).toContain('<h1>Ship features, not infrastructure</h1>')
+  })
+})
+
 describe('multi-page contract', () => {
   const schema: Schema = {
     version: 1,
