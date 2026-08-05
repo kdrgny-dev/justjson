@@ -8,7 +8,7 @@
 // Reads   apps/editor/themes-src/<id>/{meta.json,index.html,entry.html,styles.css}
 // Writes  apps/editor/src/themes/<id>.json
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -108,9 +108,18 @@ const bundle = {
   templates,
 }
 
+const json = `${JSON.stringify(bundle, null, 2)}\n`
 const outPath = join(editorRoot, 'src', 'themes', `${id}.json`)
-writeFileSync(outPath, `${JSON.stringify(bundle, null, 2)}\n`)
-console.log(`compiled ${id}: ${sorted.length} classes mangled -> src/themes/${id}.json`)
+writeFileSync(outPath, json)
+// Second copy next to the source, in themes-src/dist. For a commercial theme
+// that directory is the private themes repo, and dist/ is what a paid Studio
+// build pulls in (scripts/fetch-premium-themes.mjs) — so commit it there.
+const distDir = join(editorRoot, 'themes-src', 'dist')
+mkdirSync(distDir, { recursive: true })
+writeFileSync(join(distDir, `${id}.json`), json)
+console.log(
+  `compiled ${id}: ${sorted.length} classes mangled -> src/themes/${id}.json + themes-src/dist/`,
+)
 
 // ---------- helpers ----------
 

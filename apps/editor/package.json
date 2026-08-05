@@ -5,10 +5,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "vite build",
-    "build:studio": "vite build --base=/studio/ --outDir ../../landing/public/studio --emptyOutDir",
+    "build": "pnpm themes:fetch && vite build",
+    "build:studio": "pnpm themes:fetch && vite build --base=/studio/ --outDir ../../landing/public/studio --emptyOutDir",
     "dev": "vite",
     "preview": "vite preview",
+    "themes:fetch": "node scripts/fetch-premium-themes.mjs",
     "theme:compile": "node scripts/theme-compile.mjs",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"

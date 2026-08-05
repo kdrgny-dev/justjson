@@ -1,26 +1,30 @@
 // Theme registry for Studio: bundled (ship-with-Studio) themes + user-imported
 // premium ThemeBundles (localStorage), plus the per-project selected theme.
 // Backend-free — see docs/theme-asset-architecture.md.
-import atelier from '../themes/atelier.json'
-import beacon from '../themes/beacon.json'
-import bold from '../themes/bold.json'
-import defaultTheme from '../themes/default.json'
-import editorial from '../themes/editorial.json'
-import signal from '../themes/signal.json'
 import { activeProject } from './project'
 import type { ThemeBundle } from './theme-bundle'
 
-const DEFAULT = defaultTheme as ThemeBundle
+// Bundled themes are whatever src/themes holds at build time. The free ones are
+// in this repo; the commercial ones are pulled in by a paid build
+// (scripts/fetch-premium-themes.mjs), so nothing here may import a premium
+// bundle by name — a free build simply has fewer files, and still compiles.
+const files = import.meta.glob<{ default: unknown }>('../themes/*.json', { eager: true })
 
-// add bundled themes here — one import line + one array entry each.
-export const BUNDLED_THEMES: ThemeBundle[] = [
-  DEFAULT,
-  bold as ThemeBundle,
-  editorial as ThemeBundle,
-  signal as ThemeBundle,
-  atelier as ThemeBundle,
-  beacon as ThemeBundle,
-]
+// Display order for the themes we publish; anything else follows, by id.
+const ORDER = ['default', 'bold', 'editorial', 'signal', 'atelier', 'beacon']
+const rank = (id: string) => {
+  const i = ORDER.indexOf(id)
+  return i === -1 ? ORDER.length : i
+}
+
+export const BUNDLED_THEMES: ThemeBundle[] = Object.values(files)
+  .map((m) => m.default)
+  .filter(isBundle)
+  .sort((a, b) => rank(a.id) - rank(b.id) || a.id.localeCompare(b.id))
+
+const fallback = BUNDLED_THEMES.find((t) => t.id === 'default') ?? BUNDLED_THEMES[0]
+if (!fallback) throw new Error('No theme bundles found in src/themes — broken build.')
+const DEFAULT: ThemeBundle = fallback
 
 const IMPORTED_KEY = 'jj_imported_themes'
 const selKey = (projectId: string) => `jj_selected_theme_${projectId}`

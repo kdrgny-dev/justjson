@@ -2,10 +2,18 @@ import type { Schema } from '@justjson/core'
 import { describe, expect, it } from 'vitest'
 import { type ProjectData, renderWithBundle } from '../browser/render'
 import type { ThemeBundle } from '../browser/theme-bundle'
-import atelierJson from './atelier.json'
 import boldJson from './bold.json'
 import editorialJson from './editorial.json'
-import signalJson from './signal.json'
+
+// Commercial bundles ship only in a paid build (see scripts/fetch-premium-themes.mjs),
+// so they are looked up, never imported by name — their suites skip when absent.
+const present = import.meta.glob<{ default: ThemeBundle }>('./*.json', { eager: true })
+const bundleById = (id: string): ThemeBundle | undefined =>
+  Object.entries(present).find(([path]) => path.endsWith(`/${id}.json`))?.[1].default as
+    | ThemeBundle
+    | undefined
+const signalJson = bundleById('signal')
+const atelierJson = bundleById('atelier')
 
 const schema: Schema = {
   version: 1,
@@ -48,7 +56,7 @@ const data: ProjectData = {
 const bundles: [string, ThemeBundle][] = [
   ['bold', boldJson as ThemeBundle],
   ['editorial', editorialJson as ThemeBundle],
-  ['signal', signalJson as ThemeBundle],
+  ...(signalJson ? ([['signal', signalJson]] as [string, ThemeBundle][]) : []),
 ]
 
 describe.each(bundles)('theme bundle: %s', (_id, bundle) => {
@@ -79,7 +87,7 @@ describe.each(bundles)('theme bundle: %s', (_id, bundle) => {
 // The compiled "signal" bundle proves the theme compiler: semantic class names
 // are mangled to .hN, the renderer-contract classes survive, css is minified,
 // and it still renders correctly.
-describe('compiled theme: signal (mangled)', () => {
+describe.skipIf(!signalJson)('compiled theme: signal (mangled)', () => {
   const bundle = signalJson as ThemeBundle
   // Original semantic names authored in themes-src/signal — none may leak.
   const semantic = [
@@ -142,7 +150,7 @@ describe('compiled theme: signal (mangled)', () => {
 // The flagship "atelier" bundle proves the multi-page slot contract end to end:
 // a generic theme (four templates, bound to slots/nav — never sector fields)
 // renders home/list/entry across any schema, mangled, with animations intact.
-describe('compiled theme: atelier (generic slot theme, multi-page)', () => {
+describe.skipIf(!atelierJson)('compiled theme: atelier (generic slot theme, multi-page)', () => {
   const bundle = atelierJson as ThemeBundle
   const semantic = [
     'site-head',
@@ -158,7 +166,9 @@ describe('compiled theme: atelier (generic slot theme, multi-page)', () => {
     'article-title',
     'foot',
   ]
-  const files = renderWithBundle(data, bundle)
+  // A describe body still runs under skipIf — don't render when the bundle is
+  // absent (free build).
+  const files: Record<string, string> = atelierJson ? renderWithBundle(data, bundle) : {}
   const dec = (k: string) => (files[k] ?? '').replace(/&#x2F;/g, '/')
 
   it('provides all four templates', () => {

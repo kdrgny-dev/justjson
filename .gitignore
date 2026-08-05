@@ -29,3 +29,18 @@ pnpm-debug.log*
 .claude/skills/
 .agents/
 skills-lock.json
+
+# Premium (commercial) themes are NOT part of this MIT repo. Their source lives
+# in the private justjson-themes repo, checked out at apps/editor/themes-src,
+# and a paid build pulls the compiled bundles in via
+# apps/editor/scripts/fetch-premium-themes.mjs. Compiled bundles are ignored by
+# default and free ones opted back in, so a new premium theme can never be
+# committed here by accident.
+apps/editor/themes-src/
+apps/editor/src/themes/*.json
+!apps/editor/src/themes/default.json
+!apps/editor/src/themes/bold.json
+!apps/editor/src/themes/editorial.json
+
+# local demo/preview artifacts
+/beacon-demo.html
