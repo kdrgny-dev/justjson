@@ -1,13 +1,20 @@
 <header class="nav">
-  <a class="brand" href="{{homeUrl}}" data-magnetic>{{siteName}}</a>
-  <nav class="nav-links">
-    {{#nav}}<a class="nav-link" href="{{url}}"{{#active}} aria-current="page"{{/active}}>{{label}}</a>{{/nav}}
-  </nav>
+  <input class="nav-tgl" id="nav-tgl" type="checkbox">
+  <div class="nav-in">
+    <a class="brand" href="{{homeUrl}}">{{siteName}}</a>
+    <nav class="nav-links">
+      {{#nav}}<a class="nav-link" href="{{url}}"{{#active}} aria-current="page"{{/active}}>{{label}}</a>{{/nav}}
+    </nav>
+    <label class="burger" for="nav-tgl" aria-label="Menu"><i aria-hidden="true"></i></label>
+  </div>
+  <div class="nav-sheet">
+    <nav class="sheet-nav">{{#nav}}<a class="sheet-link" href="{{url}}"{{#active}} aria-current="page"{{/active}}>{{label}}</a>{{/nav}}</nav>
+  </div>
 </header>
 
 <main class="article-wrap">
   <article data-reveal>
-    <h1 class="article-title" data-split>{{slots.title}}</h1>
+    <h1 class="article-title">{{slots.title}}</h1>
     {{#slots.lead}}<p class="article-lead">{{slots.lead}}</p>{{/slots.lead}}
     {{#slots.cover}}<figure class="article-cover"><img src="{{slots.cover}}" alt="{{slots.title}}"></figure>{{/slots.cover}}
     <div class="article-body rt">{{{slots.body}}}</div>
@@ -20,66 +27,28 @@
   </article>
 </main>
 
-<footer class="foot" data-reveal>
-  <div class="foot-in">
+<footer class="foot">
+  <div class="wrap foot-in">
     <div>
       <p class="foot-mark">{{siteName}}</p>
       <p class="foot-tag">Built with JustJSON — own your content, as plain files.</p>
     </div>
-    <nav class="foot-nav">{{#nav}}<a href="{{url}}">{{label}}</a>{{/nav}}</nav>
+    <nav class="foot-col">{{#nav}}<a href="{{url}}">{{label}}</a>{{/nav}}</nav>
+    {{#contact.length}}
+    <div class="foot-col">{{#contact}}{{#href}}<a class="foot-line" href="{{href}}">{{display}}</a>{{/href}}{{^href}}<span class="foot-line">{{display}}</span>{{/href}}{{/contact}}</div>
+    {{/contact.length}}
   </div>
-  {{#contact.length}}
-  <div class="foot-base">
-    <div class="foot-contact">
-      {{#contact}}{{#href}}<a class="foot-line" href="{{href}}">{{display}}</a>{{/href}}{{^href}}<span class="foot-line">{{display}}</span>{{/href}}{{/contact}}
-    </div>
-  </div>
-  {{/contact.length}}
 </footer>
 
 <script>
   (function () {
-    var root = document.documentElement
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    root.setAttribute('data-js', '')
-    var fine = matchMedia('(pointer: fine)').matches
-
-    document.querySelectorAll('[data-split]').forEach(function (el) {
-      var words = el.textContent.replace(/\s+/g, ' ').trim().split(' ')
-      el.textContent = ''
-      words.forEach(function (w, i) {
-        var outer = document.createElement('span'); outer.setAttribute('data-w', '')
-        var inner = document.createElement('span'); inner.setAttribute('data-wi', ''); inner.textContent = w
-        inner.style.setProperty('--wi', i)
-        outer.appendChild(inner); el.appendChild(outer)
-        if (i < words.length - 1) el.appendChild(document.createTextNode(' '))
-      })
-    })
-
+    document.documentElement.setAttribute('data-js', '')
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
         if (e.isIntersecting) { e.target.setAttribute('data-shown', ''); io.unobserve(e.target) }
       })
     }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' })
-    document.querySelectorAll('[data-reveal], [data-split]').forEach(function (el) { io.observe(el) })
-
-    if (fine) {
-      document.querySelectorAll('[data-magnetic]').forEach(function (el) {
-        el.addEventListener('pointermove', function (e) {
-          var r = el.getBoundingClientRect()
-          el.style.setProperty('--mx', ((e.clientX - r.left - r.width / 2) * 0.28).toFixed(1) + 'px')
-          el.style.setProperty('--my', ((e.clientY - r.top - r.height / 2) * 0.5).toFixed(1) + 'px')
-        })
-        el.addEventListener('pointerleave', function () { el.style.setProperty('--mx', '0px'); el.style.setProperty('--my', '0px') })
-      })
-      var dot = document.createElement('div'); dot.setAttribute('data-cursor-dot', ''); document.body.appendChild(dot)
-      var cx = innerWidth / 2, cy = innerHeight / 2, tx = cx, ty = cy
-      addEventListener('pointermove', function (e) { tx = e.clientX; ty = e.clientY }, { passive: true })
-      ;(function loop () { cx += (tx - cx) * 0.2; cy += (ty - cy) * 0.2; dot.style.transform = 'translate(' + cx + 'px,' + cy + 'px)'; requestAnimationFrame(loop) })()
-      document.querySelectorAll('a, button, [data-magnetic]').forEach(function (el) {
-        el.addEventListener('pointerenter', function () { dot.setAttribute('data-hot', '') })
-        el.addEventListener('pointerleave', function () { dot.removeAttribute('data-hot') })
-      })
-    }
+    document.querySelectorAll('[data-reveal]').forEach(function (el) { io.observe(el) })
   })()
 </script>

@@ -1,241 +1,192 @@
 <header class="nav">
-  <a class="brand" href="{{homeUrl}}" data-magnetic>{{siteName}}</a>
-  <nav class="nav-links">
-    {{#nav}}<a class="nav-link" href="{{url}}"{{#active}} aria-current="page"{{/active}}>{{label}}</a>{{/nav}}
-  </nav>
+  <input class="nav-tgl" id="nav-tgl" type="checkbox">
+  <div class="nav-in">
+    <a class="brand" href="{{homeUrl}}">{{siteName}}</a>
+    <nav class="nav-links">
+      {{#nav}}<a class="nav-link" href="{{url}}"{{#active}} aria-current="page"{{/active}}>{{label}}</a>{{/nav}}
+    </nav>
+    <div class="nav-cta">{{#hero.meta}}{{#href}}<a class="btn btn-light" href="{{href}}">{{label}}<i class="ic" aria-hidden="true"></i></a>{{/href}}{{/hero.meta}}</div>
+    <label class="burger" for="nav-tgl" aria-label="Menu"><i aria-hidden="true"></i></label>
+  </div>
+  <div class="nav-sheet">
+    <nav class="sheet-nav">{{#nav}}<a class="sheet-link" href="{{url}}"{{#active}} aria-current="page"{{/active}}>{{label}}</a>{{/nav}}</nav>
+    <div class="btns sheet-btns">{{#hero.meta}}{{#href}}<a class="btn" href="{{href}}">{{label}}<i class="ic" aria-hidden="true"></i></a>{{/href}}{{/hero.meta}}</div>
+  </div>
 </header>
 
 <main>
   <section class="hero">
-    <canvas class="gl" data-gl aria-hidden="true"></canvas>
-    <div class="hero-in">
-      <p class="eyebrow hero-eyebrow" data-reveal>{{siteName}}</p>
+    <canvas class="fx" data-fx aria-hidden="true"></canvas>
+    <div class="wrap hero-in">
+      <span class="badge" data-lift style="--d: 60"><i class="dot" aria-hidden="true"></i>{{siteName}}</span>
       <h1 class="hero-title" data-split>{{hero.title}}</h1>
-      {{#hero.lead}}<p class="hero-sub" data-reveal>{{hero.lead}}</p>{{/hero.lead}}
-      {{#hero.meta.length}}
-      <div class="hero-meta" data-reveal>
-        {{#hero.meta}}{{#href}}<a class="pill" href="{{href}}" data-magnetic>{{label}}</a>{{/href}}{{^href}}<span class="pill">{{value}}</span>{{/href}}{{/hero.meta}}
-      </div>
-      {{/hero.meta.length}}
-
-      <div class="stats" data-reveal>
-        <div class="stat"><div class="stat-n" data-count="4000" data-suffix="+">4,000+</div><div class="stat-l">Teams shipping</div></div>
-        <div class="stat"><div class="stat-n" data-count="30" data-suffix="+">30+</div><div class="stat-l">Edge regions</div></div>
-        <div class="stat"><div class="stat-n" data-count="99" data-suffix="%">99%</div><div class="stat-l">Uptime SLA</div></div>
-        <div class="stat"><div class="stat-n" data-count="60" data-suffix="%">60%</div><div class="stat-l">Faster deploys</div></div>
-      </div>
-
-      {{#hero.cover}}
-      <div class="hero-cover" data-reveal>
-        <span class="chip chip-a" data-parallax data-speed="0.05">Uptime 99.99%</span>
-        <span class="chip chip-b" data-parallax data-speed="0.09">Deployed · 12ms</span>
-        <figure class="hero-cover-inner"><img src="{{hero.cover}}" alt="{{hero.title}}" data-parallax data-speed="0.04"></figure>
-      </div>
-      {{/hero.cover}}
+      {{#hero.lead}}<p class="hero-sub" data-lift style="--d: 560">{{hero.lead}}</p>{{/hero.lead}}
+      <div class="btns" data-lift style="--d: 680">{{#hero.meta}}{{#href}}<a class="btn" href="{{href}}">{{label}}<i class="ic" aria-hidden="true"></i></a>{{/href}}{{/hero.meta}}</div>
+      <div class="rail" data-lift style="--d: 780">{{#hero.meta}}{{^href}}<span class="rail-item"><span class="rail-k">{{label}}</span><span class="rail-v">{{value}}</span></span>{{/href}}{{/hero.meta}}</div>
     </div>
+    {{#hero.cover}}
+    <div class="wrap shot-wrap">
+      <figure class="shot" data-lift style="--d: 900">
+        <span class="shot-bar" aria-hidden="true"><i></i><i></i><i></i></span>
+        <img src="{{hero.cover}}" alt="{{hero.title}}">
+      </figure>
+    </div>
+    {{/hero.cover}}
   </section>
 
-  <div class="marquee" aria-hidden="true">
-    <div class="marquee-track">
-      <span>Ship faster</span><span>Deploy globally</span><span>Zero ops</span><span>Scale on demand</span><span>Preview every push</span>
-      <span>Ship faster</span><span>Deploy globally</span><span>Zero ops</span><span>Scale on demand</span><span>Preview every push</span>
+  {{#hero.body}}
+  <section class="band">
+    <div class="wrap note" data-reveal>
+      <div class="note-body rt">{{{hero.body}}}</div>
     </div>
-  </div>
+  </section>
+  {{/hero.body}}
 
   {{#hero.extras}}
-  <section class="section" data-reveal>
-    <div class="sec-head"><div><span class="kicker">Pricing</span><h2>Simple pricing that scales with you</h2></div></div>
-    {{{hero.extras}}}
+  <section class="band">
+    <div class="wrap" data-reveal>{{{hero.extras}}}</div>
   </section>
   {{/hero.extras}}
 
   {{#sections}}
   {{#items.length}}
-  <section class="section" data-reveal>
-    <div class="sec-head">
-      <div><span class="kicker">{{label}}</span><h2>Everything you need, nothing you don't</h2></div>
-      <a class="all-link" href="{{url}}">View all</a>
-    </div>
-    <div class="cards" data-stagger>
-      {{#items}}
-      <a class="card" href="{{_url}}" data-tilt>
-        {{#_cover}}<span class="card-cover"><img src="{{_cover}}" alt="{{_title}}"></span>{{/_cover}}
-        <h3 class="card-title">{{_title}}</h3>
-        {{#_lead}}<p class="card-lead">{{_lead}}</p>{{/_lead}}
-        <span class="card-go" aria-hidden="true">→</span>
-      </a>
-      {{/items}}
+  <section class="band">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <h2>{{label}}</h2>
+        <span class="sec-n">{{items.length}}</span>
+      </div>
+      <div class="cards" data-stagger>
+        {{#items}}
+        <a class="card" href="{{_url}}">
+          <span class="chip" aria-hidden="true"></span>
+          {{#_cover}}<span class="card-cover"><img src="{{_cover}}" alt="{{_title}}"></span>{{/_cover}}
+          <h3 class="card-title">{{_title}}</h3>
+          {{#_lead}}<p class="card-lead">{{_lead}}</p>{{/_lead}}
+          <span class="card-go" aria-hidden="true">→</span>
+        </a>
+        {{/items}}
+      </div>
+      <div class="sec-foot" data-reveal><a class="all-link" href="{{url}}">View all<i class="ic" aria-hidden="true"></i></a></div>
     </div>
   </section>
   {{/items.length}}
   {{/sections}}
 
-  {{#hero.meta.length}}
-  <section class="section">
-    <div class="cta-band" data-reveal>
-      <h2 data-split>Start shipping in minutes</h2>
-      <div class="hero-meta">
-        {{#hero.meta}}{{#href}}<a class="pill" href="{{href}}" data-magnetic>{{label}}</a>{{/href}}{{/hero.meta}}
-      </div>
+  <section class="cta">
+    <div class="wrap cta-in" data-reveal>
+      <h2>{{hero.title}}</h2>
+      <div class="btns">{{#hero.meta}}{{#href}}<a class="btn" href="{{href}}">{{label}}<i class="ic" aria-hidden="true"></i></a>{{/href}}{{/hero.meta}}</div>
     </div>
   </section>
-  {{/hero.meta.length}}
 </main>
 
-<footer class="foot" data-reveal>
-  <div class="foot-in">
+<footer class="foot">
+  <div class="wrap foot-in">
     <div>
       <p class="foot-mark">{{siteName}}</p>
       <p class="foot-tag">Built with JustJSON — own your content, as plain files.</p>
     </div>
-    <nav class="foot-nav">{{#nav}}<a href="{{url}}">{{label}}</a>{{/nav}}</nav>
+    <nav class="foot-col">{{#nav}}<a href="{{url}}">{{label}}</a>{{/nav}}</nav>
+    {{#contact.length}}
+    <div class="foot-col">{{#contact}}{{#href}}<a class="foot-line" href="{{href}}">{{display}}</a>{{/href}}{{^href}}<span class="foot-line">{{display}}</span>{{/href}}{{/contact}}</div>
+    {{/contact.length}}
   </div>
-  {{#contact.length}}
-  <div class="foot-base">
-    <div class="foot-contact">
-      {{#contact}}{{#href}}<a class="foot-line" href="{{href}}">{{display}}</a>{{/href}}{{^href}}<span class="foot-line">{{display}}</span>{{/href}}{{/contact}}
-    </div>
-  </div>
-  {{/contact.length}}
 </footer>
 
 <script>
   (function () {
-    var root = document.documentElement
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    root.setAttribute('data-js', '')
-    var fine = matchMedia('(pointer: fine)').matches
+    var still = matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (!still) document.documentElement.setAttribute('data-js', '')
 
-    document.querySelectorAll('[data-split]').forEach(function (el) {
-      var words = el.textContent.replace(/\s+/g, ' ').trim().split(' ')
-      el.textContent = ''
-      words.forEach(function (w, i) {
-        var outer = document.createElement('span'); outer.setAttribute('data-w', '')
-        var inner = document.createElement('span'); inner.setAttribute('data-wi', ''); inner.textContent = w
-        inner.style.setProperty('--wi', i)
-        outer.appendChild(inner); el.appendChild(outer)
-        if (i < words.length - 1) el.appendChild(document.createTextNode(' '))
+    // A tier's detail cell is usually one line of "a · b · c" — turn it into a
+    // ticked list. Structure, not decoration, so it runs with reduced motion on;
+    // with JS off the sentence still reads fine.
+    document.querySelectorAll('.jj-table tbody td').forEach(function (td) {
+      if (td.cellIndex < 2) return
+      var parts = td.textContent.split(/\s*[·•]\s*/).filter(Boolean)
+      if (parts.length < 2) return
+      var ul = document.createElement('ul')
+      ul.setAttribute('data-ticks', '')
+      parts.forEach(function (p) {
+        var li = document.createElement('li')
+        li.textContent = p
+        ul.appendChild(li)
       })
+      td.textContent = ''
+      td.appendChild(ul)
     })
 
-    document.querySelectorAll('[data-stagger]').forEach(function (p) {
-      for (var i = 0; i < p.children.length; i++) p.children[i].style.setProperty('--i', i)
-    })
-
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (e.isIntersecting) { e.target.setAttribute('data-shown', ''); io.unobserve(e.target) }
+    if (!still) {
+      document.querySelectorAll('[data-split]').forEach(function (el) {
+        var words = el.textContent.replace(/\s+/g, ' ').trim().split(' ')
+        el.textContent = ''
+        words.forEach(function (w, i) {
+          var outer = document.createElement('span'); outer.setAttribute('data-w', '')
+          var inner = document.createElement('span'); inner.setAttribute('data-wi', ''); inner.textContent = w
+          inner.style.setProperty('--wi', i)
+          outer.appendChild(inner); el.appendChild(outer)
+          if (i < words.length - 1) el.appendChild(document.createTextNode(' '))
+        })
       })
-    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' })
-    document.querySelectorAll('[data-reveal], [data-split]').forEach(function (el) { io.observe(el) })
 
-    var counters = document.querySelectorAll('[data-count]')
-    if (counters.length) {
-      var cio = new IntersectionObserver(function (es) {
+      document.querySelectorAll('[data-stagger]').forEach(function (p) {
+        for (var i = 0; i < p.children.length; i++) p.children[i].style.setProperty('--i', i)
+      })
+
+      var io = new IntersectionObserver(function (es) {
         es.forEach(function (e) {
-          if (!e.isIntersecting) return
-          cio.unobserve(e.target)
-          var el = e.target, end = parseFloat(el.getAttribute('data-count')), suf = el.getAttribute('data-suffix') || '', t0 = null
-          requestAnimationFrame(function step (ts) {
-            if (t0 === null) t0 = ts
-            var p = Math.min((ts - t0) / 1500, 1), k = 1 - Math.pow(1 - p, 3)
-            el.textContent = Math.round(end * k).toLocaleString() + suf
-            if (p < 1) requestAnimationFrame(step)
-          })
+          if (e.isIntersecting) { e.target.setAttribute('data-shown', ''); io.unobserve(e.target) }
         })
-      }, { threshold: 0.5 })
-      counters.forEach(function (c) { cio.observe(c) })
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' })
+      document.querySelectorAll('[data-reveal], [data-stagger]').forEach(function (el) { io.observe(el) })
     }
 
-    var px = [].slice.call(document.querySelectorAll('[data-parallax]'))
-    if (px.length) {
-      var tick = function () {
-        var vh = innerHeight
-        px.forEach(function (el) {
-          var r = el.getBoundingClientRect()
-          var sp = parseFloat(el.getAttribute('data-speed') || '0.12')
-          el.style.setProperty('--py', (-(r.top + r.height / 2 - vh / 2) * sp).toFixed(1) + 'px')
-        })
+    // The signature: a slowly turning field of light — the beacon's sweep seen
+    // from above. Bespoke canvas, no libraries; one static frame if the visitor
+    // asked for reduced motion.
+    var cv = document.querySelector('[data-fx]')
+    if (!cv || !cv.getContext) return
+    var g = cv.getContext('2d')
+    var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#4c7fff'
+    var w = 0, h = 0
+    function size () {
+      var dpr = Math.min(devicePixelRatio || 1, 2)
+      w = cv.clientWidth; h = cv.clientHeight
+      cv.width = w * dpr; cv.height = h * dpr
+      g.setTransform(dpr, 0, 0, dpr, 0, 0)
+    }
+    var RINGS = 30, PER = 128
+    function draw (t) {
+      g.clearRect(0, 0, w, h)
+      var cx = w / 2, cy = h * 0.46, base = Math.min(w * 0.62, h * 1.15)
+      for (var i = 1; i <= RINGS; i++) {
+        var rr = i / RINGS
+        for (var j = 0; j < PER; j++) {
+          var a = (j / PER) * Math.PI * 2 + t * 0.05 + rr * 1.9
+          var wob = Math.sin(a * 3 + t * 0.7 + rr * 4.2)
+          var R = base * rr * (1 + wob * 0.07)
+          var px = cx + Math.cos(a) * R
+          var py = cy + Math.sin(a) * R * 0.42 + wob * R * 0.15
+          var al = (0.14 + rr * 0.85) * Math.max(0, 1 - Math.abs(py - cy) / (h * 0.72))
+          if (al < 0.015) continue
+          g.globalAlpha = Math.min(al, 0.95)
+          g.fillStyle = j % 9 === 0 ? '#e4ecff' : accent
+          var s = 0.8 + rr * 2
+          g.fillRect(px, py, s, s * 2.4)
+        }
       }
-      addEventListener('scroll', function () { requestAnimationFrame(tick) }, { passive: true })
-      tick()
+      g.globalAlpha = 1
     }
-
-    if (fine) {
-      document.querySelectorAll('[data-magnetic]').forEach(function (el) {
-        el.addEventListener('pointermove', function (e) {
-          var r = el.getBoundingClientRect()
-          el.style.setProperty('--mx', ((e.clientX - r.left - r.width / 2) * 0.28).toFixed(1) + 'px')
-          el.style.setProperty('--my', ((e.clientY - r.top - r.height / 2) * 0.5).toFixed(1) + 'px')
-        })
-        el.addEventListener('pointerleave', function () { el.style.setProperty('--mx', '0px'); el.style.setProperty('--my', '0px') })
-      })
-      document.querySelectorAll('[data-tilt]').forEach(function (el) {
-        el.addEventListener('pointermove', function (e) {
-          var r = el.getBoundingClientRect()
-          el.style.setProperty('--rx', (((e.clientY - r.top) / r.height - 0.5) * -5).toFixed(2) + 'deg')
-          el.style.setProperty('--ry', (((e.clientX - r.left) / r.width - 0.5) * 5).toFixed(2) + 'deg')
-        })
-        el.addEventListener('pointerleave', function () { el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg') })
-      })
-      var dot = document.createElement('div'); dot.setAttribute('data-cursor-dot', ''); document.body.appendChild(dot)
-      var cx = innerWidth / 2, cy = innerHeight / 2, tx = cx, ty = cy
-      addEventListener('pointermove', function (e) { tx = e.clientX; ty = e.clientY }, { passive: true })
-      ;(function loop () { cx += (tx - cx) * 0.2; cy += (ty - cy) * 0.2; dot.style.transform = 'translate(' + cx + 'px,' + cy + 'px)'; requestAnimationFrame(loop) })()
-      document.querySelectorAll('a, button, [data-magnetic], [data-tilt]').forEach(function (el) {
-        el.addEventListener('pointerenter', function () { dot.setAttribute('data-hot', '') })
-        el.addEventListener('pointerleave', function () { dot.removeAttribute('data-hot') })
-      })
-    }
-
-    var cv = document.querySelector('[data-gl]')
-    if (cv) aurora(cv)
-    function readAccent () {
-      var c = getComputedStyle(root).getPropertyValue('--accent').trim() || '#6366f1'
-      var t = document.createElement('canvas'); t.width = t.height = 1; var x = t.getContext('2d')
-      x.fillStyle = c; x.fillRect(0, 0, 1, 1); var d = x.getImageData(0, 0, 1, 1).data
-      return [d[0] / 255, d[1] / 255, d[2] / 255]
-    }
-    function aurora (canvas) {
-      var gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: false })
-      if (!gl) return
-      var acc = readAccent()
-      var fs = [
-        'precision highp float;',
-        'uniform vec2 u_res;uniform float u_t;uniform vec3 u_acc;',
-        'float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
-        'float n(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);',
-        'return mix(mix(h(i),h(i+vec2(1,0)),u.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),u.x),u.y);}',
-        'float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p*=2.03;a*=.5;}return v;}',
-        'void main(){vec2 uv=gl_FragCoord.xy/u_res;vec2 p=uv;p.x*=u_res.x/u_res.y;',
-        'float t=u_t*0.05;',
-        'vec2 q=vec2(fbm(p+t),fbm(p+vec2(4.2,1.3)-t));',
-        'float f=fbm(p+q*1.7+t*0.6);',
-        'vec3 violet=vec3(0.36,0.24,0.86);vec3 teal=vec3(0.09,0.82,0.79);',
-        'vec3 col=mix(u_acc,violet,smoothstep(0.15,0.85,f));',
-        'col=mix(col,teal,smoothstep(0.55,1.0,q.x)*0.7);',
-        'float g=smoothstep(0.98,0.12,length(uv-vec2(0.5,0.64)));',
-        'float a=(0.20+0.55*f)*g;',
-        'gl_FragColor=vec4(col,a);}'
-      ].join('\n')
-      function sh (ty, src) { var s = gl.createShader(ty); gl.shaderSource(s, src); gl.compileShader(s); return s }
-      var prog = gl.createProgram()
-      gl.attachShader(prog, sh(gl.VERTEX_SHADER, 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'))
-      gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs))
-      gl.linkProgram(prog); gl.useProgram(prog)
-      var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf)
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW)
-      var loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
-      var uRes = gl.getUniformLocation(prog, 'u_res'), uT = gl.getUniformLocation(prog, 'u_t'), uAcc = gl.getUniformLocation(prog, 'u_acc')
-      function resize () { var d = Math.min(devicePixelRatio || 1, 2); canvas.width = canvas.clientWidth * d; canvas.height = canvas.clientHeight * d; gl.viewport(0, 0, canvas.width, canvas.height) }
-      addEventListener('resize', resize); resize()
-      var start = null, vis = true
-      document.addEventListener('visibilitychange', function () { vis = !document.hidden })
-      requestAnimationFrame(function frame (ts) {
-        if (start === null) start = ts
-        if (vis) { gl.uniform2f(uRes, canvas.width, canvas.height); gl.uniform1f(uT, (ts - start) / 1000); gl.uniform3f(uAcc, acc[0], acc[1], acc[2]); gl.drawArrays(gl.TRIANGLES, 0, 3) }
-        requestAnimationFrame(frame)
-      })
-    }
+    var t0 = null, live = true
+    document.addEventListener('visibilitychange', function () { live = !document.hidden })
+    addEventListener('resize', function () { size(); if (still) draw(0) })
+    size()
+    if (still) { draw(0); return }
+    requestAnimationFrame(function loop (ts) {
+      if (t0 === null) t0 = ts
+      if (live) draw((ts - t0) / 1000)
+      requestAnimationFrame(loop)
+    })
   })()
 </script>
