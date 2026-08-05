@@ -14,8 +14,10 @@
           { "key": "tagline", "label": "Tagline", "type": "text" },
           { "key": "cover", "label": "Hero image", "type": "image" },
           { "key": "intro", "label": "Intro", "type": "richtext" },
-          { "key": "cta", "label": "Start free", "type": "url" },
+          { "key": "cta", "label": "Start deploying", "type": "url" },
           { "key": "docs", "label": "Read the docs", "type": "url" },
+          { "key": "probeRegions", "label": "Regions probing every canary", "type": "number" },
+          { "key": "recorderDays", "label": "Days of flight history kept", "type": "number" },
           {
             "key": "pricing",
             "label": "Pricing",
@@ -53,6 +55,29 @@
         ]
       },
       {
+        "name": "integrations",
+        "label": "Integrations",
+        "path": "integrations",
+        "fields": [
+          { "key": "name", "label": "Name", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "summary", "label": "Summary", "type": "text" },
+          { "key": "body", "label": "Body", "type": "richtext" }
+        ]
+      },
+      {
+        "name": "customers",
+        "label": "Customers",
+        "path": "customers",
+        "fields": [
+          { "key": "name", "label": "Company", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "summary", "label": "Quote", "type": "text" },
+          { "key": "cover", "label": "Cover", "type": "image" },
+          { "key": "body", "label": "Story", "type": "richtext" }
+        ]
+      },
+      {
         "name": "changelog",
         "label": "Changelog",
         "path": "changelog",
@@ -68,95 +93,218 @@
   },
   "samples": {
     "home": {
-      "siteName": "Beacon",
-      "title": "Ship features, not infrastructure",
-      "tagline": "Beacon is the platform that turns your ideas into production in minutes — no ops, no glue code, no waiting.",
-      "cover": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&q=80&auto=format&fit=crop",
-      "intro": "Trusted by 4,000+ teams to build, launch and scale. Deploy on every push, roll back in one click, and watch it all from a single dashboard.",
+      "siteName": "Lodestar",
+      "title": "Every release gets a flight plan",
+      "tagline": "Previews, canaries and rollbacks for teams without an ops team",
+      "cover": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80&auto=format&fit=crop",
+      "intro": "A release should feel like a launch sequence, not a leap of faith. Lodestar puts a flight plan around every deploy — previews before merge, canaries before full traffic, rollback before anyone finishes typing a status update.",
       "cta": "https://example.com/signup",
       "docs": "https://example.com/docs",
+      "probeRegions": 3,
+      "recorderDays": 30,
       "pricing": [
         {
-          "plan": "Starter",
+          "plan": "Solo",
           "price": "$0 / mo",
-          "includes": "1 project · community support · 10k requests"
+          "includes": "1 project · preview environments · manual rollbacks"
         },
         {
-          "plan": "Pro",
-          "price": "$29 / mo",
-          "includes": "Unlimited projects · email support · 5M requests · previews"
+          "plan": "Crew",
+          "price": "$24 / seat / mo",
+          "includes": "Unlimited projects · canary releases · release checks · 30-day flight recorder"
         },
         {
-          "plan": "Scale",
-          "price": "$99 / mo",
-          "includes": "SSO · SLA · audit logs · unlimited requests · priority support"
+          "plan": "Fleet",
+          "price": "Custom",
+          "includes": "SSO · audit exports · private regions · dedicated support channel"
         }
       ]
     },
     "contact": {
-      "email": "hello@beacon.dev",
+      "email": "hello@lodestar.example",
       "twitter": "https://twitter.com/",
       "github": "https://github.com/"
     },
     "features": [
       {
-        "title": "Realtime analytics",
-        "slug": "analytics",
-        "summary": "Every request, deploy and error on one live dashboard — no setup.",
-        "body": "See traffic, latency and errors update as they happen. Drill into any request, filter by route, and share a link to any view.\n\nNo agents to install — it works the moment you deploy."
+        "title": "Preview environments",
+        "slug": "previews",
+        "summary": "Every pull request becomes a running copy of your app, on its own URL.",
+        "cover": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1600&q=80&auto=format&fit=crop",
+        "body": "Open a pull request and Lodestar builds the branch, provisions a database seeded from your fixtures, and posts the URL back to the PR. Reviewers click a link instead of checking out the branch.\n\n## What's in a preview\n\n- The app, built from the branch head\n- A disposable database with your seed data\n- Environment variables scoped to previews — never production secrets\n- A comment on the PR that updates with every push\n\nPreviews expire when the PR closes, so nothing is left running over the weekend."
       },
       {
-        "title": "Deploy on every push",
-        "slug": "deploys",
-        "summary": "Connect a repo and ship. Previews for every branch, rollbacks in one click.",
-        "body": "Push to a branch and get a shareable preview URL. Merge to main and it's live. If anything looks off, roll back instantly — your last ten deploys are always one click away."
+        "title": "Canary releases",
+        "slug": "canary",
+        "summary": "New versions reach a slice of traffic first, and only spread when the checks pass.",
+        "cover": "https://images.unsplash.com/photo-1517976487492-5750f3195933?w=1600&q=80&auto=format&fit=crop",
+        "body": "A merge doesn't have to mean an all-at-once cutover. Lodestar routes a slice of production traffic to the new version and holds it there while your release checks run against real requests.\n\n## The staged path\n\n1. Deploy the new version alongside the old one\n2. Shift an initial slice of traffic — you pick the size\n3. Run your checks against the canary's live metrics\n4. Widen in steps, or pull back automatically on a failed check\n\nThe rollout plan lives in `lodestar.yml`, next to the code it ships:\n\n```yaml\nrollout:\n  steps: [5%, 25%, 100%]\n  hold: 10m\n  checks: [error-rate, p95-latency]\n```"
       },
       {
-        "title": "Built-in auth",
-        "slug": "auth",
-        "summary": "Email, OAuth and SSO out of the box. Sessions, tokens, done.",
-        "body": "Add sign-in with a few lines. Passwordless, social login and enterprise SSO are handled for you, with sessions and refresh tokens managed securely."
+        "title": "Instant rollback",
+        "slug": "rollback",
+        "summary": "Any past release can be back in production before the incident channel fills up.",
+        "cover": "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=1600&q=80&auto=format&fit=crop",
+        "body": "Every release is immutable: the build, the config and the migrations that shipped with it are kept together. Rolling back means routing traffic to a version that already exists — not rebuilding an old commit under pressure.\n\nRollbacks are one action from the dashboard, the CLI or a failed release check. If a canary check fails, the pullback happens on its own and the release is marked with the check that tripped it.\n\n> The fastest incident is the one that ends before anyone writes a status update."
       },
       {
-        "title": "Global edge",
-        "slug": "edge",
-        "summary": "Your app runs close to every user, automatically.",
-        "body": "Static assets and functions run at the edge in 30+ regions. No config — requests are served from the location nearest each visitor."
+        "title": "Release checks",
+        "slug": "checks",
+        "summary": "Declare what healthy means, and no release advances without proving it.",
+        "cover": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1600&q=80&auto=format&fit=crop",
+        "body": "A release check is a rule the rollout must satisfy before it widens: error rate under a threshold, latency inside a budget, a smoke test returning green, a queue staying drained.\n\n## Checks you can declare\n\n- **Metric gates** — error rate, latency percentiles, saturation\n- **Synthetic probes** — HTTP checks against the canary from multiple regions\n- **Custom hooks** — any script that exits zero, run against the new version\n\nChecks run at every step of a staged rollout. A failure stops the spread and, if you've enabled it, pulls the release back without waiting for a human."
       },
       {
-        "title": "Team collaboration",
-        "slug": "teams",
-        "summary": "Invite the team, set roles, review changes together.",
-        "body": "Organize work into teams, assign roles, and comment on preview deploys. Everyone sees the same source of truth."
+        "title": "Sealed configuration",
+        "slug": "config",
+        "summary": "Secrets are encrypted per environment and versioned with the release that used them.",
+        "cover": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1600&q=80&auto=format&fit=crop",
+        "body": "Configuration in Lodestar is sealed to an environment: production secrets can't leak into previews, and a preview's throwaway credentials never reach production.\n\nEvery release records the configuration version it shipped with. When you roll back, the config rolls back with it — no hunting for the value a variable had last Tuesday.\n\n## How teams use it\n\n- Rotate a key, and the change lands as a config release with its own diff\n- Grant read access by environment, so contractors see staging and nothing else\n- Pull values locally with `lodestar env pull` for development against real shapes"
       },
       {
-        "title": "Open API",
-        "slug": "api",
-        "summary": "Automate everything with a clean REST API and CLI.",
-        "body": "Script deploys, pull metrics, manage teams — the whole platform is available over a documented REST API and a first-class CLI."
+        "title": "Flight recorder",
+        "slug": "flight-recorder",
+        "summary": "A single timeline of every deploy, check, config change and rollback.",
+        "cover": "https://images.unsplash.com/photo-1614728263952-84ea256f9679?w=1600&q=80&auto=format&fit=crop",
+        "body": "When something breaks, the first question is always the same: what changed? The flight recorder answers it in one place — every deploy, traffic shift, check result, config change and rollback, in order, with who triggered it and why.\n\nEach entry links back to the pull request and the release it belongs to, so the path from \"alert\" to \"the commit that did it\" is a scroll, not an investigation.\n\nTimelines can be exported for audits, and kept as long as your plan allows."
+      }
+    ],
+    "integrations": [
+      {
+        "name": "GitHub",
+        "slug": "github",
+        "summary": "Previews on every pull request, checks reported back as commit statuses.",
+        "body": "Connect a repository and Lodestar listens for pull requests: every PR gets a preview environment, every push updates it, and the preview URL lands in the PR conversation.\n\nRelease checks report back as commit statuses, so a rollout that failed its canary is visible right where the code was merged."
+      },
+      {
+        "name": "GitLab",
+        "slug": "gitlab",
+        "summary": "Merge request previews and pipeline-triggered rollouts.",
+        "body": "The GitLab integration mirrors the GitHub one: previews per merge request, statuses on the MR, and rollouts that can be triggered from the tail of an existing pipeline instead of replacing it."
+      },
+      {
+        "name": "Slack",
+        "slug": "slack",
+        "summary": "Rollouts, check failures and pullbacks, narrated in your channel.",
+        "body": "Point Lodestar at a channel and it narrates the release: rollout started, canary holding, check failed, traffic pulled back. Each message links to the flight recorder entry.\n\nQuiet by default — one thread per release, not one message per event."
+      },
+      {
+        "name": "Datadog",
+        "slug": "datadog",
+        "summary": "Use your existing monitors as release checks.",
+        "body": "Any Datadog monitor can gate a rollout. Pick monitors per project or per rollout step; a monitor in alert state stops the spread, and the flight recorder records which one tripped.\n\nNo duplicate thresholds — the numbers your on-call already trusts are the ones your releases answer to."
+      },
+      {
+        "name": "Grafana",
+        "slug": "grafana",
+        "summary": "Release annotations on the dashboards you already watch.",
+        "body": "Every deploy, traffic shift and pullback lands as an annotation on the Grafana dashboards you choose. When a graph bends, the vertical line next to it says why."
+      },
+      {
+        "name": "PagerDuty",
+        "slug": "pagerduty",
+        "summary": "Automatic pullbacks can open, and close, incidents.",
+        "body": "When a canary check fails and Lodestar pulls a release back, it can open a PagerDuty incident with the tripped check attached — and resolve it once traffic is stable on the previous version.\n\nThe incident timeline links to the flight recorder, so the postmortem starts half-written."
+      },
+      {
+        "name": "Terraform",
+        "slug": "terraform",
+        "summary": "Manage projects, environments and checks as code.",
+        "body": "The Lodestar provider manages projects, environments, sealed variables and release checks from your existing Terraform workspace. Review infrastructure and rollout policy in the same pull request."
+      },
+      {
+        "name": "Linear",
+        "slug": "linear",
+        "summary": "Releases link back to the issues they shipped.",
+        "body": "Lodestar reads issue references from merged pull requests and attaches them to the release. An issue's page shows the release that shipped it; a release's notes list the issues it closed."
+      }
+    ],
+    "customers": [
+      {
+        "name": "Ferrostack",
+        "slug": "ferrostack",
+        "summary": "“We stopped treating Friday afternoon like a threat.”",
+        "cover": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&q=80&auto=format&fit=crop",
+        "body": "Ferrostack runs payment reconciliation for mid-size marketplaces — the kind of workload where a bad deploy doesn't show up as a broken button, it shows up as money in the wrong column.\n\nBefore Lodestar, releases were scheduled around the finance calendar and shepherded by two senior engineers. Now every merge rolls out as a canary gated on their own reconciliation-drift monitor.\n\n> The checks are the same ones our on-call watches. The difference is that now a release has to pass them before it's allowed to spread.\n\nRollouts happen whenever the work is ready — including Friday afternoon."
+      },
+      {
+        "name": "Nordwind Mobility",
+        "slug": "nordwind",
+        "summary": "“Preview environments turned our design reviews from meetings into links.”",
+        "cover": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1600&q=80&auto=format&fit=crop",
+        "body": "Nordwind builds charging-station software for fleet operators across the Nordics. Their product team is spread over four time zones, and their old review flow was a weekly call with screen sharing.\n\nWith Lodestar, every pull request carries a seeded preview: reviewers open a running app with realistic fleet data, on their own schedule, and leave comments on the PR.\n\nThe weekly call still exists — it's just about decisions now, not demos."
+      },
+      {
+        "name": "Hexlight Studio",
+        "slug": "hexlight",
+        "summary": "“Client sites ship the day they're approved, not the sprint after.”",
+        "cover": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1600&q=80&auto=format&fit=crop",
+        "body": "Hexlight is an eight-person studio shipping product sites and small apps for a rotating cast of clients. No two projects share a stack, and nobody wants to be the person who remembers how project #14 deploys.\n\nLodestar gives every project the same launch ritual: preview on PR, canary on merge, rollback on the dashboard. Onboarding a freelancer now means sharing a link, not a runbook.\n\n> The deploy story used to be different for every client. Now it's the boring part of the project — which is exactly what a deploy story should be."
+      },
+      {
+        "name": "Cascade Health",
+        "slug": "cascade-health",
+        "summary": "“The audit conversation went from a week of screenshots to a CSV export.”",
+        "cover": "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1600&q=80&auto=format&fit=crop",
+        "body": "Cascade builds scheduling and intake tools for outpatient clinics, which means every release conversation eventually becomes a compliance conversation.\n\nThe flight recorder changed the shape of their audits: every deploy, config change and rollback is already on one timeline, with who and why attached. When the auditor asks what changed in March, the answer is an export, not an archaeology project.\n\nSealed configuration closed the other gap — contractors work against staging values and have never seen a production secret."
+      },
+      {
+        "name": "Playdeck",
+        "slug": "playdeck",
+        "summary": "“Canaries caught the regression our load tests missed.”",
+        "cover": "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1600&q=80&auto=format&fit=crop",
+        "body": "Playdeck makes live-ops tooling for indie game studios. Their traffic is spiky and superstitious: launch nights bring player load no staging environment reproduces honestly.\n\nTheir releases now go out as canaries held against p95 latency during real traffic. The rollouts that would have hurt die at the first step, in front of a sliver of players, instead of in front of all of them.\n\n> Load tests tell you how the system behaves under the traffic you imagined. The canary tells you how it behaves under the traffic you actually got."
+      },
+      {
+        "name": "Tidewater Analytics",
+        "slug": "tidewater",
+        "summary": "“Two people run the platform. Lodestar is the third.”",
+        "cover": "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&q=80&auto=format&fit=crop",
+        "body": "Tidewater ships dashboards for harbour logistics — a two-engineer company with customers in six countries and no appetite for 3am surprises.\n\nThey run Lodestar with automatic pullbacks on and let the platform mind the rollouts. When a check fails, traffic is already back on the previous version by the time a human reads the Slack thread.\n\nIt's not that incidents stopped. It's that they got small enough to handle after coffee."
       }
     ],
     "changelog": [
       {
-        "title": "Edge functions, now in every region",
-        "slug": "edge-functions",
-        "version": "v2.4",
-        "date": "2026-07-28",
-        "body": "Functions now run at the edge in 30+ regions by default. Cold starts are down 60%, and you can pin a function to a region from the dashboard."
+        "title": "Automatic pullbacks on failed checks",
+        "slug": "auto-pullback",
+        "version": "v1.9",
+        "date": "2026-07-21",
+        "body": "Canary rollouts can now reverse themselves. When a release check fails mid-rollout, Lodestar shifts traffic back to the previous version and records the tripped check in the flight recorder.\n\n- Enable per project or per rollout with `pullback: auto`\n- A pullback posts to your incident channel with the check that failed\n- Manual confirmation mode is still the default"
       },
       {
-        "title": "One-click rollbacks",
-        "slug": "rollbacks",
-        "version": "v2.3",
-        "date": "2026-06-14",
-        "body": "Every deploy is now immutable and instantly restorable. Open any past deploy and promote it to production in a single click."
+        "title": "Synthetic probes from three regions",
+        "slug": "synthetic-probes",
+        "version": "v1.8",
+        "date": "2026-06-30",
+        "body": "Release checks can now include HTTP probes that hit your canary from three regions at once. A probe passes only when every region agrees, so a regional network wobble can't wave a bad release through."
       },
       {
-        "title": "Realtime analytics dashboard",
-        "slug": "analytics-dashboard",
-        "version": "v2.2",
-        "date": "2026-05-02",
-        "body": "The new dashboard streams requests, latency and errors live. Filter by route, status or region and share any view with a link."
+        "title": "Config diffs in the flight recorder",
+        "slug": "config-diffs",
+        "version": "v1.7",
+        "date": "2026-06-09",
+        "body": "Configuration changes now appear in the flight recorder as diffs — variable names always, values only for teammates with read access to that environment. Rotations stop being invisible events."
+      },
+      {
+        "title": "Seeded preview databases",
+        "slug": "preview-seeds",
+        "version": "v1.6",
+        "date": "2026-05-18",
+        "body": "Preview environments can now boot with a database seeded from a fixtures file in your repo. Reviewers land in an app that has data in it, not an empty shell.\n\n```yaml\npreviews:\n  seed: db/fixtures/demo.sql\n```"
+      },
+      {
+        "title": "Rollback from the CLI",
+        "slug": "cli-rollback",
+        "version": "v1.5",
+        "date": "2026-04-27",
+        "body": "`lodestar rollback` promotes any previous release from your terminal. Pass a release id, or run it bare to get an interactive picker of recent releases with their check results."
+      },
+      {
+        "title": "Release notes, drafted from merged PRs",
+        "slug": "release-notes",
+        "version": "v1.4",
+        "date": "2026-04-01",
+        "body": "Every release now carries a draft changelog assembled from the pull requests it contains. Edit it, or ship it as-is to the flight recorder and your team channel."
       }
     ]
   }

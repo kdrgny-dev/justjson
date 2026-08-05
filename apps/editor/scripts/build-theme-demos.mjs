@@ -24,7 +24,7 @@ const outRoot = join(repoRoot, 'landing', 'public', 'themes')
 // Theme ↔ template pairing. A demo only sells the theme if the content fits it.
 // Add one row per premium theme as it ships: { theme, template, accent?, lang }.
 // (Premium themes were reset 2026-08-05 — see themes-src/CLAUDE.md §8.)
-const DEMOS = []
+const DEMOS = [{ theme: 'apogee', template: 'saas', lang: 'en' }]
 
 const die = (msg) => {
   console.error(`\ndemos: ${msg}\n`)

@@ -158,6 +158,7 @@ const THEME_FIT: Record<string, string> = {
   bold: 'A loud, high-contrast voice',
   editorial: 'Long-form reading',
   // premium theme labels go here as each ships, keyed by its id
+  apogee: 'SaaS & developer platforms',
 }
 
 function ThemePicker({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) {
