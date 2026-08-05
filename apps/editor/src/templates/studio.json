@@ -1,0 +1,197 @@
+{
+  "title": "Studio / Developer",
+  "description": "A design-build studio site: manifesto, values, projects and contact.",
+  "schema": {
+    "version": 1,
+    "singletons": [
+      {
+        "name": "studio",
+        "label": "Studio",
+        "path": "studio.json",
+        "fields": [
+          { "key": "siteName", "label": "Site name", "type": "text" },
+          { "key": "title", "label": "Headline", "type": "text", "required": true },
+          { "key": "tagline", "label": "Tagline", "type": "text" },
+          { "key": "cover", "label": "Hero image", "type": "image" },
+          { "key": "intro", "label": "Manifesto", "type": "richtext" },
+          { "key": "enquire", "label": "Start a project", "type": "url" },
+          { "key": "book", "label": "Book a visit", "type": "url" },
+          {
+            "key": "values",
+            "label": "Values",
+            "type": "repeater",
+            "fields": [
+              { "key": "value", "label": "Value", "type": "text" },
+              { "key": "detail", "label": "Detail", "type": "text" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "contact",
+        "label": "Contact",
+        "path": "contact.json",
+        "fields": [
+          { "key": "email", "label": "Email", "type": "email" },
+          { "key": "instagram", "label": "Instagram", "type": "url" },
+          { "key": "studioAddress", "label": "Studio", "type": "text" }
+        ]
+      }
+    ],
+    "collections": [
+      {
+        "name": "projects",
+        "label": "Projects",
+        "path": "projects",
+        "fields": [
+          { "key": "name", "label": "Project", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "summary", "label": "Summary", "type": "text" },
+          { "key": "cover", "label": "Cover", "type": "image" },
+          { "key": "location", "label": "Location", "type": "text" },
+          { "key": "year", "label": "Year", "type": "text" },
+          { "key": "status", "label": "Status", "type": "text" },
+          { "key": "body", "label": "Body", "type": "richtext" }
+        ]
+      },
+      {
+        "name": "practice",
+        "label": "Practice",
+        "path": "practice",
+        "fields": [
+          { "key": "title", "label": "Title", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text", "required": true },
+          { "key": "summary", "label": "Summary", "type": "text" },
+          { "key": "cover", "label": "Cover", "type": "image" },
+          { "key": "body", "label": "Body", "type": "richtext" }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "studio": {
+      "siteName": "Aravel",
+      "title": "Houses meant to outlast their drawings",
+      "tagline": "A design-build studio making four houses a year on the Vessholm coast.",
+      "cover": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80&auto=format&fit=crop",
+      "intro": "We design and build in the same office, with the same people, from the first site walk to the day the keys change hands. There is no drawing set thrown over a wall and no contractor left to interpret it. When a detail turns out to be wrong on site, the person who drew it is standing there.\n\nWe believe a house is a long argument with weather. Salt air, horizontal rain and eight dark months are not edge cases here, they are the brief. So we build heavy where the wind hits, we let timber breathe, and we choose materials that grey honestly instead of ones that look new for three years and then look neglected.\n\nWe take on four buildings a year. That is not scarcity marketing, it is the number of sites we can visit every week without lying to somebody. If the schedule is full we will say so and tell you when it opens.",
+      "enquire": "https://example.com/enquire",
+      "book": "https://example.com/visit",
+      "values": [
+        {
+          "value": "Patience",
+          "detail": "We hold four projects at a time so nobody's house is waiting for another one to finish."
+        },
+        {
+          "value": "Weight",
+          "detail": "Brick, stone and solid timber, chosen because they hold heat and settle rather than wear out."
+        },
+        {
+          "value": "Daylight",
+          "detail": "Every room we draw takes light from two sides, even when that costs us floor area."
+        },
+        {
+          "value": "Repair",
+          "detail": "Nothing is sealed shut: a window, a floor or a roof can be opened and mended in an afternoon."
+        }
+      ]
+    },
+    "contact": {
+      "email": "hello@aravel.example",
+      "instagram": "https://instagram.com/",
+      "studioAddress": "Ropewalk 12, Sundvik, Vessholm"
+    },
+    "projects": [
+      {
+        "name": "Harrow House",
+        "slug": "harrow-house",
+        "summary": "A single-storey house for two people who wanted the sea audible but not visible.",
+        "cover": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1600&q=80&auto=format&fit=crop",
+        "location": "Sundmark",
+        "year": "2025",
+        "status": "Completed",
+        "body": "**Sundmark · 2025 · Completed**\n\nThe plot sits behind a low ridge, which is the only reason anything can stand there. We kept the house on the sheltered side and turned the windows inland, so the water is something you hear at night rather than watch all day.\n\nThe plan is a single run of five rooms off one corridor, with the kitchen at the warm end and a workshop at the cold end. Walls are lime-rendered blockwork, floors are ash over sand-filled joists, and the roof is a shallow zinc fold that sheds the westerly without catching it.\n\n- 128 m² on one level\n- Lime render on block\n- Completed spring 2025\n\nLiving there is quieter than the site suggested it would be. The owners report that the loudest thing in the house is the front door."
+      },
+      {
+        "name": "Nine Windows",
+        "slug": "nine-windows",
+        "summary": "A narrow town house squeezed between two older neighbours, lit entirely from the ends.",
+        "cover": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80&auto=format&fit=crop",
+        "location": "Kaldstrand",
+        "year": "2024",
+        "status": "Completed",
+        "body": "**Kaldstrand · 2024 · Completed**\n\nFour and a half metres wide, party walls on both sides, and a covenant that fixed the ridge height. Everything interesting about this house is a consequence of those three facts.\n\nBecause light could only come from the front and back, we cut a slot through all three floors and put the stair in it. The slot carries daylight down to the kitchen and carries warm air up in winter, which was not the plan but turned out to be the best thing about it. Nine windows in total, each sized for the room behind it rather than for the elevation.\n\nThe street face is reclaimed brick from a demolished mill two towns over, laid in a lazy bond that matches the neighbours' settling rather than correcting it."
+      },
+      {
+        "name": "Long Barn",
+        "slug": "long-barn",
+        "summary": "Four homes inside the shell of a hay barn that had lost its roof and half its gable.",
+        "cover": "https://images.unsplash.com/photo-1449844908441-8829872d2607?w=1600&q=80&auto=format&fit=crop",
+        "location": "Bregnholm",
+        "year": "2026",
+        "status": "In construction",
+        "body": "**Bregnholm · 2026 · In construction**\n\nThe barn was structurally finished, in the sense that it had finished. We took down what could not be saved, numbered the stones that could, and rebuilt the north gable from the pile it had made of itself.\n\nInside the old envelope sits a new timber frame that touches the stone in eleven places and nowhere else. That separation is what makes four homes possible: each one is a warm box standing inside a cold shell, so the stonework stays ventilated and the insulation stays dry.\n\n- 4 homes\n- Timber frame inside existing stone\n- Handover expected late 2026\n\nEach home gets a door onto the yard and a window in the old cart opening. The yard itself stays gravel and weeds, because the tenants asked for somewhere to leave a bike wet."
+      },
+      {
+        "name": "Ferrylight",
+        "slug": "ferrylight",
+        "summary": "A house for a harbour pilot, planned around a bed that has to be left at odd hours.",
+        "cover": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1600&q=80&auto=format&fit=crop",
+        "location": "Vessholm Point",
+        "year": "2026",
+        "status": "In construction",
+        "body": "**Vessholm Point · 2026 · In construction**\n\nThe client is called out at two in the morning perhaps sixty times a year. So the brief was unusual and very specific: get from bed to boots to car without waking a household or turning on a bright light.\n\nThe answer is a short dark route. Bedroom, a lobby with a bench and a heated rail, then the door. Low-level lights on a separate circuit, a floor that does not creak because it is screed rather than boards, and no stair in the sequence at all.\n\nThe rest of the house is ordinary and warm: a wide kitchen facing south-east, a room for drying gear, and a shallow porch deep enough to take a coat off in the rain before you come inside."
+      },
+      {
+        "name": "Cold Harbour",
+        "slug": "cold-harbour",
+        "summary": "Six apartments over a boat store, on the last undeveloped plot on the quay.",
+        "cover": "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1600&q=80&auto=format&fit=crop",
+        "location": "Storvik",
+        "year": "2027",
+        "status": "Coming soon",
+        "body": "**Storvik · 2027 · Coming soon**\n\nThe ground floor has to stay working. It stores and repairs boats through the winter, which means big doors, a wet floor and no interest in being pretty. We designed it as infrastructure and put the housing on top of it rather than pretending it was not there.\n\nSix apartments share one open deck facing the water, reached by an external stair. Every flat is dual-aspect, every flat has a store big enough for what people on a quay actually own, and the deck is wide enough that two neighbours can pass without turning sideways.\n\nGroundwork starts in the spring. We are building it ourselves, which is the only reason the boat store can keep running through the whole thing."
+      },
+      {
+        "name": "Two Roofs",
+        "slug": "two-roofs",
+        "summary": "A house split in half so an ageing parent and a young family can live one wall apart.",
+        "cover": "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=1600&q=80&auto=format&fit=crop",
+        "location": "Nyholt",
+        "year": "2025",
+        "status": "Completed",
+        "body": "**Nyholt · 2025 · Completed**\n\nTwo households, one plot, and a relationship that needed a door between it rather than an open plan. We drew two houses of unequal size sharing a masonry spine, each with its own entrance, its own heating and its own roof.\n\nThe smaller half is on one level, with a bathroom sized for a wheelchair from the start rather than adapted later. The larger half has three bedrooms upstairs and a kitchen that opens onto the shared yard, which is the only place the two houses are obliged to meet.\n\nThe spine wall is 300mm of solid brick. It carries both roofs, holds the flues, and means neither household can hear the other's television."
+      }
+    ],
+    "practice": [
+      {
+        "title": "Choosing the site",
+        "slug": "choosing-the-site",
+        "summary": "We walk a plot in bad weather before we agree to build on it.",
+        "cover": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1600&q=80&auto=format&fit=crop",
+        "body": "A plot in June tells you almost nothing. We walk it in the wet, at the wrong end of the day, and we come back at least twice. What we are looking for is where the wind arrives, where water leaves, and which corner still has light in the afternoon in November.\n\nSometimes the answer is that the site is wrong, or that the house should be a third smaller and turned ninety degrees. We would rather say that in the first month than draw around a problem for a year. If we think you should buy the other plot, we will tell you that too."
+      },
+      {
+        "title": "Drawing it",
+        "slug": "drawing-it",
+        "summary": "Plans first, in cheap ways, until the shape of your days is right.",
+        "cover": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&q=80&auto=format&fit=crop",
+        "body": "We start with the plan and stay there far longer than most people expect. Elevations and materials are decisions we can make quickly once the plan is honest, and no amount of good cladding rescues a house you have to walk through twice to reach the kettle.\n\nYou will see card models and hand drawings before you see anything rendered. They are quicker to change and easier to argue with. Once the plan settles we build the details at full size for the parts that matter: the window reveal, the door threshold, the junction where the roof meets the wall."
+      },
+      {
+        "title": "Building it",
+        "slug": "building-it",
+        "summary": "Our own crew, on site every week, with the drawings still in the room.",
+        "cover": "https://images.unsplash.com/photo-1416331108676-a22ccb276e35?w=1600&q=80&auto=format&fit=crop",
+        "body": "We hold the build contract ourselves and work with the same joiners, bricklayers and groundworkers project after project. They know how we detail things, which removes most of the arguments before they start.\n\nSite meetings happen weekly and you are welcome at all of them. When something is discovered in the ground or a supplier lets us down, you hear about it that week with the cost and the options, not at the end in a settlement. Every change is written down and priced before it is built."
+      },
+      {
+        "title": "After you move in",
+        "slug": "after-you-move-in",
+        "summary": "A manual for the building, and a visit at one year to fix what has moved.",
+        "cover": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1600&q=80&auto=format&fit=crop",
+        "body": "You get a folder that explains the house: where the valves are, how the ventilation runs, which paint we used in which room, and who made the windows. It is written to be read by somebody who is not you, ten years from now.\n\nWe come back at one year. Timber shrinks, plaster cracks along its first winter, doors that closed perfectly in August need easing by February. That visit is included and we fix what we find. After that we are still the people to call, and we still have the drawings."
+      }
+    ]
+  }
+}

@@ -27,6 +27,7 @@ const outRoot = join(repoRoot, 'landing', 'public', 'themes')
 const DEMOS = [
   { theme: 'apogee', template: 'saas', lang: 'en' },
   { theme: 'mainstage', template: 'event', lang: 'en' },
+  { theme: 'meridian', template: 'studio', lang: 'en' },
 ]
 
 const die = (msg) => {

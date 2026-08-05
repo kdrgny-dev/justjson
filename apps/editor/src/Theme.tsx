@@ -160,6 +160,7 @@ const THEME_FIT: Record<string, string> = {
   // premium theme labels go here as each ships, keyed by its id
   apogee: 'SaaS & developer platforms',
   mainstage: 'Festivals, conferences & events',
+  meridian: 'Studios, agencies & developers',
 }
 
 function ThemePicker({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) {
