@@ -1,0 +1,698 @@
+{
+  "title": "Clinic",
+  "description": "A neighbourhood health practice: services, clinicians, patient guides, opening hours and booking.",
+  "schema": {
+    "version": 1,
+    "singletons": [
+      {
+        "name": "practice",
+        "label": "Practice",
+        "path": "practice.json",
+        "fields": [
+          {
+            "key": "siteName",
+            "label": "Practice name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "title",
+            "label": "Headline",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "tagline",
+            "label": "Tagline",
+            "type": "text"
+          },
+          {
+            "key": "cover",
+            "label": "Cover",
+            "type": "image"
+          },
+          {
+            "key": "intro",
+            "label": "Introduction",
+            "type": "richtext"
+          },
+          {
+            "key": "book",
+            "label": "Book a visit",
+            "type": "url"
+          },
+          {
+            "key": "directions",
+            "label": "Directions",
+            "type": "url"
+          },
+          {
+            "key": "established",
+            "label": "Open since",
+            "type": "number"
+          },
+          {
+            "key": "hours",
+            "label": "Opening hours",
+            "type": "repeater",
+            "fields": [
+              {
+                "key": "day",
+                "label": "Day",
+                "type": "text"
+              },
+              {
+                "key": "open",
+                "label": "Open",
+                "type": "text"
+              },
+              {
+                "key": "note",
+                "label": "Note",
+                "type": "text"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "contact",
+        "label": "Contact",
+        "path": "contact.json",
+        "fields": [
+          {
+            "key": "email",
+            "label": "E-mail",
+            "type": "email"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "type": "text"
+          },
+          {
+            "key": "address",
+            "label": "Address",
+            "type": "text"
+          },
+          {
+            "key": "map",
+            "label": "Map",
+            "type": "url"
+          }
+        ]
+      }
+    ],
+    "collections": [
+      {
+        "name": "services",
+        "label": "Services",
+        "path": "services",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text"
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "type": "text"
+          },
+          {
+            "key": "cover",
+            "label": "Cover",
+            "type": "image"
+          },
+          {
+            "key": "discipline",
+            "label": "Discipline",
+            "type": "select",
+            "options": [
+              "Dentistry",
+              "Physiotherapy",
+              "Psychology",
+              "Eye care"
+            ]
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "type": "number"
+          },
+          {
+            "key": "body",
+            "label": "Details",
+            "type": "richtext"
+          },
+          {
+            "key": "visit",
+            "label": "What the visit covers",
+            "type": "repeater",
+            "fields": [
+              {
+                "key": "stage",
+                "label": "Stage",
+                "type": "text"
+              },
+              {
+                "key": "detail",
+                "label": "Detail",
+                "type": "text"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "team",
+        "label": "Clinicians",
+        "path": "team",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text"
+          },
+          {
+            "key": "role",
+            "label": "Role",
+            "type": "text"
+          },
+          {
+            "key": "photo",
+            "label": "Photo",
+            "type": "image"
+          },
+          {
+            "key": "discipline",
+            "label": "Discipline",
+            "type": "select",
+            "options": [
+              "Dentistry",
+              "Physiotherapy",
+              "Psychology",
+              "Eye care"
+            ]
+          },
+          {
+            "key": "since",
+            "label": "At Aster since",
+            "type": "date"
+          },
+          {
+            "key": "bio",
+            "label": "Biography",
+            "type": "richtext"
+          }
+        ]
+      },
+      {
+        "name": "guides",
+        "label": "Guides",
+        "path": "guides",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text"
+          },
+          {
+            "key": "standfirst",
+            "label": "Standfirst",
+            "type": "text"
+          },
+          {
+            "key": "cover",
+            "label": "Cover",
+            "type": "image"
+          },
+          {
+            "key": "date",
+            "label": "Published",
+            "type": "date"
+          },
+          {
+            "key": "body",
+            "label": "Body",
+            "type": "richtext"
+          }
+        ]
+      },
+      {
+        "name": "pages",
+        "label": "Pages",
+        "path": "pages",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "slug",
+            "label": "Slug",
+            "type": "text"
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "type": "text"
+          },
+          {
+            "key": "body",
+            "label": "Body",
+            "type": "richtext"
+          }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "practice": {
+      "siteName": "Aster",
+      "title": "One building, four clinics, one set of notes",
+      "tagline": "Dentistry, physiotherapy, psychology and eye care on Mill Lane. Booked in one place, and none of it hurried.",
+      "cover": "https://images.unsplash.com/photo-1585821569995-86966667ca62?w=1600&q=80&auto=format&fit=crop",
+      "intro": "Aster started when four clinicians got tired of writing referral letters to each other across town. A jaw that aches at night is often a neck that never recovered from a fall, and a child who squints at the board is sometimes a child nobody has tested. Under one roof, that conversation happens in the corridor instead of in the post.\n\nWe keep appointments long enough to finish them. A first visit is forty minutes because the first ten are usually spent finding out what you actually came in for. If your treatment needs a colleague from another discipline, we book it while you are still in the chair.\n\nNothing here is sold to you. We will tell you when something can be watched rather than treated, and we will say so in plain language, in writing, before anything starts.",
+      "book": "https://example.com/book",
+      "directions": "https://example.com/directions",
+      "established": 2016,
+      "hours": [
+        {
+          "day": "Monday",
+          "open": "08:00 – 18:00",
+          "note": "All four clinics"
+        },
+        {
+          "day": "Tuesday",
+          "open": "08:00 – 18:00",
+          "note": "All four clinics"
+        },
+        {
+          "day": "Wednesday",
+          "open": "08:00 – 20:00",
+          "note": "Late dental list"
+        },
+        {
+          "day": "Thursday",
+          "open": "08:00 – 18:00",
+          "note": "All four clinics"
+        },
+        {
+          "day": "Friday",
+          "open": "08:00 – 16:00",
+          "note": "Eye care from 10:00"
+        },
+        {
+          "day": "Saturday",
+          "open": "09:00 – 14:00",
+          "note": "Urgent dental only"
+        },
+        {
+          "day": "Sunday",
+          "open": "Closed",
+          "note": "Answerphone gives the out-of-hours number"
+        }
+      ]
+    },
+    "contact": {
+      "email": "reception@asterpractice.example",
+      "phone": "+44 20 7946 0311",
+      "address": "18 Mill Lane, Thornbury",
+      "map": "https://example.com/map"
+    },
+    "services": [
+      {
+        "name": "Dental examination",
+        "slug": "dental-examination",
+        "summary": "A full look at teeth, gums and jaw, with photographs so you can see what we see.",
+        "cover": "https://images.unsplash.com/photo-1704455306251-b4634215d98f?w=1600&q=80&auto=format&fit=crop",
+        "discipline": "Dentistry",
+        "minutes": 40,
+        "body": "Most people book an examination because something twinged once and then stopped. That is a good reason to come.\n\nWe check every tooth surface, measure the gum pockets, look at the soft tissue of the mouth and feel the jaw joint while you open and close. X-rays are taken only when there is a question they can answer, and we will tell you what the question is.\n\nAt the end you get photographs on the screen, a written plan in order of urgency, and a clear line between what needs doing now, what can be watched, and what is cosmetic. If nothing needs doing, we say so and book you back in six or twelve months.\n\n## If you are nervous\n\nTell reception when you book. We will put you in the first slot of the day, keep the door open, and stop whenever you raise a hand. Nobody is talked into treatment in the chair.",
+        "visit": [
+          {
+            "stage": "Talk",
+            "detail": "What brought you in, what hurts, what you have been avoiding"
+          },
+          {
+            "stage": "Examine",
+            "detail": "Teeth, gums, soft tissue and jaw joint, with intraoral photographs"
+          },
+          {
+            "stage": "Image",
+            "detail": "X-rays only where they change the decision"
+          },
+          {
+            "stage": "Plan",
+            "detail": "A written plan, in order of urgency, with costs before anything starts"
+          }
+        ]
+      },
+      {
+        "name": "Implants and replacement teeth",
+        "slug": "implants",
+        "summary": "Planning, placement and follow-up for a single gap or a whole bridge, done in stages you can stop at.",
+        "cover": "https://images.unsplash.com/photo-1593022356769-11f762e25ed9?w=1600&q=80&auto=format&fit=crop",
+        "discipline": "Dentistry",
+        "minutes": 60,
+        "body": "An implant is a small titanium post placed in the jaw, given time to fuse, and then restored with a crown or bridge. It is a good answer to a missing tooth and a poor answer to a problem that has not been diagnosed properly, which is why the first appointment is a consultation and nothing else.\n\nWe plan from a 3D scan, so the position of the post is decided before anyone picks up an instrument. Placement is done under local anaesthetic and takes about an hour for a single site. Healing runs eight to twelve weeks, and you leave every appointment with a temporary tooth in place.\n\n## What can go wrong\n\nImplants fail in a small number of cases, more often in smokers and in gums that are already inflamed. We will treat the gums first and be honest if we think the odds are not in your favour.",
+        "visit": [
+          {
+            "stage": "Consultation",
+            "detail": "Scan, gum assessment, and an honest view of whether this is the right treatment"
+          },
+          {
+            "stage": "Placement",
+            "detail": "One hour per site under local anaesthetic, temporary tooth fitted the same day"
+          },
+          {
+            "stage": "Healing",
+            "detail": "Eight to twelve weeks, with two short reviews"
+          },
+          {
+            "stage": "Restoration",
+            "detail": "Final crown or bridge made from an impression taken at the last review"
+          }
+        ]
+      },
+      {
+        "name": "Physiotherapy assessment",
+        "slug": "physiotherapy-assessment",
+        "summary": "An hour of watching how you actually move, and a plan you can do without equipment.",
+        "cover": "https://images.unsplash.com/photo-1649751361457-01d3a696c7e6?w=1600&q=80&auto=format&fit=crop",
+        "discipline": "Physiotherapy",
+        "minutes": 60,
+        "body": "The assessment is mostly you moving and us watching. Walking, squatting, reaching overhead, going up a step. Pain has a habit of appearing somewhere other than its cause, so we look above and below whatever hurts.\n\nWe test strength and range against the other side, take a history that includes your work and your sleep, and explain what we think is happening in words you can repeat to someone else.\n\nYou leave with three or four exercises, not fifteen. They are chosen so you can do them at home without buying anything, and we film them on your own phone so you are not guessing a week later.\n\n## How many sessions\n\nMost problems need three to six. We will tell you at the second session whether this is working, and if it is not, we will say what to try instead.",
+        "visit": [
+          {
+            "stage": "History",
+            "detail": "Onset, work, sleep, previous injuries and what you have already tried"
+          },
+          {
+            "stage": "Movement",
+            "detail": "Walking, loading, reaching, and the movement you are avoiding"
+          },
+          {
+            "stage": "Hands on",
+            "detail": "Joint and soft tissue testing to confirm or rule out"
+          },
+          {
+            "stage": "Programme",
+            "detail": "Three or four exercises, filmed on your phone before you leave"
+          }
+        ]
+      },
+      {
+        "name": "Manual therapy",
+        "slug": "manual-therapy",
+        "summary": "Hands-on treatment for stiff joints and irritable tissue, used alongside exercise rather than instead of it.",
+        "cover": "https://images.unsplash.com/photo-1519824145371-296894a0daa9?w=1600&q=80&auto=format&fit=crop",
+        "discipline": "Physiotherapy",
+        "minutes": 45,
+        "body": "Manual therapy buys a window. Mobilising a stiff segment, releasing tissue that has been guarding for weeks, and settling a joint that will not tolerate loading yet all make room for the work that actually changes things, which is movement.\n\nSessions run forty-five minutes and usually end with ten minutes of loading, so you leave having used the range we have just given you.\n\nWe do not book long courses of hands-on treatment. If three sessions have not changed anything measurable, the problem is somewhere else and we will go looking for it.",
+        "visit": [
+          {
+            "stage": "Review",
+            "detail": "What has changed since the last session, and what you managed at home"
+          },
+          {
+            "stage": "Treatment",
+            "detail": "Joint mobilisation and soft tissue work in the area that is guarding"
+          },
+          {
+            "stage": "Loading",
+            "detail": "Ten minutes using the range you have just gained"
+          }
+        ]
+      },
+      {
+        "name": "Return to sport rehabilitation",
+        "slug": "return-to-sport",
+        "summary": "Structured strength work for the gap between out of pain and back on the pitch.",
+        "cover": "https://images.unsplash.com/photo-1522898467493-49726bf28798?w=1600&q=80&auto=format&fit=crop",
+        "discipline": "Physiotherapy",
+        "minutes": 50,
+        "body": "The point where pain stops is not the point where tissue is ready. Most re-injuries happen in the weeks after someone feels fine, doing the thing they stopped doing three months earlier.\n\nWe build the bridge: progressive loading, then speed, then change of direction, then contact or competition. Each stage has a criterion you have to meet before the next one, and we test it rather than guess it.\n\n## In the room\n\nSessions are in the gym space at the back of the building, with a plinth, free weights and a sled. Bring the boots or the shoes you actually play in.",
+        "visit": [
+          {
+            "stage": "Baseline",
+            "detail": "Strength and hop testing against the uninjured side"
+          },
+          {
+            "stage": "Load",
+            "detail": "Progressive strength work, reviewed fortnightly"
+          },
+          {
+            "stage": "Speed",
+            "detail": "Running mechanics, acceleration and deceleration"
+          },
+          {
+            "stage": "Return",
+            "detail": "Change of direction and sport-specific drills against set criteria"
+          }
+        ]
+      },
+      {
+        "name": "Talking therapy",
+        "slug": "talking-therapy",
+        "summary": "Fifty minutes a week with the same psychologist, for as long as it is useful and no longer.",
+        "cover": "https://images.unsplash.com/photo-1758273241078-8eec353836be?w=1600&q=80&auto=format&fit=crop",
+        "discipline": "Psychology",
+        "minutes": 50,
+        "body": "The first session is an assessment. You describe what has been happening, we ask about sleep, appetite, work and the people around you, and together we decide whether we are the right service. If you would be better served elsewhere, we will say so and help you get there.\n\nAfter that, sessions are weekly, same time, same room, same person. Most people are working with cognitive behavioural approaches, though what we use depends on you rather than on a manual.\n\n## Confidentiality\n\nWhat you say stays in the room. The exceptions are the ordinary ones — a risk to your life or someone else's — and we will tell you before we act on them, not afterwards.\n\n## Ending\n\nWe review every sixth session and ask the same question out loud: is this still worth your Tuesday evening?",
+        "visit": [
+          {
+            "stage": "Assessment",
+            "detail": "Fifty minutes to decide together whether this is the right service"
+          },
+          {
+            "stage": "Weekly work",
+            "detail": "Same time, same room, same psychologist"
+          },
+          {
+            "stage": "Review",
+            "detail": "Every sixth session, an honest look at whether it is working"
+          }
+        ]
+      },
+      {
+        "name": "Couples sessions",
+        "slug": "couples-sessions",
+        "summary": "Eighty minutes with both of you in the room, for the arguments that keep arriving in the same shape.",
+        "cover": "https://images.unsplash.com/photo-1714976694895-d38078c1a3c0?w=1600&q=80&auto=format&fit=crop",
+        "discipline": "Psychology",
+        "minutes": 80,
+        "body": "Couples work is slower and louder than individual therapy. We are not there to decide who is right. We are there to slow down the twenty seconds where the same argument turns, so both of you can see what happens in them.\n\nSessions are eighty minutes, fortnightly, and both partners come. If one of you is thinking about ending the relationship and has not said so, tell us privately before we start — it changes what the work is for.\n\nThere is a waiting list for these appointments, usually three to four weeks. Reception will tell you the honest wait when you call, not the optimistic one.",
+        "visit": [
+          {
+            "stage": "Both present",
+            "detail": "Eighty minutes, fortnightly, with the same psychologist each time"
+          },
+          {
+            "stage": "The turn",
+            "detail": "Slowing the moment an argument changes direction"
+          },
+          {
+            "stage": "Between sessions",
+            "detail": "One small thing to try, agreed by both of you before you leave"
+          }
+        ]
+      },
+      {
+        "name": "Eye examination",
+        "slug": "eye-examination",
+        "summary": "Sight test, eye health check and retinal photographs, with the images kept for comparison.",
+        "cover": "https://images.unsplash.com/photo-1539036776273-021ec1d78bec?w=1600&q=80&auto=format&fit=crop",
+        "discipline": "Eye care",
+        "minutes": 35,
+        "body": "A sight test is the smaller half of this appointment. The rest is the health of the eye: pressures, the front surface, and a wide retinal photograph that we keep so next year's picture can be compared with this one.\n\nChanges matter more than single readings. Keeping the images is how a slow change gets noticed while it is still small.\n\n## Bring with you\n\nYour current glasses, any drops you use, and the name of anything you take for blood pressure or diabetes. If you drive, we will tell you plainly whether you meet the standard.\n\n## Children\n\nWe test children from three years old, using pictures rather than letters. No child needs to be able to read to have their eyes tested.",
+        "visit": [
+          {
+            "stage": "History",
+            "detail": "Vision, headaches, medication and family history"
+          },
+          {
+            "stage": "Sight test",
+            "detail": "Refraction for distance, screen distance and reading"
+          },
+          {
+            "stage": "Health check",
+            "detail": "Pressures, front surface, and wide retinal photography"
+          },
+          {
+            "stage": "Result",
+            "detail": "A plain answer on driving, screens and whether anything needs watching"
+          }
+        ]
+      },
+      {
+        "name": "Glasses and contact lenses",
+        "slug": "glasses-and-lenses",
+        "summary": "Dispensing without the hard sell: frames measured properly, and lenses explained in the order they matter.",
+        "cover": "https://images.unsplash.com/photo-1486250944723-86bca2b15b06?w=1600&q=80&auto=format&fit=crop",
+        "discipline": "Eye care",
+        "minutes": 30,
+        "body": "Half of the complaints about new glasses are not about the prescription. They are about a frame that sits wrong, a lens centred for a face that is not yours, or a coating nobody explained.\n\nWe measure on the frame you have chosen, on your face, sitting the way you sit. Lenses are quoted with the options separated out, so you can see what each one costs and refuse the ones you do not want.\n\nContact lens fitting includes a teaching appointment. You do not leave with lenses until you can put them in and take them out yourself, without hurrying.\n\n## Repairs\n\nAdjustments and small repairs are free, whether or not the glasses came from us.",
+        "visit": [
+          {
+            "stage": "Choose",
+            "detail": "Frames tried on and measured on your face, not from a chart"
+          },
+          {
+            "stage": "Quote",
+            "detail": "Lens options priced separately, with the reason for each one"
+          },
+          {
+            "stage": "Fit",
+            "detail": "Collection appointment with adjustment until they sit right"
+          },
+          {
+            "stage": "After",
+            "detail": "Free adjustments and small repairs, wherever the glasses came from"
+          }
+        ]
+      }
+    ],
+    "team": [
+      {
+        "name": "Dr. Rasmus Aalto",
+        "slug": "rasmus-aalto",
+        "role": "Dentist and clinical lead",
+        "photo": "https://images.unsplash.com/photo-1590086782957-93c06ef21604?w=1200&q=80&auto=format&fit=crop",
+        "discipline": "Dentistry",
+        "since": "2016-02-01",
+        "bio": "Rasmus opened the Mill Lane practice with three colleagues and still keeps a full clinical list, which is deliberate: the person setting the rules should live under them.\n\nMost of the week is examinations, restorative work and implants. The rest goes on the nervous patients other practices have given up on, usually in the quiet first hour of the morning.\n\nQualified in Helsinki, worked eight years in hospital dentistry before moving into practice. Teaches on the local vocational training scheme two afternoons a month."
+      },
+      {
+        "name": "Elin Marchetti",
+        "slug": "elin-marchetti",
+        "role": "Dental hygienist",
+        "photo": "https://images.unsplash.com/photo-1770058443069-e384cd001e9b?w=1200&q=80&auto=format&fit=crop",
+        "discipline": "Dentistry",
+        "since": "2017-09-01",
+        "bio": "Elin sees more of our patients than anyone else in the building, usually twice a year for the rest of their lives.\n\nHer appointments are as much teaching as cleaning: which two spaces in your mouth actually need the floss, why the electric brush you bought is being held wrong, and what to do about a gum that bleeds when nothing hurts.\n\nSpecial interest in gum disease in people who smoke or live with diabetes, and in getting teenagers through the years when nobody wants to be told anything."
+      },
+      {
+        "name": "Tomas Berg",
+        "slug": "tomas-berg",
+        "role": "Physiotherapist",
+        "photo": "https://images.unsplash.com/photo-1758613654360-45f1ff78c0cf?w=1200&q=80&auto=format&fit=crop",
+        "discipline": "Physiotherapy",
+        "since": "2016-02-01",
+        "bio": "Tomas treats backs, necks and shoulders, and holds an unfashionable view: that most of them get better with load, patience and an explanation that makes sense.\n\nHe spent six years in a hospital outpatient department before joining Aster, which is where the habit of writing everything down in plain language came from.\n\nRuns the Wednesday evening list for people who cannot get time off work."
+      },
+      {
+        "name": "Dr. Amal Haddad",
+        "slug": "amal-haddad",
+        "role": "Clinical psychologist",
+        "photo": "https://images.unsplash.com/photo-1781705117078-dbd54fd9f597?w=1200&q=80&auto=format&fit=crop",
+        "discipline": "Psychology",
+        "since": "2018-04-01",
+        "bio": "Amal works with anxiety, low mood, health anxiety and the long tail that follows an accident or a diagnosis.\n\nSessions are structured but not scripted. The approach is largely cognitive behavioural, adapted to whoever is in the chair, and the review question every six weeks is always the same: is this still worth your evening?\n\nWorks in English and Arabic. Also runs the practice's referral link with the community mental health team, so nobody is left to chase their own paperwork."
+      },
+      {
+        "name": "Dr. Priya Venn",
+        "slug": "priya-venn",
+        "role": "Optometrist",
+        "photo": "https://images.unsplash.com/photo-1758600436770-821223436cdc?w=1200&q=80&auto=format&fit=crop",
+        "discipline": "Eye care",
+        "since": "2019-01-07",
+        "bio": "Priya runs the eye clinic and the children's testing list. She is the reason we photograph every retina and keep the images: a slow change is only visible against last year's picture.\n\nSpecial interest in dry eye, screen-related strain, and myopia in children, where the honest answer about what slows it down is more useful than the marketed one.\n\nHolds the independent prescribing qualification, so common eye infections can be treated here rather than sent on."
+      },
+      {
+        "name": "Nora Sandved",
+        "slug": "nora-sandved",
+        "role": "Physiotherapist, sports rehabilitation",
+        "photo": "https://images.unsplash.com/photo-1779400203231-102e4e62a5f3?w=1200&q=80&auto=format&fit=crop",
+        "discipline": "Physiotherapy",
+        "since": "2021-08-16",
+        "bio": "Nora takes the knees, ankles and hamstrings, and the long middle stretch of rehabilitation where people feel fine and are not yet ready.\n\nShe worked with two amateur clubs before joining Aster and still covers Sunday fixtures for one of them, which is where the return-to-sport criteria came from.\n\nEvery stage of her programmes has a test attached. If you have not passed it, you do not move on, and she will tell you why in one sentence."
+      }
+    ],
+    "guides": [
+      {
+        "title": "What happens at a first visit",
+        "slug": "first-visit",
+        "standfirst": "Forty minutes, most of it talking, and nothing done to you that has not been explained first.",
+        "cover": "https://images.unsplash.com/photo-1665231795856-769fb08a90bc?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-06-18",
+        "body": "You will be asked to arrive five minutes early to fill in a health form. It asks about medication and past treatment because both change what is safe to do.\n\nThe appointment itself starts with a conversation. What brought you in, how long it has been going on, what you have already tried, and what you are hoping will be different afterwards. That last question is the useful one and the one most people have never been asked.\n\nThen the examination, which we narrate as we go. Nothing is done without telling you first, and you can stop at any point without explaining yourself.\n\nYou leave with a written summary, a plan in order of urgency, and the cost of each step before any of it is booked. If you want to think about it, that is a normal answer and reception will not chase you.\n\n## Bringing someone with you\n\nYou are welcome to bring a friend, a partner or an interpreter into the room. Say so when you book and we will allow a little more time."
+      },
+      {
+        "title": "Toothache at the weekend",
+        "slug": "toothache-at-the-weekend",
+        "standfirst": "What actually helps between Friday evening and Monday morning, and the signs that mean do not wait.",
+        "cover": "https://images.unsplash.com/photo-1704455306925-1401c3012117?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-05-02",
+        "body": "Most weekend toothache is an inflamed nerve, and most of it can be held until Monday.\n\nWhat helps: painkillers taken on schedule rather than when the pain peaks, sleeping propped up, and keeping the tooth clean even though brushing it is unpleasant. Cold usually settles a hot nerve better than heat.\n\nWhat does not help: holding an aspirin against the gum, which burns the tissue, and clove oil in quantity, which does the same.\n\n## Do not wait until Monday\n\nCall the out-of-hours number if there is swelling that is spreading into the cheek, eye or neck, if you cannot swallow easily or open your mouth fully, or if you have a fever with the pain. Those are infections that need treating the same day.\n\nOur Saturday list from nine until two is kept for urgent dental problems. Ring at nine; we do not take those slots in advance."
+      },
+      {
+        "title": "Back pain that comes and goes",
+        "slug": "back-pain-that-comes-and-goes",
+        "standfirst": "Why the scan is usually not the answer, and what the first two weeks should look like.",
+        "cover": "https://images.unsplash.com/photo-1478476868527-002ae3f3e159?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-04-14",
+        "body": "Back pain that arrives, eases and returns a few months later is the most common thing we see, and the most commonly over-investigated.\n\nScans of pain-free backs are full of findings. Bulges, wear, narrowing: all of it turns up in people who have never had a day of trouble. Imaging is useful when it changes what we do, which is why we ask what decision the scan would settle before ordering one.\n\nThe first two weeks matter more. Keep moving, in smaller amounts and more often than feels natural. Walk before you stretch. Load the back rather than protecting it, because a back that is guarded gets stiffer and more painful, not safer.\n\n## When to be seen sooner\n\nNumbness in the saddle area, difficulty passing urine, weakness in a leg that is getting worse, or pain with fever or unexplained weight loss. Those are not wait-and-see problems. Call us or your GP the same day."
+      },
+      {
+        "title": "Screens, dry eyes and the twenty-minute habit",
+        "slug": "screens-and-dry-eyes",
+        "standfirst": "Screen strain is mostly a blinking problem. Here is what changes it and what does not.",
+        "cover": "https://images.unsplash.com/photo-1743183988213-d5e24edf3dc8?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-03-20",
+        "body": "Looking at a screen does not damage your eyes. It does change how you use them: the blink rate drops by more than half while you concentrate, and a half-blink does not spread the tear film across the surface.\n\nThe result is the familiar end-of-day set — gritty, tired eyes, blurred text that clears when you blink hard, a headache behind the brow.\n\nWhat helps, in order: every twenty minutes look at something twenty feet away for twenty seconds; drop the screen slightly below eye level so the lids cover more of the surface; and deal with the air, because a desk under an air-conditioning vent dries the film faster than any amount of screen time.\n\nBlue-light coatings have not been shown to change any of this. If someone is selling you one for eye strain, ask what it is meant to do.\n\n## When to have it checked\n\nIf your eyes water constantly, if vision blurs and does not clear on blinking, or if one eye is red and sore rather than both, book a look at it."
+      },
+      {
+        "title": "A child's first eye test",
+        "slug": "childs-first-eye-test",
+        "standfirst": "You do not need to wait until they can read, and you do not need them to sit still.",
+        "cover": "https://images.unsplash.com/photo-1734751069857-cf649c4e8ea9?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-02-06",
+        "body": "We test children from three. The test uses pictures and matching cards rather than letters, so reading is not required, and most of it looks like a game because that is the only way it works.\n\nWhat we are looking for is not glasses. It is whether both eyes are developing evenly. A lazy eye treated at four responds far better than the same eye treated at nine, and it usually causes no symptoms at all — which is exactly why it gets missed.\n\nBring them tired-free if you can: mid-morning is better than late afternoon. The appointment is twenty-five minutes and you stay in the room throughout.\n\n## Signs worth an earlier look\n\nAn eye that turns in or out, sitting very close to the screen, tilting the head to see, or rubbing one eye repeatedly. Also worth booking if a squint or a lazy eye runs in the family, whatever their age."
+      },
+      {
+        "title": "How we prioritise the waiting list",
+        "slug": "waiting-list",
+        "standfirst": "Who gets seen first, why the honest wait is the one reception quotes, and what to do if you get worse.",
+        "cover": "https://images.unsplash.com/photo-1673892990360-2168cc2c25d6?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-01-15",
+        "body": "Every clinic here keeps a small number of slots free each day. They are not held back for anyone in particular; they exist so that pain, swelling and sudden change can be seen the same week.\n\nEverything else is booked in order, with two exceptions: children, and anyone whose treatment is already in progress and would be set back by a delay.\n\nReception quotes the real wait, not the optimistic one. If we say three weeks for a couples appointment, it is three weeks. We would rather you booked elsewhere with the true number than waited with a hopeful one.\n\n## If you get worse while you are waiting\n\nRing us. A place on a list is not a verdict, and the list is re-sorted every morning. Tell reception what has changed — more pain, less sleep, a new symptom — and it will be passed to the clinician before the day starts."
+      }
+    ],
+    "pages": [
+      {
+        "title": "Visiting",
+        "slug": "visiting",
+        "summary": "Where we are, how to get in, and what to bring to a first appointment.",
+        "body": "Aster is at 18 Mill Lane, four minutes' walk from the station, in the brick building with the green door.\n\n## Getting here\n\nThere are two accessible bays directly outside and a residents' zone after 18:00 on the surrounding streets. The 41 and 88 stop on Bridge Road, a two-minute walk away.\n\n## Getting in\n\nThe entrance is step-free and the door opens on a push pad. All four clinics, the accessible toilet and the gym space are on the ground floor. There is a quiet room off reception if a waiting area is difficult for you — ask, or say so when you book and we will hold it.\n\n## What to bring\n\nA list of your medication, the name of your GP practice, and your current glasses if you are coming for eye care. If you are bringing a child, bring whatever keeps them content for twenty minutes.\n\n## Changing an appointment\n\nCall or e-mail reception. We ask for a day's notice where you can give it, because the slot almost always goes to someone on the waiting list."
+      },
+      {
+        "title": "Fees and payment",
+        "slug": "fees-and-payment",
+        "summary": "How costs are quoted, when you pay, and what happens if a plan changes halfway.",
+        "body": "Nothing is charged that has not been quoted first.\n\n## Before treatment\n\nAfter an examination you get a written plan with the cost of each item and the order we would do them in. You take it home. It stays valid for three months, and reception will confirm the total before your next appointment starts.\n\n## Paying\n\nCard or bank transfer, at the end of each appointment rather than up front. Longer courses of treatment — implants, orthodontics, a block of therapy — can be split across the stages, and reception will set that out in writing.\n\n## If the plan changes\n\nSometimes what we find under a filling changes the work. When that happens we stop, explain, and re-quote before continuing. You will never be told the price after the fact.\n\n## Insurance\n\nWe are not tied to any insurer. If you are claiming, we will give you an itemised invoice with the treatment codes on it, which is what almost every policy asks for."
+      }
+    ]
+  }
+}

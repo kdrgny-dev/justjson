@@ -28,6 +28,7 @@ const DEMOS = [
   { theme: 'apogee', template: 'saas', lang: 'en' },
   { theme: 'mainstage', template: 'event', lang: 'en' },
   { theme: 'meridian', template: 'studio', lang: 'en' },
+  { theme: 'solace', template: 'clinic', lang: 'en' },
 ]
 
 const die = (msg) => {

@@ -161,6 +161,7 @@ const THEME_FIT: Record<string, string> = {
   apogee: 'SaaS & developer platforms',
   mainstage: 'Festivals, conferences & events',
   meridian: 'Studios, agencies & developers',
+  solace: 'Clinics & health practices',
 }
 
 function ThemePicker({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) {
