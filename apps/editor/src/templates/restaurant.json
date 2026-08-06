@@ -1,0 +1,265 @@
+{
+  "title": "Restoran",
+  "description": "Küçük bir restoran: menü bölümleri, fiyatlar, mutfaktan notlar, saatler ve iletişim.",
+  "schema": {
+    "version": 1,
+    "singletons": [
+      {
+        "name": "restoran",
+        "label": "Restoran",
+        "path": "restoran.json",
+        "fields": [
+          { "key": "siteName", "label": "Restoran adı", "type": "text", "required": true },
+          { "key": "title", "label": "Başlık", "type": "text", "required": true },
+          { "key": "tagline", "label": "Alt başlık", "type": "text" },
+          { "key": "cover", "label": "Kapak", "type": "image" },
+          { "key": "intro", "label": "Giriş", "type": "richtext" },
+          { "key": "rezervasyon", "label": "Rezervasyon", "type": "url" },
+          {
+            "key": "saatler",
+            "label": "Açılış saatleri",
+            "type": "repeater",
+            "fields": [
+              { "key": "gun", "label": "Gün", "type": "text" },
+              { "key": "servis", "label": "Servis", "type": "text" },
+              { "key": "not", "label": "Not", "type": "text" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "iletisim",
+        "label": "İletişim",
+        "path": "iletisim.json",
+        "fields": [
+          { "key": "siteEn", "label": "English", "type": "url" },
+          { "key": "email", "label": "E-posta", "type": "email" },
+          { "key": "telefon", "label": "Telefon", "type": "text" },
+          { "key": "adres", "label": "Adres", "type": "text" },
+          { "key": "instagram", "label": "Instagram", "type": "url" }
+        ]
+      }
+    ],
+    "collections": [
+      {
+        "name": "menu",
+        "label": "Menü",
+        "path": "menu",
+        "fields": [
+          { "key": "name", "label": "Bölüm", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text" },
+          { "key": "summary", "label": "Özet", "type": "text" },
+          { "key": "cover", "label": "Kapak", "type": "image" },
+          {
+            "key": "servis",
+            "label": "Servis",
+            "type": "select",
+            "options": ["Sabah", "Tüm gün", "Akşam"]
+          },
+          { "key": "body", "label": "Anlatım", "type": "richtext" },
+          {
+            "key": "kalemler",
+            "label": "Bu bölümde",
+            "type": "repeater",
+            "fields": [
+              { "key": "ad", "label": "Ad", "type": "text" },
+              { "key": "aciklama", "label": "Açıklama", "type": "text" },
+              { "key": "fiyat", "label": "Fiyat", "type": "text" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "notlar",
+        "label": "Mutfaktan",
+        "path": "notlar",
+        "fields": [
+          { "key": "title", "label": "Başlık", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text" },
+          { "key": "standfirst", "label": "Spot", "type": "text" },
+          { "key": "cover", "label": "Kapak", "type": "image" },
+          { "key": "date", "label": "Tarih", "type": "date" },
+          { "key": "body", "label": "Metin", "type": "richtext" }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "restoran": {
+      "siteName": "Sarnıç",
+      "title": "Menüyü tekne yazar, biz sadece pişiririz",
+      "tagline": "Ayvalık'ta on iki masalı bir mutfak. Ne geldiyse o akşam odur; ertesi gün başka bir şeydir.",
+      "cover": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&q=80&auto=format&fit=crop",
+      "intro": "Sarnıç, bir zeytinyağı deposunun arka avlusunda. Duvarda hâlâ eski künk izleri var; adı oradan kalma.\n\nHer sabah balıkçıdan iki telefon geliyor: biri ne çıktığını, biri ne kadar çıktığını söylüyor. Menünün yarısı o iki telefondan sonra yazılıyor. Kalan yarısı — mezeler, fırın, tatlı — yıl boyu değişmiyor, çünkü onları değiştirmek için bir sebep çıkmadı.\n\n## Nasıl yiyoruz\n\nMasaya önce meze geliyor, ortaya. Ana yemeği paylaşan çok, biz de porsiyonları ona göre kuruyoruz. Acele eden misafir için akşamın ilk servisi 18:30'da başlıyor ve iki saatte bitiyor; geri kalan herkes için mutfak 23:00'a kadar açık.\n\nÇocuk menüsü yok, ama mutfak her tabağı yarım porsiyon çıkarabiliyor — söylemeniz yeterli.",
+      "rezervasyon": "https://sarnicayvalik.example/rezervasyon",
+      "saatler": [
+        { "gun": "Pazartesi", "servis": "Kapalı", "not": "Pazar tedariki" },
+        { "gun": "Salı", "servis": "18:00 – 23:00", "not": "" },
+        { "gun": "Çarşamba", "servis": "18:00 – 23:00", "not": "" },
+        { "gun": "Perşembe", "servis": "18:00 – 23:00", "not": "" },
+        { "gun": "Cuma", "servis": "18:00 – 00:00", "not": "Bar 23:30'a kadar" },
+        { "gun": "Cumartesi", "servis": "09:00 – 00:00", "not": "Kahvaltı 12:00'a kadar" },
+        { "gun": "Pazar", "servis": "09:00 – 17:00", "not": "Kahvaltı ve öğle" }
+      ]
+    },
+    "iletisim": {
+      "email": "masa@sarnicayvalik.example",
+      "telefon": "+90 266 312 44 08",
+      "adres": "Sakarya Mah. Kilise Sok. 7, Ayvalık",
+      "instagram": "https://instagram.example/sarnicayvalik",
+      "siteEn": "https://sarnicayvalik.example/en"
+    },
+    "menu": [
+      {
+        "name": "Kahvaltı",
+        "slug": "kahvalti",
+        "summary": "Cumartesi ve pazar, on ikiye kadar. Tek tabak değil, masaya yayılan bir şey.",
+        "cover": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1600&q=80&auto=format&fit=crop",
+        "servis": "Sabah",
+        "body": "Kahvaltıyı hafta sonuna sıkıştırmamızın sebebi basit: hafta içi aynı ocakta akşam hazırlığı var.\n\nPeynirler Balıkesir'den, ikisi keçi. Zeytin kendi bahçemizden değil — bahçe yok — ama Küçükköy'de bir aileden, aynı ağaçlardan, sekiz yıldır.\n\nÇay demlikte gelir ve tazelemesi ücretsizdir. Kahve isteyene filtre var; espresso makinesi almadık, almayacağız.",
+        "kalemler": [
+          {
+            "ad": "Serpme",
+            "aciklama": "İki kişilik, on iki tabak, ekmek sınırsız",
+            "fiyat": "780 ₺"
+          },
+          { "ad": "Menemen", "aciklama": "Tereyağında, isteğe göre peynirli", "fiyat": "245 ₺" },
+          {
+            "ad": "Kaygana",
+            "aciklama": "Bahçe otları, taze soğan, beyaz peynir",
+            "fiyat": "230 ₺"
+          },
+          {
+            "ad": "Zeytinyağlı kabak mücver",
+            "aciklama": "Yoğurt ve dereotu ile",
+            "fiyat": "215 ₺"
+          },
+          { "ad": "Bal & kaymak", "aciklama": "Kestane balı, manda kaymağı", "fiyat": "265 ₺" },
+          { "ad": "Demlik çay", "aciklama": "Tazelemesi dahil", "fiyat": "90 ₺" }
+        ]
+      },
+      {
+        "name": "Mezeler",
+        "slug": "mezeler",
+        "summary": "Ortaya gelir, sırayla değil hep birlikte. Beş meze iki kişiye yeter, altıncısını isteyen çok.",
+        "cover": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=1600&q=80&auto=format&fit=crop",
+        "servis": "Tüm gün",
+        "body": "Meze tezgâhı mutfağın değil salonun içinde. Bunun bir sebebi var: seçmeden önce görmek, tarif okumaktan hızlı.\n\nHepsi o gün yapılır ve o gün biter. Akşam dokuzdan sonra listeden birkaçının tükenmiş olması normaldir; garson söylemeden getirmez.\n\n## Zeytinyağı üstüne\n\nMezelerin tamamı erken hasat, soğuk sıkım tek çeşit yağla yapılıyor. Yağı masaya da veriyoruz; ekmek isteyene ayrıca ücret yok.",
+        "kalemler": [
+          { "ad": "Deniz börülcesi", "aciklama": "Limon, sarımsak, zeytinyağı", "fiyat": "165 ₺" },
+          { "ad": "Girit ezmesi", "aciklama": "Ceviz, kuru kekik, tulum", "fiyat": "175 ₺" },
+          { "ad": "Ahtapot salatası", "aciklama": "Kırmızı soğan, kereviz sapı", "fiyat": "320 ₺" },
+          { "ad": "Fava", "aciklama": "Közlenmiş soğan, dereotu", "fiyat": "155 ₺" },
+          { "ad": "Enginar", "aciklama": "Zeytinyağlı, mevsiminde", "fiyat": "195 ₺" },
+          { "ad": "Lakerda", "aciklama": "Kendi salamuramız, iki dilim", "fiyat": "290 ₺" }
+        ]
+      },
+      {
+        "name": "Fırın",
+        "slug": "firin",
+        "summary": "Tek fırın, günde iki hamur. Sabah ekmek, akşam pide ve tepsi.",
+        "cover": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1600&q=80&auto=format&fit=crop",
+        "servis": "Tüm gün",
+        "body": "Fırın taş tabanlı ve odunla ısınıyor. Isıyı tutması üç saat sürdüğü için günde iki kez yakıyoruz, ikisinin arasında ne pişerse o.\n\nEkmek mayası on bir yıllık; hafta sonu daha ekşi çıkar, çünkü cuma akşamı beslenip cumartesi sabahı kullanılıyor.\n\nPaket ekmek satıyoruz ama sınırlı: akşam servisinde masalara yetecek kadarını ayırdıktan sonra kalanı tezgâha koyuyoruz.",
+        "kalemler": [
+          { "ad": "Ekşi maya somun", "aciklama": "Bütün, 900 g", "fiyat": "120 ₺" },
+          { "ad": "Zeytinli çörek", "aciklama": "Yeşil zeytin, kekik", "fiyat": "95 ₺" },
+          { "ad": "Peynirli pide", "aciklama": "Tulum ve taze kaşar", "fiyat": "280 ₺" },
+          { "ad": "Karides pide", "aciklama": "Tereyağı, biber, limon", "fiyat": "420 ₺" },
+          { "ad": "Tepside kabak", "aciklama": "Fırın, yoğurtlu", "fiyat": "225 ₺" }
+        ]
+      },
+      {
+        "name": "Denizden",
+        "slug": "denizden",
+        "summary": "Bu bölüm her gün değişir. Tahtada ne yazıyorsa o vardır; menüde yazan bir başlangıçtır.",
+        "cover": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=1600&q=80&auto=format&fit=crop",
+        "servis": "Akşam",
+        "body": "Balığı gramla satıyoruz. Tabağa gitmeden önce masaya getirip gösteriyoruz; beğenmezseniz geri gider, bu bir nezaket değil sistemin parçası.\n\nPişirme tercihi sizin: ızgara, fırın, tuzda. Tuzda pişirme kırk dakika sürüyor, sipariş verirken söylemek gerekiyor.\n\n## Sezon dışı\n\nYasak dönemlerde bu bölüm küçülür ve yerini çiftlik levreği yerine sebzeye bırakır. Sezon dışı balık çalışmıyoruz; sorarsanız hangi ayda ne olduğunu söyleriz.",
+        "kalemler": [
+          { "ad": "Günün balığı", "aciklama": "Gramla, tahtada yazılı", "fiyat": "Değişken" },
+          { "ad": "Kalamar", "aciklama": "Izgara, roka, limon", "fiyat": "480 ₺" },
+          { "ad": "Karides güveç", "aciklama": "Domates, kekik, tulum", "fiyat": "520 ₺" },
+          { "ad": "Çipura buğulama", "aciklama": "İki kişilik, kırk dakika", "fiyat": "890 ₺" },
+          { "ad": "Sardalya", "aciklama": "Asma yaprağında, mevsiminde", "fiyat": "340 ₺" }
+        ]
+      },
+      {
+        "name": "Tatlılar",
+        "slug": "tatlilar",
+        "summary": "Üç tatlı. Dördüncüsünü koymayı iki kez denedik, ikisinde de geri aldık.",
+        "cover": "https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=1600&q=80&auto=format&fit=crop",
+        "servis": "Akşam",
+        "body": "Tatlıyı akşam yedide yapıyoruz, gece on birde bitiyor. Kalmazsa yoktur; ertesi güne aktarmıyoruz.\n\nSütlü tatlıların sütü Bergama'dan geliyor, haftada üç gün. Kazandibi o üç günün ertesinde en iyisidir ve bunu söyleyecek kadar dürüstüz.",
+        "kalemler": [
+          { "ad": "Kazandibi", "aciklama": "Tarçınsız, isteyene ayrı", "fiyat": "185 ₺" },
+          { "ad": "Zeytinyağlı portakallı kek", "aciklama": "Kaymak ile", "fiyat": "195 ₺" },
+          { "ad": "İncir tatlısı", "aciklama": "Ceviz, kaymak, kış aylarında", "fiyat": "205 ₺" }
+        ]
+      },
+      {
+        "name": "Şarap & rakı",
+        "slug": "sarap-raki",
+        "summary": "Kırk şişe, çoğu Ege'den. Kadeh açtığımız altı şarap her hafta değişir.",
+        "cover": "https://images.unsplash.com/photo-1481931098730-318b6f776db0?w=1600&q=80&auto=format&fit=crop",
+        "servis": "Akşam",
+        "body": "Şarap listesi kısa çünkü depomuz küçük. Kısa listenin iyi tarafı şu: her şişeyi açtık, tattık ve neyin yanına gittiğini biliyoruz.\n\nRakıyı sulandırılmış getirmiyoruz; buz ayrı gelir. Bunu soran çok olduğu için yazıyoruz.\n\nKorkage uygulamıyoruz.",
+        "kalemler": [
+          { "ad": "Kadeh beyaz", "aciklama": "Haftanın seçkisi, altı çeşit", "fiyat": "260 ₺" },
+          { "ad": "Kadeh kırmızı", "aciklama": "Haftanın seçkisi", "fiyat": "280 ₺" },
+          { "ad": "Şişe — Ege beyaz", "aciklama": "Narince, Bornova misketi", "fiyat": "1.150 ₺" },
+          { "ad": "Rakı — duble", "aciklama": "Buz ayrı", "fiyat": "420 ₺" },
+          { "ad": "Ev limonatası", "aciklama": "Alkolsüz, günlük", "fiyat": "110 ₺" }
+        ]
+      }
+    ],
+    "notlar": [
+      {
+        "title": "Kahveyi neden değiştirmedik",
+        "slug": "kahve",
+        "standfirst": "Sekiz yıldır aynı kavurmacı. Değiştirmek için üç kez denedik, üçünde de misafir fark etti.",
+        "cover": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-05-14",
+        "body": "Filtre kahveyi menüye koyduğumuzda amaç yemekten sonra bir şey vermekti, kahveci olmak değil.\n\nKavurmacı İzmir'de, haftada bir kilo gönderiyor. Daha ucuz iki teklif geldi, ikisini de iki hafta denedik. İkisinde de aynı soru geldi masalardan: \"Kahve değişti mi?\"\n\nDeğişmiş olması kötü değil; fark edilmesi bilgi. Geri döndük."
+      },
+      {
+        "title": "On iki masa, neden daha fazlası değil",
+        "slug": "on-iki-masa",
+        "standfirst": "Avlu on sekiz masa alıyor. Altısını koymamayı seçtik ve nedeni sadece ferahlık değil.",
+        "cover": "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-04-02",
+        "body": "Mutfakta üç kişi çalışıyoruz. Üç kişinin bir serviste düzgün çıkarabildiği tabak sayısı belli ve biz onu sayarak bulduk, tahmin ederek değil.\n\nOn sekiz masayla akşamın ikinci yarısında bekleme yirmi dakikayı geçiyordu. On iki masayla sekiz dakika.\n\n## Rezervasyon\n\nMasaların yarısını rezervasyona açıyoruz, yarısını kapıya. Gelip beklemek isteyen için barda dört tabure var ve orada oturan da meze söyleyebiliyor."
+      },
+      {
+        "title": "Zeytinyağını nereden alıyoruz",
+        "slug": "zeytinyagi",
+        "standfirst": "Tek üretici, tek çeşit, erken hasat. Yılda bir kez, kasımda, bir yıllık alıyoruz.",
+        "date": "2026-03-11",
+        "body": "Yağı yılda bir kez almanın riski açık: kötü bir yıl olursa on iki ay onunla yaşarsınız.\n\nBuna rağmen böyle yapıyoruz, çünkü karışık yağla çalışan bir mutfakta mezenin tadı haftadan haftaya kayıyor ve bunun nedenini bulmak günler alıyor.\n\nKasımda Küçükköy'e gidip sıkımı izliyoruz. Bu bir tur değil; asit oranını yerinde ölçtürmek için."
+      },
+      {
+        "title": "Makarnayı menüden çıkardık",
+        "slug": "makarna",
+        "standfirst": "İki sezon denedik. İyi satıyordu ve tam da bu yüzden çıkardık.",
+        "cover": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-02-20",
+        "body": "Makarna hızlı çıkıyor, iyi kâr bırakıyor ve kimse şikâyet etmiyor. Sorun da bu: masaların üçte biri makarna söylemeye başlayınca balık tezgâhı akşam dokuzda dolu kalıyordu.\n\nBir mutfağın ne olduğunu menüdeki en kolay tabak belirler. Onu çıkarınca geriye ne yaptığınız kalıyor.\n\nBir gün geri gelebilir, ama tek bir tabak olarak ve kışın."
+      },
+      {
+        "title": "Servis ücreti almıyoruz",
+        "slug": "servis-ucreti",
+        "standfirst": "Fiyatların içinde. Hesapta sürpriz satır yok ve bahşiş tamamen size kalmış.",
+        "date": "2026-01-28",
+        "body": "Menüdeki fiyat, ödeyeceğiniz fiyat. Kuver, ekmek, servis — hiçbiri ayrı satır değil.\n\nBunun tek bir sebebi var: hesap gelince yapılan hesaplama, yemek boyunca kurulan her şeyi bozuyor.\n\nBahşiş bırakan misafirin bıraktığı tutar tamamen salona gidiyor ve haftalık paylaşılıyor. Mutfak da bu paylaşımın içinde."
+      },
+      {
+        "title": "Cumartesi akşamı neden rezervasyon almıyoruz",
+        "slug": "cumartesi",
+        "standfirst": "Haftanın altı günü rezervasyon var. Cumartesi akşamı kapıya bırakılıyor.",
+        "cover": "https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=1600&q=80&auto=format&fit=crop",
+        "date": "2025-12-06",
+        "body": "Cumartesi akşamı, bu sokakta yürüyüp içeri bakan insanın akşamı. Rezervasyona açtığımız iki sezonda salonun tamamı üç gün önceden doluyordu ve kapıdan gelen herkesi geri çevirmek zorunda kaldık.\n\nŞimdi kapı açık. Sekizden sonra beklemek gerekebiliyor; barda oturup meze söyleyebilirsiniz.\n\nYaz aylarında avlu daha erken doluyor — yedi buçukta gelmek işe yarıyor."
+      }
+    ]
+  }
+}

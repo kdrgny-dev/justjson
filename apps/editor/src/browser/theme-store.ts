@@ -11,7 +11,7 @@ import type { ThemeBundle } from './theme-bundle'
 const files = import.meta.glob<{ default: unknown }>('../themes/*.json', { eager: true })
 
 // Display order for the themes we publish; anything else follows, by id.
-const ORDER = ['default', 'bold', 'editorial']
+const ORDER = ['default', 'bold', 'editorial', 'larder']
 const rank = (id: string) => {
   const i = ORDER.indexOf(id)
   return i === -1 ? ORDER.length : i

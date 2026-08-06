@@ -157,6 +157,7 @@ const THEME_FIT: Record<string, string> = {
   default: 'Any site — a clean starting point',
   bold: 'A loud, high-contrast voice',
   editorial: 'Long-form reading',
+  larder: 'Restaurants & cafés',
   // premium theme labels go here as each ships, keyed by its id
   apogee: 'SaaS & developer platforms',
   mainstage: 'Festivals, conferences & events',

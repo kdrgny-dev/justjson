@@ -6,9 +6,10 @@
 //   node scripts/theme-compile.mjs <id>
 //
 // Reads   apps/editor/themes-src/<id>/{meta.json,index.html,entry.html,styles.css}
+//         or apps/editor/themes-free/<id>/ for a free (MIT) theme
 // Writes  apps/editor/src/themes/<id>.json
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -41,7 +42,13 @@ if (!id) {
   process.exit(1)
 }
 
-const srcDir = join(editorRoot, 'themes-src', id)
+// Commercial sources live in the private repo at themes-src/; free (MIT) themes
+// live in themes-free/, which IS committed here. Mangling a free theme buys
+// nothing — its source is public — so free compiles keep readable class names.
+const premiumDir = join(editorRoot, 'themes-src', id)
+const freeDir = join(editorRoot, 'themes-free', id)
+const isFree = !existsSync(premiumDir) && existsSync(freeDir)
+const srcDir = isFree ? freeDir : premiumDir
 const read = (f) => readFileSync(join(srcDir, f), 'utf8')
 
 const meta = JSON.parse(read('meta.json'))
@@ -79,8 +86,9 @@ for (const html of Object.values(src)) for (const tok of templateClassTokens(htm
 for (const m of maskedCss.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) names.add(m[1])
 for (const r of RESERVED) names.delete(r)
 
-// 3. Deterministic map original -> .hN (sorted for stable output).
-const sorted = [...names].sort()
+// 3. Deterministic map original -> .hN (sorted for stable output). A free theme
+//    maps nothing, so every rewrite below is an identity pass.
+const sorted = isFree ? [] : [...names].sort()
 const map = new Map(sorted.map((name, i) => [name, `h${i}`]))
 
 // 4. Rewrite CSS selectors + template class attrs from the SAME map (kept in
@@ -113,12 +121,17 @@ const outPath = join(editorRoot, 'src', 'themes', `${id}.json`)
 writeFileSync(outPath, json)
 // Second copy next to the source, in themes-src/dist. For a commercial theme
 // that directory is the private themes repo, and dist/ is what a paid Studio
-// build pulls in (scripts/fetch-premium-themes.mjs) — so commit it there.
-const distDir = join(editorRoot, 'themes-src', 'dist')
-mkdirSync(distDir, { recursive: true })
-writeFileSync(join(distDir, `${id}.json`), json)
+// build pulls in (scripts/fetch-premium-themes.mjs) — so commit it there. A free
+// theme ships its bundle from src/themes/ directly; it has no dist.
+if (!isFree) {
+  const distDir = join(editorRoot, 'themes-src', 'dist')
+  mkdirSync(distDir, { recursive: true })
+  writeFileSync(join(distDir, `${id}.json`), json)
+}
 console.log(
-  `compiled ${id}: ${sorted.length} classes mangled -> src/themes/${id}.json + themes-src/dist/`,
+  isFree
+    ? `compiled ${id} (free, unmangled) -> src/themes/${id}.json`
+    : `compiled ${id}: ${sorted.length} classes mangled -> src/themes/${id}.json + themes-src/dist/`,
 )
 
 // ---------- helpers ----------

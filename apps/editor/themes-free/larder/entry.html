@@ -1,0 +1,110 @@
+<canvas data-paper aria-hidden="true"></canvas>
+
+<header class="top">
+  <a class="brand" href="{{homeUrl}}">{{siteName}}</a>
+  <input id="jj-m" class="mtg" type="checkbox">
+  <label class="mbtn" for="jj-m" aria-label="Menu"><span></span><span></span></label>
+  <nav class="nav">
+    {{#nav}}<a class="nl" {{#active}}aria-current="page"{{/active}} href="{{url}}">{{label}}</a>{{/nav}}
+  </nav>
+  <div class="top-contact">
+    {{#contact}}{{#href}}<a class="tc" href="{{href}}">{{display}}</a>{{/href}}{{^href}}<span class="tc">{{display}}</span>{{/href}}{{/contact}}
+  </div>
+</header>
+
+<main>
+  <section class="band">
+    <div class="band-in">
+      <p class="crumb"><a href="{{collection.url}}">{{collection.label}}</a></p>
+      <h1 class="band-ttl" data-rv>{{slots.title}}</h1>
+      {{#slots.lead}}<p class="band-lead" data-rv>{{slots.lead}}</p>{{/slots.lead}}
+      <figure class="shot" data-rv>
+        {{#slots.cover}}<img class="img" src="{{slots.cover}}" alt="{{slots.title}}">{{/slots.cover}}
+        {{^slots.cover}}<span class="plate" aria-hidden="true">{{slots.title}}</span>{{/slots.cover}}
+      </figure>
+    </div>
+  </section>
+
+  <div class="sheet">
+    <div class="rail" data-rv>
+      {{! a linked chip shows its label — a raw url or address is not a caption }}
+      {{#slots.meta}}{{#href}}<a class="chip" href="{{href}}">{{label}}</a>{{/href}}{{^href}}<span class="chip"><b>{{label}}</b>{{value}}</span>{{/href}}{{/slots.meta}}
+    </div>
+
+    {{#slots.body}}<div class="rt" data-rv>{{{slots.body}}}</div>{{/slots.body}}
+    {{#slots.extras}}<div class="menu" data-rv>{{{slots.extras}}}</div>{{/slots.extras}}
+
+    <a class="back" href="{{collection.url}}">{{collection.label}}</a>
+  </div>
+</main>
+
+<footer class="foot">
+  <a class="brand" href="{{homeUrl}}">{{siteName}}</a>
+  <div class="foot-contact">
+    {{#contact}}{{#href}}<a class="fc" href="{{href}}">{{display}}</a>{{/href}}{{^href}}<span class="fc">{{display}}</span>{{/href}}{{/contact}}
+  </div>
+  <p class="credit">Built with JustJSON</p>
+</footer>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // The table: one pre-baked grain tile, blitted under one slow warm light.
+  (function () {
+    var c = document.querySelector('canvas[data-paper]');
+    var x = c && c.getContext && c.getContext('2d');
+    if (!x) return; // the CSS gradient stays as the static fallback
+    var CFG = { fps: 30, grain: 0.055, lightR: 0.62, lightA: 0.1, driftX: 0.017, driftY: 0.011, dprCap: 1.5 };
+    var tw = 256, tile = document.createElement('canvas');
+    tile.width = tile.height = tw;
+    var tx = tile.getContext('2d'), im = tx.createImageData(tw, tw), d = im.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var v = (Math.random() * 255) | 0;
+      d[i] = d[i + 1] = d[i + 2] = v;
+      d[i + 3] = (CFG.grain * 255) | 0;
+    }
+    tx.putImageData(im, 0, 0);
+    var pat = x.createPattern(tile, 'repeat'), w = 0, h = 0;
+    function size() {
+      var small = innerWidth < 760;
+      var dpr = Math.min(devicePixelRatio || 1, small ? 1.15 : CFG.dprCap);
+      w = innerWidth; h = innerHeight;
+      c.width = w * dpr; c.height = h * dpr;
+      c.style.width = w + 'px'; c.style.height = h + 'px';
+      x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function draw(t) {
+      var amp = innerWidth < 760 ? 0.5 : 1;
+      x.clearRect(0, 0, w, h);
+      var r = Math.min(w, h) * CFG.lightR;
+      var cx = w * (0.5 + 0.28 * Math.sin(t * CFG.driftX * 6.283) * amp);
+      var cy = h * (0.42 + 0.22 * Math.cos(t * CFG.driftY * 6.283) * amp);
+      var g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g.addColorStop(0, 'rgba(201,162,39,' + CFG.lightA + ')');
+      g.addColorStop(1, 'rgba(201,162,39,0)');
+      x.fillStyle = g; x.fillRect(0, 0, w, h);
+      x.fillStyle = pat; x.fillRect(0, 0, w, h);
+    }
+    size();
+    addEventListener('resize', function () { size(); draw(0); }, { passive: true });
+    if (reduce) return draw(0); // one frame, no loop
+    var last = 0, step = 1000 / CFG.fps, t0 = performance.now();
+    requestAnimationFrame(function loop(now) {
+      requestAnimationFrame(loop);
+      if (document.hidden || now - last < step) return;
+      last = now;
+      draw((now - t0) / 1000);
+    });
+  })();
+
+  if (reduce) return;
+  document.documentElement.setAttribute('data-js', '');
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (e.isIntersecting) { e.target.setAttribute('data-in', ''); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' });
+  document.querySelectorAll('[data-rv]').forEach(function (el) { io.observe(el); });
+})();
+</script>

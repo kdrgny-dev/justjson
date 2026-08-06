@@ -4,6 +4,7 @@ import { type ProjectData, renderWithBundle } from '../browser/render'
 import type { ThemeBundle } from '../browser/theme-bundle'
 import boldJson from './bold.json'
 import editorialJson from './editorial.json'
+import larderJson from './larder.json'
 
 // Commercial bundles ship only in a paid build (see scripts/fetch-premium-themes.mjs),
 // so they are looked up, never imported by name — their suites skip when absent.
@@ -81,6 +82,55 @@ describe.each(bundles)('theme bundle: %s', (_id, bundle) => {
     expect(entry).toBeDefined()
     expect(entry).toContain('Aurora')
     expect(entry).toContain('<strong>realtime</strong>')
+  })
+})
+
+// Larder is a slot theme compiled from themes-free/, the public (MIT) source
+// tree, where the compiler deliberately skips mangling — that source is
+// readable anyway, and the renderer's own `.wrap` fallback markup only styles
+// correctly while class names stay semantic.
+describe('compiled theme: larder (free, unmangled slot theme)', () => {
+  const bundle = larderJson as ThemeBundle
+  const files = renderWithBundle(data, bundle)
+  const dec = (k: string) => (files[k] ?? '').replace(/&#x2F;/g, '/')
+
+  it('ships as a free bundle with its semantic class names intact', () => {
+    expect(bundle.license).toBe('free')
+    expect(bundle.css).toContain('.sheet{')
+    expect(bundle.css).not.toMatch(/\.h\d+\{/)
+    expect(bundle.templates.index).toContain('class="sheet"')
+  })
+
+  it('keeps --jj-accent so the accent picker still works', () => {
+    expect(bundle.css).toContain('var(--jj-accent')
+  })
+
+  it('composes the home from slots', () => {
+    const idx = dec('/index.html')
+    expect(idx).toContain('Studio Nova')
+    expect(idx).toContain('Aurora')
+    expect(idx).toContain('projects/aurora.html')
+    expect(idx).toContain(bundle.css.slice(0, 40))
+  })
+
+  it('renders an entry with richtext HTML', () => {
+    const entry = files['/projects/aurora.html'] as string
+    expect(entry).toContain('Aurora')
+    expect(entry).toContain('<strong>realtime</strong>')
+  })
+
+  it('falls back to a typographic plate when a record has no cover', () => {
+    expect(files['/index.html']).toContain('class="plate"')
+    expect(files['/projects/aurora.html']).toContain('class="plate"')
+  })
+
+  it('renders its own collection list, and still styles the page fallback', () => {
+    const list = dec('/projects/index.html')
+    expect(list).toContain('class="cards"')
+    expect(list).toContain('projects/aurora.html')
+    // page.html is not authored, so `pages` records fall back to render.ts's
+    // bare `<main class="wrap">` — which the theme styles rather than leaves raw.
+    expect(bundle.css).toContain('.wrap{')
   })
 })
 

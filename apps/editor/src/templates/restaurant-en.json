@@ -1,0 +1,274 @@
+{
+  "title": "Restaurant",
+  "description": "A small restaurant: menu sections with prices, kitchen notes, opening hours and contact.",
+  "schema": {
+    "version": 1,
+    "singletons": [
+      {
+        "name": "restaurant",
+        "label": "Restaurant",
+        "path": "restaurant.json",
+        "fields": [
+          { "key": "siteName", "label": "Restaurant name", "type": "text", "required": true },
+          { "key": "title", "label": "Headline", "type": "text", "required": true },
+          { "key": "tagline", "label": "Tagline", "type": "text" },
+          { "key": "cover", "label": "Cover", "type": "image" },
+          { "key": "intro", "label": "Introduction", "type": "richtext" },
+          { "key": "booking", "label": "Book a table", "type": "url" },
+          {
+            "key": "hours",
+            "label": "Opening hours",
+            "type": "repeater",
+            "fields": [
+              { "key": "day", "label": "Day", "type": "text" },
+              { "key": "service", "label": "Service", "type": "text" },
+              { "key": "note", "label": "Note", "type": "text" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "contact",
+        "label": "Contact",
+        "path": "contact.json",
+        "fields": [
+          { "key": "email", "label": "E-mail", "type": "email" },
+          { "key": "phone", "label": "Phone", "type": "text" },
+          { "key": "address", "label": "Address", "type": "text" },
+          { "key": "instagram", "label": "Instagram", "type": "url" }
+        ]
+      }
+    ],
+    "collections": [
+      {
+        "name": "menu",
+        "label": "Menu",
+        "path": "menu",
+        "fields": [
+          { "key": "name", "label": "Section", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text" },
+          { "key": "summary", "label": "Summary", "type": "text" },
+          { "key": "cover", "label": "Cover", "type": "image" },
+          {
+            "key": "service",
+            "label": "Served",
+            "type": "select",
+            "options": ["Morning", "All day", "Evening"]
+          },
+          { "key": "body", "label": "Notes", "type": "richtext" },
+          {
+            "key": "items",
+            "label": "On this list",
+            "type": "repeater",
+            "fields": [
+              { "key": "dish", "label": "Dish", "type": "text" },
+              { "key": "detail", "label": "Detail", "type": "text" },
+              { "key": "price", "label": "Price", "type": "text" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "notes",
+        "label": "From the kitchen",
+        "path": "notes",
+        "fields": [
+          { "key": "title", "label": "Title", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text" },
+          { "key": "standfirst", "label": "Standfirst", "type": "text" },
+          { "key": "cover", "label": "Cover", "type": "image" },
+          { "key": "date", "label": "Date", "type": "date" },
+          { "key": "body", "label": "Text", "type": "richtext" }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "restaurant": {
+      "siteName": "Marrow & Salt",
+      "title": "A short menu, rewritten on the mornings it needs to be",
+      "tagline": "Fourteen covers off Picton Street, Bristol. Most of the list holds all year; the rest depends on what the market had at six.",
+      "cover": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1600&q=80&auto=format&fit=crop",
+      "intro": "Marrow & Salt is one room, an open pass and a wood oven that was here when we took the lease.\n\nWe cook what keeps: braises, whole vegetables, bread, one fish. The kitchen is three people, so the menu is deliberately shorter than the room could carry.\n\n## How dinner runs\n\nSmall plates arrive as they are ready rather than in courses. Two or three each, then something from the grill to share, is how most tables eat and how the portions are built.\n\nWe hold four seats at the counter for walk-ins every night, including Saturday.",
+      "booking": "https://marrowandsalt.example/book",
+      "hours": [
+        { "day": "Monday", "service": "Closed", "note": "Prep and deliveries" },
+        { "day": "Tuesday", "service": "18:00 – 22:30", "note": "" },
+        { "day": "Wednesday", "service": "18:00 – 22:30", "note": "" },
+        { "day": "Thursday", "service": "18:00 – 22:30", "note": "" },
+        {
+          "day": "Friday",
+          "service": "12:00 – 15:00, 18:00 – 23:00",
+          "note": "Lunch is a set list"
+        },
+        { "day": "Saturday", "service": "09:30 – 23:00", "note": "Breakfast until 12:00" },
+        { "day": "Sunday", "service": "09:30 – 16:00", "note": "Breakfast and lunch" }
+      ]
+    },
+    "contact": {
+      "email": "table@marrowandsalt.example",
+      "phone": "+44 117 496 0182",
+      "address": "31a Picton Street, Bristol BS6",
+      "instagram": "https://instagram.example/marrowandsalt"
+    },
+    "menu": [
+      {
+        "name": "Breakfast",
+        "slug": "breakfast",
+        "summary": "Weekends until noon. Bread, eggs, one thing from the oven, and coffee that is not an afterthought.",
+        "cover": "https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=1600&q=80&auto=format&fit=crop",
+        "service": "Morning",
+        "body": "Breakfast exists because the oven is already hot on a Saturday and it seemed wasteful not to use it.\n\nEggs come from a farm outside Chew Magna, delivered twice a week. The bread is the same dough we bake for dinner, shaped smaller.\n\nWe do not take breakfast bookings. The room turns quickly and the wait is rarely more than fifteen minutes.",
+        "items": [
+          {
+            "dish": "Eggs, bread, butter",
+            "detail": "Two eggs any way, cultured butter",
+            "price": "£9"
+          },
+          {
+            "dish": "Baked beans, sourdough",
+            "detail": "Slow-cooked, smoked paprika",
+            "price": "£11"
+          },
+          {
+            "dish": "Mushrooms on toast",
+            "detail": "Garlic, parsley, hard cheese",
+            "price": "£12"
+          },
+          { "dish": "Bacon sandwich", "detail": "Dry-cured, in a soft roll", "price": "£10" },
+          {
+            "dish": "Yoghurt, honey, oats",
+            "detail": "Toasted, with whatever fruit is in",
+            "price": "£8"
+          },
+          { "dish": "Filter coffee", "detail": "Refills at the counter", "price": "£3.50" }
+        ]
+      },
+      {
+        "name": "Small plates",
+        "slug": "small-plates",
+        "summary": "The part of the menu that changes most. Three each is a sensible start for two people.",
+        "cover": "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=1600&q=80&auto=format&fit=crop",
+        "service": "All day",
+        "body": "These are written on the board most weeks and printed only when they settle.\n\nVegetables lead here, not because of a position on eating but because the market two streets away is better at vegetables than it is at anything else.\n\n## Allergens\n\nAsk and we will tell you exactly what is in a dish. We do not print symbols; the recipes move too often for the print to stay honest.",
+        "items": [
+          { "dish": "Grilled halloumi", "detail": "Honey, chilli, oregano", "price": "£9" },
+          { "dish": "Charred leeks", "detail": "Hazelnut, brown butter", "price": "£8.50" },
+          { "dish": "Whipped cod roe", "detail": "With warm flatbread", "price": "£10" },
+          { "dish": "Beetroot, curd", "detail": "Roasted in salt, dill oil", "price": "£8" },
+          { "dish": "Braised chickpeas", "detail": "Tomato, cumin, yoghurt", "price": "£9" },
+          { "dish": "Olives", "detail": "Warmed with orange peel", "price": "£5" }
+        ]
+      },
+      {
+        "name": "Sandwiches",
+        "slug": "sandwiches",
+        "summary": "Friday lunch only, twelve to three. One meat, one vegetable, both in our own bread.",
+        "cover": "https://images.unsplash.com/photo-1521305916504-4a1121188589?w=1600&q=80&auto=format&fit=crop",
+        "service": "All day",
+        "body": "Friday lunch started as staff food and stayed on because people kept knocking on the window.\n\nIt is a short list and it sells out. When the bread is gone, lunch is over — usually around half past two.\n\nEverything is available to take away, wrapped, at the same price.",
+        "items": [
+          { "dish": "Fried chicken", "detail": "Pickles, hot sauce, soft roll", "price": "£12" },
+          { "dish": "Roast squash", "detail": "Feta, chilli, herbs", "price": "£10" },
+          { "dish": "Side salad", "detail": "Leaves, lemon, oil", "price": "£4" },
+          { "dish": "Soup", "detail": "Whatever the week left us", "price": "£6" }
+        ]
+      },
+      {
+        "name": "From the grill",
+        "slug": "grill",
+        "summary": "Cooked over wood, meant for the middle of the table. One order feeds two comfortably.",
+        "cover": "https://images.unsplash.com/photo-1544025162-d76694265947?w=1600&q=80&auto=format&fit=crop",
+        "service": "Evening",
+        "body": "The grill runs on beech and a little oak. It takes forty minutes to be usable and about four hours to be at its best, which is why we open at six and not at five.\n\nMeat comes whole from a farm near Chepstow and is butchered here. That is the reason the list is short: we use the animal we have, in the order the cuts are ready.\n\nEverything from this section rests for at least ten minutes, so it will not be the first thing to reach your table.",
+        "items": [
+          { "dish": "Short rib", "detail": "Braised, then grilled, for two", "price": "£34" },
+          { "dish": "Pork chop", "detail": "Apples, mustard, sage", "price": "£24" },
+          { "dish": "Whole plaice", "detail": "Butter, capers, lemon", "price": "£26" },
+          { "dish": "Hispi cabbage", "detail": "Charred, anchovy or not", "price": "£13" },
+          { "dish": "Potatoes", "detail": "In the fat from the grill", "price": "£6" }
+        ]
+      },
+      {
+        "name": "Puddings",
+        "slug": "puddings",
+        "summary": "Three, made in the afternoon. When they are gone they are gone.",
+        "cover": "https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=1600&q=80&auto=format&fit=crop",
+        "service": "Evening",
+        "body": "We are not a pastry kitchen and it would be dishonest to pretend otherwise. Three puddings is what one person can make well between lunch and service.\n\nThe custard is the same recipe for all of them, which is either laziness or focus depending on the evening.",
+        "items": [
+          { "dish": "Burnt custard tart", "detail": "Nutmeg, thin pastry", "price": "£8" },
+          { "dish": "Baked apple", "detail": "Oats, cream", "price": "£7.50" },
+          {
+            "dish": "Chocolate, olive oil, salt",
+            "detail": "One spoon is not enough, two is",
+            "price": "£8.50"
+          }
+        ]
+      },
+      {
+        "name": "Wine & cider",
+        "slug": "wine-cider",
+        "summary": "Thirty bottles, half of them from the west of England. Six open by the glass each week.",
+        "cover": "https://images.unsplash.com/photo-1481931098730-318b6f776db0?w=1600&q=80&auto=format&fit=crop",
+        "service": "Evening",
+        "body": "The list is short because the cellar is a cupboard. The upside is that we have drunk everything on it.\n\nCider is treated like wine here — served in a glass, at cellar temperature, from producers within an hour's drive.\n\nCorkage is £15 and we will happily open something you brought.",
+        "items": [
+          { "dish": "Glass, white", "detail": "Six open each week", "price": "£7" },
+          { "dish": "Glass, red", "detail": "Six open each week", "price": "£7.50" },
+          { "dish": "Bottle, house white", "detail": "Loire, dry", "price": "£32" },
+          { "dish": "Keeved cider", "detail": "Somerset, 500 ml", "price": "£14" },
+          { "dish": "Alcohol-free", "detail": "Rotating, made here", "price": "£4.50" }
+        ]
+      }
+    ],
+    "notes": [
+      {
+        "title": "Why the coffee stayed the same",
+        "slug": "coffee",
+        "standfirst": "Eight years, one roaster. We tried to change it three times and the room noticed every time.",
+        "cover": "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-05-14",
+        "body": "Coffee was meant to be the thing that came after dinner, not a second business.\n\nOur roaster is twenty minutes away and delivers weekly. Two cheaper offers arrived last year and we ran both for a fortnight. Both times the same question came back across the counter: has the coffee changed?\n\nBeing noticed is information. We went back."
+      },
+      {
+        "title": "Fourteen covers, and why not more",
+        "slug": "fourteen-covers",
+        "standfirst": "The room fits twenty-two. We took six tables out and kept the counter.",
+        "cover": "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-04-02",
+        "body": "Three of us cook. The number of plates three people can send out properly in one service is a fixed number and we found it by counting, not guessing.\n\nAt twenty-two covers the wait between small plates and the grill stretched past twenty minutes. At fourteen it sits under eight.\n\n## Bookings\n\nHalf the room is bookable and half is held for walk-ins. The counter is never bookable, which is the only rule we have never bent."
+      },
+      {
+        "title": "Where the bread flour comes from",
+        "slug": "flour",
+        "standfirst": "One mill in Wiltshire, one variety, bought a season at a time.",
+        "date": "2026-03-11",
+        "body": "Buying a season of flour at once carries an obvious risk: a poor harvest means twelve months of living with it.\n\nWe do it anyway. A bakery that switches flour drifts week to week, and finding out why takes days you do not have during service.\n\nWe visit the mill each autumn. Not as a trip — to see the crop and agree the grind."
+      },
+      {
+        "title": "We took the pasta off",
+        "slug": "pasta",
+        "standfirst": "Two seasons on the menu. It sold well, which is exactly why it went.",
+        "cover": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&q=80&auto=format&fit=crop",
+        "date": "2026-02-20",
+        "body": "Pasta leaves the pass fast, carries a good margin and nobody complains about it. That is the problem: once a third of the room ordered it, the grill sat half-used at nine o'clock.\n\nA kitchen is defined by the easiest dish on its menu. Take that away and what is left is what you actually do.\n\nIt may come back one winter, as a single dish."
+      },
+      {
+        "title": "No service charge",
+        "slug": "service-charge",
+        "standfirst": "It is in the prices. The bill has no line you did not choose.",
+        "date": "2026-01-28",
+        "body": "The number on the menu is the number you pay. No cover, no bread charge, no discretionary percentage.\n\nThere is one reason for this: the arithmetic that happens when the bill lands undoes most of what the meal built.\n\nTips go to the room and are shared weekly. The kitchen is in that share."
+      },
+      {
+        "title": "Saturday night is walk-in only",
+        "slug": "saturday",
+        "standfirst": "Six nights take bookings. Saturday belongs to whoever is on the street.",
+        "cover": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600&q=80&auto=format&fit=crop",
+        "date": "2025-12-06",
+        "body": "Saturday is the night people walk up Picton Street and look in. For the two seasons we took bookings, the room filled three days ahead and we turned away everyone who did that.\n\nNow the door is open. After eight there may be a wait; you can sit at the counter and order small plates while you do.\n\nIn summer the front tables go early — arriving at half past six works."
+      }
+    ]
+  }
+}

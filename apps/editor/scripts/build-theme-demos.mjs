@@ -29,6 +29,8 @@ const DEMOS = [
   { theme: 'mainstage', template: 'event', lang: 'en' },
   { theme: 'meridian', template: 'studio', lang: 'en' },
   { theme: 'solace', template: 'clinic', lang: 'en' },
+  { theme: 'larder', template: 'restaurant', lang: 'tr' },
+  { theme: 'larder', template: 'restaurant-en', lang: 'en', out: 'larder-en' },
 ]
 
 const die = (msg) => {
@@ -51,8 +53,10 @@ apps/editor/themes-src). Compile the bundle first:
 // The theme's own default accent, taken from `var(--jj-accent, #xxxxxx)` in its
 // source — so a demo never invents a colour the designer didn't choose.
 function themeAccent(themeId) {
-  const css = join(editorRoot, 'themes-src', themeId, 'styles.css')
-  if (!existsSync(css)) return null
+  const css = ['themes-src', 'themes-free']
+    .map((d) => join(editorRoot, d, themeId, 'styles.css'))
+    .find((p) => existsSync(p))
+  if (!css) return null
   const m = readFileSync(css, 'utf8').match(/--jj-accent,\s*(#[0-9a-fA-F]{3,8})/)
   return m ? m[1] : null
 }
@@ -151,12 +155,15 @@ writeFileSync(
   join(outRoot, 'NOTICE.txt'),
   [
     'The files under landing/public/themes/ are generated marketing demos of',
-    "JustJSON's commercial themes (Beacon, Atelier, Signal, Psikolog).",
+    "JustJSON's themes.",
     '',
-    'They are NOT covered by the MIT license of this repository and may not be',
-    'redistributed, resold or republished. The theme sources are kept in a private',
-    'repository and are licensed separately; a demo page contains only minified,',
-    'class-mangled output.',
+    'Demos of COMMERCIAL themes are NOT covered by the MIT license of this',
+    'repository and may not be redistributed, resold or republished. Those theme',
+    'sources are kept in a private repository and are licensed separately; a demo',
+    'page contains only minified, class-mangled output.',
+    '',
+    'Demos of FREE themes (sources under apps/editor/themes-free/) are MIT, like',
+    'the rest of this repository.',
     '',
     'Regenerate with: pnpm --filter @justjson/editor demos',
     '',
@@ -183,7 +190,9 @@ for (const demo of DEMOS) {
   const { checked, dangling } = checkLinks(files)
   if (dangling.length) die(`"${demo.theme}" has dangling links:\n  ${dangling.join('\n  ')}`)
 
-  const dir = join(outRoot, demo.theme)
+  // `out` lets one theme ship more than one demo (e.g. a second language)
+  // without the two runs overwriting each other's directory.
+  const dir = join(outRoot, demo.out ?? demo.theme)
   rmSync(dir, { recursive: true, force: true })
   let bytes = 0
   for (const [path, html] of Object.entries(files)) {
@@ -194,7 +203,7 @@ for (const demo of DEMOS) {
   }
   totalPages += paths.length
   console.log(
-    `${demo.theme.padEnd(9)} ${String(paths.length).padStart(2)} pages  ` +
+    `${(demo.out ?? demo.theme).padEnd(9)} ${String(paths.length).padStart(2)} pages  ` +
       `${String(Math.round(bytes / 1024)).padStart(4)} KB  ` +
       `${String(checked).padStart(3)} links ok  accent ${accent}  (${demo.template})`,
   )

@@ -41,6 +41,7 @@ apps/editor/src/themes/*.json
 !apps/editor/src/themes/default.json
 !apps/editor/src/themes/bold.json
 !apps/editor/src/themes/editorial.json
+!apps/editor/src/themes/larder.json
 
 # local demo/preview artifacts
 /beacon-demo.html

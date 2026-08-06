@@ -1,0 +1,826 @@
+@import url("https://api.fontshare.com/v2/css?f[]=gambarino@400&f[]=switzer@400,500,600&display=swap");
+
+/* ─────────────────────────────────────────────────────────────
+   Larder — a cream paper sheet on a dark green table.
+   Every number that carries the theme's character lives here.
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --table: #16241c; /* the table — page ground */
+  --paper: #f4efe3; /* the sheet — where content lives */
+  --ink: #1b2a20; /* text on paper */
+  --olive: #4a5d3a; /* secondary text, hairlines */
+  --brass: var(--jj-accent, #c9a227); /* accent — links, tape, leader dots */
+
+  --tilt-max: 1.5deg; /* ceiling for taped tilt; 0deg = flat */
+  --tape-w: 76px; /* tape strip width */
+  --lift: 4px; /* hover lift on a taped photo */
+  --paper-inset: clamp(16px, 4vw, 72px); /* sheet margin from the viewport */
+
+  --disp-min: 32px;
+  --disp-max: 76px; /* display serif clamp ends */
+  --measure: 68ch; /* .rt reading measure */
+  --rhythm: clamp(56px, 9vh, 128px); /* space between blocks */
+
+  --disp: "Gambarino", Georgia, "Times New Roman", serif;
+  --sans: "Switzer", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sheet-w: 1180px;
+  --tape: rgba(244, 239, 227, 0.62); /* light tape, for use on the dark table */
+  --dot: rgba(27, 42, 32, 0.42); /* menu leader dots */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--table);
+  /* Static stand-in for the canvas: if 2d context creation fails the table
+     still carries light, never a flat black rectangle. */
+  background-image: radial-gradient(120% 80% at 50% 30%, rgba(201, 162, 39, 0.1), transparent 68%);
+  color: var(--paper);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+canvas[data-paper] {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── top strip ─────────────────────────────────────────────── */
+.top {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 3vw, 32px);
+  padding: 18px var(--paper-inset);
+  flex-wrap: wrap;
+}
+
+.brand {
+  font-family: var(--disp);
+  font-size: clamp(19px, 2.4vw, 25px);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  margin-right: auto;
+}
+
+.nav {
+  display: flex;
+  gap: clamp(12px, 2vw, 26px);
+  flex-wrap: wrap;
+}
+
+.nl {
+  text-decoration: none;
+  font-size: 14px;
+  color: rgba(244, 239, 227, 0.76);
+  padding: 6px 0;
+}
+
+.nl:hover,
+.nl[aria-current="page"] {
+  color: var(--paper);
+  box-shadow: inset 0 -1px 0 var(--brass);
+}
+
+.top-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 13px;
+  color: rgba(244, 239, 227, 0.7);
+}
+
+.tc {
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tc:hover {
+  color: var(--brass);
+}
+
+/* The renderer hands over every contact line; the strip shows the first four
+   (hours, address, phone, a language link — whatever the project put first) and
+   the footer carries the rest. Logic-less templates can't slice — CSS can. */
+.top-contact > :nth-child(n + 5) {
+  display: none;
+}
+
+.mtg,
+.mbtn {
+  display: none;
+}
+
+/* ── hero, on the bare table ───────────────────────────────── */
+main {
+  position: relative;
+  z-index: 1;
+}
+
+.hero {
+  padding: clamp(28px, 7vh, 88px) var(--paper-inset) clamp(40px, 8vh, 104px);
+}
+
+.hero-in {
+  max-width: var(--sheet-w);
+  margin: 0 auto;
+  display: grid;
+  gap: clamp(28px, 5vw, 64px);
+  grid-template-columns: 1fr;
+  align-items: end;
+}
+
+.hero-ttl {
+  font-family: var(--disp);
+  font-weight: 400;
+  font-size: clamp(var(--disp-min), 6.4vw, var(--disp-max));
+  line-height: 1.02;
+  letter-spacing: -0.012em;
+  margin: 0;
+  max-width: 16ch;
+}
+
+.hero-lead {
+  margin: 0.7em 0 0;
+  max-width: 46ch;
+  font-size: clamp(16px, 1.5vw, 19px);
+  color: rgba(244, 239, 227, 0.76);
+}
+
+/* ── taped photo ───────────────────────────────────────────── */
+.shot {
+  position: relative;
+  margin: 0;
+  --tilt: 1.3deg;
+  rotate: clamp(calc(-1 * var(--tilt-max)), var(--tilt), var(--tilt-max));
+  transition: rotate 0.24s cubic-bezier(0.2, 0.7, 0.3, 1), translate 0.24s
+    cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.24s ease;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.34);
+  background: var(--paper);
+  padding: 10px;
+}
+
+.shot::before,
+.shot::after {
+  content: "";
+  position: absolute;
+  top: -11px;
+  width: var(--tape-w);
+  height: 22px;
+  background: var(--tape);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.shot::before {
+  left: 8%;
+  rotate: -8deg;
+}
+
+.shot::after {
+  right: 8%;
+  rotate: 7deg;
+}
+
+@media (hover: hover) {
+  .shot:hover {
+    rotate: 0deg;
+    translate: 0 calc(-1 * var(--lift));
+    box-shadow: 0 20px 46px rgba(0, 0, 0, 0.42);
+  }
+}
+
+.shot .img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+/* Cover-less fallback: one display glyph on paper, no tape. The rest of the
+   title is pushed far out of the box by the letter-spacing, so exactly one
+   character shows whatever the title is. */
+.plate {
+  display: block;
+  width: 1.05em;
+  height: 1.2em;
+  overflow: hidden;
+  white-space: nowrap;
+  letter-spacing: 20em;
+  font-family: var(--disp);
+  font-size: clamp(88px, 15vw, 168px);
+  line-height: 1.2;
+  color: var(--ink);
+  background: var(--paper);
+  padding: 0.14em 0.1em;
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 39, 0.5);
+}
+
+/* ── the paper sheet ───────────────────────────────────────── */
+.sheet {
+  position: relative;
+  max-width: var(--sheet-w);
+  margin: 0 auto;
+  background: var(--paper);
+  color: var(--ink);
+  padding: clamp(28px, 5vw, 72px) var(--paper-inset) clamp(48px, 8vh, 112px);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.28);
+}
+
+.sheet a {
+  color: var(--ink);
+  text-decoration-color: var(--brass);
+  text-underline-offset: 3px;
+}
+
+.sheet a:hover {
+  color: var(--olive);
+}
+
+/* ── meta chips, riding the sheet's top edge ───────────────── */
+.rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding-bottom: 22px;
+  margin-bottom: var(--rhythm);
+  border-bottom: 1px solid rgba(74, 93, 58, 0.22);
+}
+
+.rail:empty {
+  display: none;
+}
+
+.chip {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--olive);
+  text-decoration: none;
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.chip b {
+  font-weight: 500;
+  color: rgba(27, 42, 32, 0.55);
+}
+
+a.chip:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--brass);
+}
+
+/* ── richtext ──────────────────────────────────────────────── */
+.rt {
+  max-width: var(--measure);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.rt > :first-child {
+  margin-top: 0;
+}
+
+.rt h2,
+.rt h3 {
+  font-family: var(--disp);
+  font-weight: 400;
+  line-height: 1.14;
+  margin: 1.6em 0 0.4em;
+}
+
+.rt h2 {
+  font-size: clamp(24px, 3vw, 34px);
+}
+
+.rt h3 {
+  font-size: clamp(20px, 2.2vw, 25px);
+}
+
+.rt p {
+  margin: 0 0 1.05em;
+}
+
+.rt ul,
+.rt ol {
+  padding-left: 1.2em;
+  margin: 0 0 1.05em;
+}
+
+.rt li {
+  margin-bottom: 0.35em;
+}
+
+.rt blockquote {
+  margin: 1.4em 0;
+  padding-left: 1.1em;
+  border-left: 2px solid var(--brass);
+  font-family: var(--disp);
+  font-size: 1.15em;
+}
+
+.rt code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: rgba(74, 93, 58, 0.1);
+  padding: 0.1em 0.35em;
+}
+
+.rt pre {
+  overflow-x: auto;
+  background: rgba(74, 93, 58, 0.1);
+  padding: 1em;
+}
+
+.rt img {
+  width: 100%;
+  height: auto;
+  margin: 1.4em 0;
+}
+
+.rt a {
+  color: var(--ink);
+}
+
+/* ── the menu: repeater tables are this theme's main event ─── */
+.menu {
+  margin-top: var(--rhythm);
+}
+
+.jj-table-wrap {
+  overflow-x: auto;
+  margin-bottom: var(--rhythm);
+}
+
+.jj-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.jj-table caption {
+  text-align: left;
+  font-family: var(--disp);
+  font-size: clamp(24px, 3.4vw, 40px);
+  line-height: 1.1;
+  padding-bottom: 0.5em;
+}
+
+.jj-table thead th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: rgba(27, 42, 32, 0.45);
+  padding: 0 0 0.6rem;
+  border-bottom: 1px solid rgba(74, 93, 58, 0.22);
+}
+
+.jj-table thead th + th {
+  padding-left: 1rem;
+}
+
+.jj-table tbody td {
+  vertical-align: baseline;
+  padding: 0.75rem 0 1rem;
+  /* Dotted leader: each cell paints the same strip along its own bottom edge,
+     and adjacent cells make it read as one continuous line from name to price. */
+  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1.3px);
+  background-size: 7px 7px;
+  background-repeat: repeat-x;
+  background-position: left calc(100% - 2px);
+}
+
+.jj-table tbody td + td {
+  padding-left: 1rem;
+}
+
+.jj-table tbody td:last-child {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--olive);
+}
+
+.jj-table tbody tr:last-child td {
+  background-image: none;
+}
+
+@media (max-width: 719px) {
+  .jj-table,
+  .jj-table tbody,
+  .jj-table tbody tr,
+  .jj-table tbody td {
+    display: block;
+    width: 100%;
+  }
+
+  .jj-table thead {
+    display: none;
+  }
+
+  .jj-table tbody tr {
+    padding: 0.9rem 0;
+    border-bottom: 1px solid rgba(74, 93, 58, 0.22);
+  }
+
+  .jj-table tbody td {
+    background-image: none;
+    padding: 0.2rem 0;
+    text-align: left;
+  }
+
+  .jj-table tbody td + td {
+    padding-left: 0;
+  }
+
+  .jj-table tbody td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: rgba(27, 42, 32, 0.45);
+  }
+
+  /* The first column names the row; labelling it doubles the reading for no
+     information. It becomes the card's heading instead. */
+  .jj-table tbody td:first-child::before {
+    display: none;
+  }
+
+  .jj-table tbody td:first-child {
+    font-family: var(--disp);
+    font-size: 19px;
+    line-height: 1.2;
+    padding-bottom: 0.35rem;
+  }
+
+  .jj-table tbody td:last-child {
+    text-align: left;
+    color: var(--ink);
+  }
+}
+
+/* ── collection blocks ─────────────────────────────────────── */
+.block {
+  margin-top: var(--rhythm);
+}
+
+.block-ttl {
+  font-family: var(--disp);
+  font-weight: 400;
+  font-size: clamp(26px, 3.6vw, 44px);
+  line-height: 1.08;
+  margin: 0 0 1.1rem;
+}
+
+.block-ttl a {
+  text-decoration: none;
+}
+
+.block-ttl a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--brass);
+}
+
+.cards {
+  display: grid;
+  gap: clamp(20px, 3vw, 36px);
+  grid-template-columns: 1fr;
+}
+
+.card {
+  text-decoration: none;
+  display: block;
+  padding-top: 14px;
+  border-top: 1px solid rgba(74, 93, 58, 0.22);
+}
+
+.card-shot {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.card-shot .img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+/* Only the first card in a block is taped — the rest stay flat, so the device
+   stays a punctuation mark rather than a pattern. */
+.card:first-child .card-shot {
+  position: relative;
+  --tilt: -0.8deg;
+  rotate: clamp(calc(-1 * var(--tilt-max)), var(--tilt), var(--tilt-max));
+  background: var(--paper);
+  padding: 8px;
+  box-shadow: 0 8px 22px rgba(27, 42, 32, 0.16);
+  transition: rotate 0.24s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.24s ease;
+}
+
+.card:first-child .card-shot::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 12%;
+  width: var(--tape-w);
+  height: 20px;
+  rotate: -7deg;
+  /* On paper the tape has to be darker than the sheet to exist at all. */
+  background: rgba(90, 84, 60, 0.18);
+}
+
+@media (hover: hover) {
+  .card:first-child:hover .card-shot {
+    rotate: 0deg;
+    box-shadow: 0 14px 30px rgba(27, 42, 32, 0.22);
+  }
+}
+
+.card-ttl {
+  display: block;
+  font-family: var(--disp);
+  font-size: clamp(20px, 2.2vw, 26px);
+  line-height: 1.15;
+}
+
+.card:hover .card-ttl {
+  text-decoration: underline;
+  text-decoration-color: var(--brass);
+  text-underline-offset: 3px;
+}
+
+.card-lead {
+  display: block;
+  margin-top: 0.4em;
+  color: rgba(27, 42, 32, 0.68);
+  font-size: 15px;
+}
+
+/* ── entry band ────────────────────────────────────────────── */
+.band {
+  padding: clamp(24px, 6vh, 64px) var(--paper-inset) clamp(32px, 6vh, 72px);
+}
+
+.band-in {
+  max-width: var(--sheet-w);
+  margin: 0 auto;
+}
+
+.crumb {
+  margin: 0 0 1rem;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: rgba(244, 239, 227, 0.66);
+}
+
+.crumb a {
+  text-decoration: none;
+}
+
+.crumb a:hover {
+  color: var(--brass);
+}
+
+.band-ttl {
+  font-family: var(--disp);
+  font-weight: 400;
+  font-size: clamp(30px, 5.4vw, 62px);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  margin: 0;
+  max-width: 18ch;
+}
+
+.band-lead {
+  margin: 0.6em 0 0;
+  max-width: 52ch;
+  color: rgba(244, 239, 227, 0.76);
+}
+
+.band .shot {
+  --tilt: -1.1deg;
+  margin-top: clamp(24px, 4vh, 44px);
+  max-width: 760px;
+}
+
+.back {
+  display: inline-block;
+  margin-top: var(--rhythm);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--olive);
+}
+
+/* ── footer, back on the table ─────────────────────────────── */
+.foot {
+  position: relative;
+  z-index: 1;
+  max-width: var(--sheet-w);
+  margin: 0 auto;
+  padding: clamp(36px, 7vh, 80px) var(--paper-inset);
+  display: grid;
+  gap: 18px;
+}
+
+.foot-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 26px;
+  font-size: 15px;
+  color: rgba(244, 239, 227, 0.78);
+}
+
+.fc {
+  text-decoration: none;
+}
+
+.fc:hover {
+  color: var(--brass);
+}
+
+.credit {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: rgba(244, 239, 227, 0.45);
+}
+
+/* ── reveal ────────────────────────────────────────────────── */
+[data-js] [data-rv] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.42s ease, transform 0.42s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+[data-js] [data-rv][data-in] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-js] [data-rv] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .shot,
+  .card:first-child .card-shot {
+    transition: none;
+  }
+}
+
+/* ── the renderer's bare list/page fallback ────────────────────
+   Larder ships index + entry only, so collection index routes come from
+   render.ts's built-in `<main class="wrap">` markup. Style it so the route
+   reads as a deliberate index rather than an unstyled leftover. */
+.wrap {
+  /* on the dark table the leader dots have to invert */
+  --dot: rgba(244, 239, 227, 0.35);
+  position: relative;
+  z-index: 1;
+  max-width: var(--sheet-w);
+  margin: 0 auto;
+  padding: clamp(40px, 9vh, 104px) var(--paper-inset);
+}
+
+.wrap h1 {
+  font-family: var(--disp);
+  font-weight: 400;
+  font-size: clamp(32px, 5.4vw, 62px);
+  line-height: 1.04;
+  margin: 0 0 clamp(24px, 4vh, 48px);
+}
+
+.wrap ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid rgba(244, 239, 227, 0.16);
+}
+
+.wrap li {
+  border-bottom: 1px solid rgba(244, 239, 227, 0.16);
+}
+
+.wrap li a {
+  display: block;
+  padding: 18px 0;
+  text-decoration: none;
+  font-family: var(--disp);
+  font-size: clamp(20px, 2.6vw, 28px);
+  transition: padding-left 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.wrap li a:hover {
+  padding-left: 12px;
+  color: var(--brass);
+}
+
+.wrap .rt,
+.wrap .jj-table-wrap {
+  color: var(--paper);
+}
+
+/* ── breakpoints ───────────────────────────────────────────── */
+@media (max-width: 719px) {
+  .mbtn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    order: 2;
+  }
+
+  .mbtn span {
+    display: block;
+    height: 1.5px;
+    width: 22px;
+    background: var(--paper);
+  }
+
+  .nav {
+    display: none;
+    order: 4;
+    width: 100%;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 10px;
+  }
+
+  .nl {
+    padding: 10px 0;
+  }
+
+  .mtg:checked ~ .nav {
+    display: flex;
+  }
+
+  .top-contact {
+    order: 5;
+    width: 100%;
+    padding-top: 8px;
+    border-top: 1px solid rgba(244, 239, 227, 0.14);
+  }
+
+  .top-contact > :nth-child(n + 5) {
+    display: inline;
+  }
+
+  /* An address is longer than a phone number: let the strip wrap rather than
+     push the whole document sideways. */
+  .tc {
+    white-space: normal;
+  }
+}
+
+@media (min-width: 720px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-in {
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+
+  .cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
