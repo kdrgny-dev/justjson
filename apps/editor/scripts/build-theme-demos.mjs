@@ -29,6 +29,7 @@ const DEMOS = [
   { theme: 'mainstage', template: 'event', lang: 'en' },
   { theme: 'meridian', template: 'studio', lang: 'en' },
   { theme: 'solace', template: 'clinic', lang: 'en' },
+  { theme: 'vespro', template: 'trattoria', lang: 'tr' },
   { theme: 'larder', template: 'restaurant', lang: 'tr' },
   { theme: 'larder', template: 'restaurant-en', lang: 'en', out: 'larder-en' },
 ]

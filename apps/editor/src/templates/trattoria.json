@@ -1,0 +1,273 @@
+{
+  "title": "İtalyan mutfağı",
+  "description": "Modern bir İtalyan mutfağı: menü bölümleri ve kalemleri, mutfaktan notlar, saatler, sabit sayfalar ve iletişim.",
+  "schema": {
+    "version": 1,
+    "singletons": [
+      {
+        "name": "mutfak",
+        "label": "Mutfak",
+        "path": "mutfak.json",
+        "fields": [
+          { "key": "siteName", "label": "Mutfak adı", "type": "text", "required": true },
+          { "key": "title", "label": "Başlık", "type": "text", "required": true },
+          { "key": "tagline", "label": "El yazısı not", "type": "text" },
+          { "key": "cover", "label": "Kapak", "type": "image" },
+          { "key": "intro", "label": "Giriş", "type": "richtext" },
+          { "key": "rezervasyon", "label": "Rezervasyon", "type": "url" },
+          {
+            "key": "saatler",
+            "label": "Servis saatleri",
+            "type": "repeater",
+            "fields": [
+              { "key": "gun", "label": "Gün", "type": "text" },
+              { "key": "servis", "label": "Servis", "type": "text" },
+              { "key": "not", "label": "Not", "type": "text" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "iletisim",
+        "label": "İletişim",
+        "path": "iletisim.json",
+        "fields": [
+          { "key": "email", "label": "E-posta", "type": "email" },
+          { "key": "telefon", "label": "Telefon", "type": "text" },
+          { "key": "adres", "label": "Adres", "type": "text" },
+          { "key": "instagram", "label": "Instagram", "type": "url" }
+        ]
+      }
+    ],
+    "collections": [
+      {
+        "name": "menu",
+        "label": "Menü",
+        "path": "menu",
+        "fields": [
+          { "key": "name", "label": "Bölüm", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text" },
+          { "key": "summary", "label": "Özet", "type": "text" },
+          { "key": "cover", "label": "Kapak", "type": "image" },
+          { "key": "servis", "label": "Servis", "type": "select", "options": ["Öğle", "Tüm gün", "Akşam"] },
+          { "key": "body", "label": "Anlatım", "type": "richtext" },
+          {
+            "key": "kalemler",
+            "label": "Bu bölümde",
+            "type": "repeater",
+            "fields": [
+              { "key": "ad", "label": "Ad", "type": "text" },
+              { "key": "aciklama", "label": "Açıklama", "type": "text" },
+              { "key": "fiyat", "label": "Fiyat", "type": "text" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "mutfaktan",
+        "label": "Mutfaktan",
+        "path": "mutfaktan",
+        "fields": [
+          { "key": "title", "label": "Başlık", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text" },
+          { "key": "standfirst", "label": "Spot", "type": "text" },
+          { "key": "cover", "label": "Kapak", "type": "image" },
+          { "key": "date", "label": "Tarih", "type": "date" },
+          { "key": "body", "label": "Metin", "type": "richtext" }
+        ]
+      },
+      {
+        "name": "pages",
+        "label": "Sayfalar",
+        "path": "pages",
+        "fields": [
+          { "key": "title", "label": "Başlık", "type": "text", "required": true },
+          { "key": "slug", "label": "Slug", "type": "text" },
+          { "key": "summary", "label": "Özet", "type": "text" },
+          { "key": "body", "label": "Metin", "type": "richtext" }
+        ]
+      }
+    ]
+  },
+  "samples": {
+    "mutfak": {
+      "siteName": "Fermento",
+      "title": "Fermento",
+      "tagline": "Hamuru sabah açıyoruz. Akşam bitiyor, ertesi gün baştan başlıyoruz — bu yüzden dünden kalan bir tabak yok.",
+      "cover": "https://images.unsplash.com/photo-1481931098730-318b6f776db0?w=1200&q=75&auto=format&fit=crop",
+      "intro": "Fermento küçük bir İtalyan mutfağı. Sekiz masa, açık bir ocak ve arkada bir hamur tezgâhı; tezgâhın üstündeki saat, servisin değil mayanın saatini tutuyor.\n\nMenü iki parçadan oluşuyor. Bir yanı yıl boyu durmuyor — makarna, fırın, birkaç klasik. Diğer yanı haftada bir değişiyor, çünkü pazardan ne geldiyse o oluyor. İkisini ayrı yazıyoruz ki misafir hangisinin ne olduğunu bilsin.\n\n## Nasıl yiyoruz\n\nMasaya önce ortaya birkaç tabak geliyor. Primi'yi paylaşan çok, porsiyonları ona göre kuruyoruz; bölmek isteyene mutfak ikiye ayırıp çıkarıyor.\n\nAkşam servisi 18:30'da başlıyor. Son sipariş 22:30, ama masayı kaldırmıyoruz — kalkmak isteyene kadar oturulur.",
+      "rezervasyon": "https://fermento.example/rezervasyon",
+      "saatler": [
+        { "gun": "Pazartesi", "servis": "Kapalı", "not": "Hamur ve tedarik" },
+        { "gun": "Salı", "servis": "18:30 – 23:00", "not": "Son sipariş 22:30" },
+        { "gun": "Çarşamba", "servis": "18:30 – 23:00", "not": "Son sipariş 22:30" },
+        { "gun": "Perşembe", "servis": "18:30 – 23:00", "not": "Son sipariş 22:30" },
+        { "gun": "Cuma", "servis": "18:30 – 00:00", "not": "Bar 23:30'a kadar" },
+        { "gun": "Cumartesi", "servis": "12:30 – 00:00", "not": "Öğle menüsü 15:00'te biter" },
+        { "gun": "Pazar", "servis": "12:30 – 17:00", "not": "Tek servis" }
+      ]
+    },
+    "iletisim": {
+      "email": "masa@fermento.example",
+      "telefon": "+90 212 555 01 24",
+      "adres": "Beyoğlu, İstanbul",
+      "instagram": "https://www.instagram.com/fermento.tr/"
+    },
+    "menu": [
+      {
+        "name": "Antipasti",
+        "slug": "antipasti",
+        "summary": "Masaya ilk gelen ve en hızlı biten kısım. Ortaya, elle, acele etmeden.",
+        "cover": "https://images.unsplash.com/photo-1544025162-d76694265947?w=1200&q=75&auto=format&fit=crop",
+        "servis": "Tüm gün",
+        "body": "Antipasti'yi menünün girişi gibi değil, masanın ilk on beş dakikası gibi düşünüyoruz. Hepsi paylaşılacak boyutta çıkıyor; tek kişilik sipariş edeni mutfak yarım porsiyon yapıyor.\n\nZeytinyağı Ayvalık'tan, tek üreticiden geliyor ve yıl içinde değişmiyor. Peynirlerin üçü ithal, ikisi Trakya'dan; hangisinin hangisi olduğunu sorduğunuzda servis size söyleyebiliyor.\n\nEkmek fırından günde iki kez çıkıyor. İkinci fırın 20:00 civarı; o saatte gelen ekmeği sıcak yiyor.",
+        "kalemler": [
+          { "ad": "Focaccia", "aciklama": "Zeytinyağı, biberiye, deniz tuzu", "fiyat": "180 ₺" },
+          { "ad": "Burrata", "aciklama": "Közlenmiş biber, fesleğen yağı, ekmek", "fiyat": "420 ₺" },
+          { "ad": "Vitello tonnato", "aciklama": "Dana nuar, ton balıklı mayonez, kapari", "fiyat": "480 ₺" },
+          { "ad": "Carpaccio", "aciklama": "Dana bonfile, roka, parmesan, limon", "fiyat": "460 ₺" },
+          { "ad": "Karışık salumi", "aciklama": "Üç çeşit, turşu ve ekmekle", "fiyat": "520 ₺" },
+          { "ad": "Mevsim sebzesi", "aciklama": "Ocakta, sarımsak ve limonla — pazara göre değişir", "fiyat": "260 ₺" }
+        ]
+      },
+      {
+        "name": "Primi",
+        "slug": "primi",
+        "summary": "El açması makarna. Her gün sabah açılıyor, akşam bitiyor.",
+        "cover": "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=1200&q=75&auto=format&fit=crop",
+        "servis": "Tüm gün",
+        "body": "Makarnayı sabah 09:00'da açmaya başlıyoruz. Ne kadar açtıysak o kadar servis ediyoruz; bittiğinde menüden düşüyor ve servis size söylüyor.\n\nUn iki çeşit: sert buğday irmiği ve yumuşak buğday. Yumurtalı hamurda oran değişiyor, bu yüzden tagliatelle ile pappardelle aynı hamur değil.\n\n## Pişirme\n\nAl dente varsayılan. Daha yumuşak isteyene mutfak sorunsuz yapıyor — söylemek yeterli, tabağı geri göndermeye gerek yok.\n\nGlutensiz makarna yok. Denedik, aynı hamur olmadı; yanlış bir şeyi doğru gibi satmak istemedik.",
+        "kalemler": [
+          { "ad": "Cacio e pepe", "aciklama": "Tonnarelli, pecorino, karabiber", "fiyat": "420 ₺" },
+          { "ad": "Tagliatelle ragù", "aciklama": "Dört saatlik dana ragù, parmesan", "fiyat": "520 ₺" },
+          { "ad": "Pappardelle mantar", "aciklama": "Mevsim mantarı, tereyağı, kekik", "fiyat": "490 ₺" },
+          { "ad": "Vongole", "aciklama": "Spaghetti, kum midyesi, beyaz şarap", "fiyat": "560 ₺" },
+          { "ad": "Ravioli", "aciklama": "Ricotta ve ıspanak, adaçayı tereyağı", "fiyat": "470 ₺" },
+          { "ad": "Günün makarnası", "aciklama": "Pazara göre — servis anlatır", "fiyat": "480 ₺" }
+        ]
+      },
+      {
+        "name": "Fırından",
+        "slug": "firindan",
+        "summary": "Odun fırını 400 derecede. Hamur en az 48 saat dinlenmiş oluyor.",
+        "cover": "https://images.unsplash.com/photo-1528137871618-79d2761e3fd5?w=1200&q=75&auto=format&fit=crop",
+        "servis": "Akşam",
+        "body": "Fırın 17:00'de yakılıyor, servise 18:30'da hazır oluyor. Öğle servisinde fırın ürünü çıkmıyor — sıcaklık oturmadan pişirmiyoruz.\n\nHamur en az 48 saat soğukta dinleniyor. Bazen 72; hangisi olduğunu tezgâhtaki etikette görebilirsiniz.\n\nMalzeme sayısını beşle sınırlıyoruz. Altıncısını isteyene ekliyoruz ama önce bir kez soruyoruz.",
+        "kalemler": [
+          { "ad": "Margherita", "aciklama": "San Marzano, fior di latte, fesleğen", "fiyat": "380 ₺" },
+          { "ad": "Marinara", "aciklama": "Domates, sarımsak, kekik, zeytinyağı — peynirsiz", "fiyat": "320 ₺" },
+          { "ad": "Diavola", "aciklama": "Acı salam, mozzarella, biber yağı", "fiyat": "460 ₺" },
+          { "ad": "Bianca", "aciklama": "Beyaz baza, patates, biberiye, pecorino", "fiyat": "420 ₺" },
+          { "ad": "Focaccia di Recco", "aciklama": "İnce hamur arasında taze peynir", "fiyat": "400 ₺" }
+        ]
+      },
+      {
+        "name": "Secondi",
+        "slug": "secondi",
+        "summary": "Ocaktan ve fırından ana tabaklar. Paylaşmak için değil, tek kişilik.",
+        "cover": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=1200&q=75&auto=format&fit=crop",
+        "servis": "Akşam",
+        "body": "Secondi tarafı menünün en az değişen kısmı. Dört tabak sabit, biri haftalık.\n\nEti dinlendiriyoruz; bu yüzden ızgara siparişleri 20 dakikaya kadar sürebiliyor. Acelesi olan misafire servis bunu sipariş alırken söylüyor.\n\nGarnitür ayrı geliyor. Tabakta hazır bir yan yok — istediğinizi seçiyorsunuz.",
+        "kalemler": [
+          { "ad": "Ossobuco", "aciklama": "Dana incik, gremolata, safranlı risotto", "fiyat": "780 ₺" },
+          { "ad": "Levrek", "aciklama": "Bütün, fırında, zeytin ve limon", "fiyat": "690 ₺" },
+          { "ad": "Pollo al mattone", "aciklama": "Tuğla altında tavuk, biberiye" , "fiyat": "560 ₺" },
+          { "ad": "Bistecca", "aciklama": "400 gr, ızgara, kemikli — iki kişilik", "fiyat": "1.240 ₺" },
+          { "ad": "Haftanın tabağı", "aciklama": "Salı günü değişir", "fiyat": "620 ₺" }
+        ]
+      },
+      {
+        "name": "Dolci",
+        "slug": "dolci",
+        "summary": "Üç tatlı. Dördüncüsünü koymak için bir sebep bulamadık.",
+        "cover": "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=1200&q=75&auto=format&fit=crop",
+        "servis": "Akşam",
+        "body": "Tatlı bölümünü kasten kısa tuttuk. Üçü de günlük yapılıyor ve bittiğinde bitiyor.\n\nTiramisu'yu öğleden sonra kuruyoruz, akşam servise çıkıyor. Bir gün öncesinden kalanı satmıyoruz.\n\nEspresso tatlıyla birlikte geliyor; ayrı istemenize gerek yok, ama istemezseniz de sormuyoruz.",
+        "kalemler": [
+          { "ad": "Tiramisu", "aciklama": "Mascarpone, espresso, kakao", "fiyat": "260 ₺" },
+          { "ad": "Panna cotta", "aciklama": "Mevsim meyvesi", "fiyat": "240 ₺" },
+          { "ad": "Affogato", "aciklama": "Vanilyalı dondurma, tek shot espresso", "fiyat": "180 ₺" }
+        ]
+      },
+      {
+        "name": "Bar",
+        "slug": "bar",
+        "summary": "Vermut, birkaç kokteyl ve küçük bir şarap listesi. Uzun liste yapmadık.",
+        "cover": "https://images.unsplash.com/photo-1536935338788-846bb9981813?w=1200&q=75&auto=format&fit=crop",
+        "servis": "Akşam",
+        "body": "Şarap listesi on iki şişe. Hepsini kadeh olarak da açıyoruz, çünkü on iki şişeyi bitirebiliyoruz.\n\nBar tarafında amaro ve vermut ağırlıkta. Yemekten önce ve sonra içilen şeyleri, yemek sırasında içilenlerden ayrı yazdık.\n\nAlkolsüz tarafta üç seçenek var ve üçü de barda hazırlanıyor — kutu içecek servis etmiyoruz.",
+        "kalemler": [
+          { "ad": "Negroni", "aciklama": "Eşit üçlü, portakal kabuğu", "fiyat": "380 ₺" },
+          { "ad": "Americano", "aciklama": "Vermut, bitter, soda", "fiyat": "320 ₺" },
+          { "ad": "Sbagliato", "aciklama": "Negroni, cin yerine köpüklü", "fiyat": "360 ₺" },
+          { "ad": "Kadeh şarap", "aciklama": "Listeden herhangi biri", "fiyat": "280 ₺" },
+          { "ad": "Alkolsüz aperitif", "aciklama": "Barda hazırlanır, üç seçenek", "fiyat": "220 ₺" }
+        ]
+      }
+    ],
+    "mutfaktan": [
+      {
+        "title": "Neden 48 saat",
+        "slug": "48-saat",
+        "standfirst": "Hamuru bir gün önce açmak yeterli değildi. İki gün olunca fark ettik, üçüncü günde fark azaldı.",
+        "cover": "https://images.unsplash.com/photo-1498579150354-977475b7ea0b?w=1200&q=75&auto=format&fit=crop",
+        "date": "2026-06-18",
+        "body": "Açılışta hamuru 24 saat dinlendiriyorduk. Sonuç fena değildi ama kenar kabarmıyordu ve ertesi gün hamur ağırlaşıyordu.\n\n48 saate çıkardığımızda iki şey değişti: kenar açıldı ve tat ekşimeden derinleşti. 72 saati de denedik — fark var ama küçük, buna karşılık planlama zorlaşıyor.\n\n## Nerede duruyoruz\n\nŞu an standart 48. Hafta sonu için cuma günü ayrı bir parti kuruyoruz ve o 72 saat oluyor. Tezgâhtaki etikette hangisi olduğu yazıyor."
+      },
+      {
+        "title": "Pazardan ne geldiyse",
+        "slug": "pazar",
+        "standfirst": "Menünün yarısı sabit, yarısı değil. Değişen kısmı yazmak, sabit kısmı yazmaktan zor.",
+        "cover": "https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1200&q=75&auto=format&fit=crop",
+        "date": "2026-05-30",
+        "body": "Salı sabahları pazara iki kişi gidiyoruz. Liste yok; ne varsa ona bakıyoruz.\n\nDönünce menünün değişen kısmı yazılıyor ve basılıyor. Bu yüzden salı akşamı menü bazen 19:00'da masaya geliyor — bunu misafire söylüyoruz.\n\nSabit kısmı yılda iki kez gözden geçiriyoruz. Geçen sene iki tabak çıkardık, bir tane ekledik."
+      },
+      {
+        "title": "Ocak neden açık",
+        "slug": "acik-ocak",
+        "standfirst": "Kapalı mutfak daha sessiz olurdu. Sessizliği istemedik.",
+        "cover": "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1200&q=75&auto=format&fit=crop",
+        "date": "2026-05-12",
+        "body": "Mekânı kurarken mutfağı arkaya almak daha kolaydı. Öne aldık, çünkü servisin nasıl işlediğini görmek yemeğin bir parçası.\n\nBunun bedeli var: mutfak gürültülü ve sıcak. Ocağa en yakın iki masayı rezervasyonda söylüyoruz, isteyene başka masa veriyoruz.\n\nBir de şu: açık mutfakta hata saklanmıyor. Bu bizim için iyi oldu."
+      },
+      {
+        "title": "Zeytinyağını değiştirmedik",
+        "slug": "zeytinyagi",
+        "standfirst": "Üç kez daha ucuzunu denedik. Üçünde de mutfak fark etti, birinde misafir sordu.",
+        "cover": "https://images.unsplash.com/photo-1516100882582-96c3a05fe590?w=1200&q=75&auto=format&fit=crop",
+        "date": "2026-04-22",
+        "body": "Zeytinyağı bizim en çok tükettiğimiz kalem. Fiyatı arttıkça alternatif aramak mantıklı göründü.\n\nÜç farklı üreticiyle denedik. İkisinde kızartma tarafı sorun değildi ama çiğ kullandığımız yerlerde — burrata, carpaccio — fark açıktı.\n\n## Sonuç\n\nAynı üreticide kaldık. Onun yerine porsiyonda değil, israfta kısmayı seçtik: şişe açıldıktan sonra ne kadar durduğunu takip ediyoruz."
+      },
+      {
+        "title": "Rezervasyonu nasıl tutuyoruz",
+        "slug": "rezervasyon",
+        "standfirst": "Sekiz masa var. Çift rezervasyon almıyoruz, gecikmeyi de cezalandırmıyoruz.",
+        "cover": "https://images.unsplash.com/photo-1481833761820-0509d3217039?w=1200&q=75&auto=format&fit=crop",
+        "date": "2026-03-28",
+        "body": "Bir masayı akşam boyunca tek rezervasyona veriyoruz. Bu, aynı masayı iki kez satmadığımız anlamına geliyor; karşılığında masayı kalkmanız için sıkıştırmıyoruz.\n\nOn beş dakika gecikme sorun değil, haber vermeniz yeterli. Otuz dakikayı geçince masayı açıyoruz ama önce arıyoruz.\n\nWalk-in için barda dört tabure var ve bunlar rezervasyona kapalı."
+      },
+      {
+        "title": "Menüde olmayan şeyler",
+        "slug": "menude-olmayan",
+        "standfirst": "Çocuk menüsü, glutensiz makarna ve espresso martini. Üçünün de sebebi ayrı.",
+        "cover": "https://images.unsplash.com/photo-1595295333158-4742f28fbd85?w=1200&q=75&auto=format&fit=crop",
+        "date": "2026-02-14",
+        "body": "**Çocuk menüsü yok** ama mutfak her tabağı yarım porsiyon çıkarabiliyor ve sade makarna her zaman yapılabiliyor. Ayrı bir menü basmak yerine bunu söylemeyi seçtik.\n\n**Glutensiz makarna yok.** Denedik; hamur aynı olmadı. Fırın tarafında da aynı sorun var. Çapraz bulaşmayı da garanti edemiyoruz, bu yüzden hiç iddia etmiyoruz.\n\n**Espresso martini yok.** Bunun teknik bir sebebi yok, sadece istemedik. Sorulunca söylediğimiz cevap bu."
+      }
+    ],
+    "pages": [
+      {
+        "title": "Mutfak",
+        "slug": "mutfak",
+        "summary": "Kaç kişiyiz, ne yapıyoruz, neyi yapmıyoruz.",
+        "body": "Fermento'da mutfakta dört, salonda üç kişi çalışıyoruz. Servis boyunca herkes aynı anda içeride oluyor; ayrı vardiya yok.\n\n## Nereden alıyoruz\n\nUn tek değirmenden, zeytinyağı tek üreticiden, peynirlerin bir kısmı Trakya'dan geliyor. Balık günlük ve o gün ne geldiyse o oluyor — bu yüzden menüde balık adı değil, \"günün balığı\" yazıyor.\n\n## Neyi yapmıyoruz\n\nPaket servis yapmıyoruz. Makarna kutuda on dakikada başka bir şeye dönüşüyor; bunu göndermek istemedik.\n\nÖzel gün menüsü de yapmıyoruz. Yılbaşında da aynı menü, aynı fiyat."
+      },
+      {
+        "title": "Mekân",
+        "slug": "mekan",
+        "summary": "Sekiz masa, dört tabure ve bir hamur tezgâhı.",
+        "body": "Salon küçük: sekiz masa ve barda dört tabure. En büyük masa altı kişilik ve önceden söylenmesi gerekiyor.\n\nMekân tek kat, giriş sokak seviyesinde ve eşik yok. Tuvalet aynı katta.\n\n## Özel kullanım\n\nSalonun tamamını kapatmak mümkün. Salı ve çarşamba günleri için uygun; hafta sonu kapatmıyoruz.\n\nMüzik akşam boyunca aynı seviyede kalıyor. Servis ilerledikçe yükseltmiyoruz."
+      }
+    ]
+  }
+}
