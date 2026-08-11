@@ -1,6 +1,6 @@
 {
   "name": "@kdrgny/justjson",
-  "version": "1.8.2",
+  "version": "1.9.0",
   "description": "A tiny local-first CMS — build your schema in a visual UI, edit content, keep everything as plain JSON on disk.",
   "type": "module",
   "license": "MIT",
