@@ -19,8 +19,9 @@ export function detectDevScript(pkg: unknown): DevCommand | null {
   return { command: 'npm', args: ['run', 'dev'] }
 }
 
-// eslint-disable-next-line no-control-regex
+// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI escape stripping is intentional
 const ANSI = /\u001b\[[0-9;]*m/g
+// biome-ignore lint/suspicious/noControlCharactersInRegex: excludes ANSI escape from URL match
 const URL_RE = /(https?:\/\/localhost:\d+[^\s\u001b]*)/i
 
 /** Astro/Vite çıktısındaki renk kodlarını sıyırıp temiz bir URL döndürür. */

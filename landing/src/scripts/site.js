@@ -1,18 +1,18 @@
 ;(() => {
-  var root = document.documentElement
-  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+  const root = document.documentElement
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
 
   /* ---------- theme ---------- */
-  var stored = null
+  let stored = null
   try {
     stored = localStorage.getItem('jj-theme')
   } catch (e) {}
   if (stored) root.setAttribute('data-theme', stored)
 
   document.getElementById('theme').addEventListener('click', () => {
-    var cur = root.getAttribute('data-theme')
-    var dark = cur === 'dark' || (!cur && matchMedia('(prefers-color-scheme: dark)').matches)
-    var next = dark ? 'light' : 'dark'
+    const cur = root.getAttribute('data-theme')
+    const dark = cur === 'dark' || (!cur && matchMedia('(prefers-color-scheme: dark)').matches)
+    const next = dark ? 'light' : 'dark'
     root.setAttribute('data-theme', next)
     try {
       localStorage.setItem('jj-theme', next)
@@ -22,9 +22,9 @@
   /* ---------- copy ---------- */
   Array.prototype.forEach.call(document.querySelectorAll('[data-copy]'), (btn) => {
     btn.addEventListener('click', () => {
-      var text = btn.getAttribute('data-copy')
+      const text = btn.getAttribute('data-copy')
       if (navigator.clipboard) navigator.clipboard.writeText(text)
-      var prev = btn.textContent
+      const prev = btn.textContent
       btn.textContent = 'Copied'
       setTimeout(() => {
         btn.textContent = prev
@@ -33,12 +33,12 @@
   })
 
   /* ---------- scroll progress ---------- */
-  var bar = document.getElementById('progress')
-  var ticking = false
+  const bar = document.getElementById('progress')
+  let ticking = false
   function drawProgress() {
-    var max = document.body.scrollHeight - innerHeight
-    var p = max > 0 ? Math.min(1, scrollY / max) : 0
-    bar.style.transform = 'scaleX(' + p + ')'
+    const max = document.body.scrollHeight - innerHeight
+    const p = max > 0 ? Math.min(1, scrollY / max) : 0
+    bar.style.transform = `scaleX(${p})`
     ticking = false
   }
   addEventListener(
@@ -54,7 +54,7 @@
   drawProgress()
 
   /* ---------- reveal ---------- */
-  var revealables = document.querySelectorAll('.reveal')
+  const revealables = document.querySelectorAll('.reveal')
   Array.prototype.forEach.call(document.querySelectorAll('.stagger'), (g) => {
     Array.prototype.forEach.call(g.children, (child, i) => {
       child.style.setProperty('--i', i)
@@ -62,14 +62,14 @@
   })
 
   if ('IntersectionObserver' in window && !reduce) {
-    var io = new IntersectionObserver(
+    const io = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
+        for (const e of entries) {
           if (e.isIntersecting) {
             e.target.classList.add('shown')
             io.unobserve(e.target)
           }
-        })
+        }
       },
       { threshold: 0.14 },
     )
@@ -90,9 +90,9 @@
   if (matchMedia('(pointer: fine)').matches && !reduce) {
     Array.prototype.forEach.call(document.querySelectorAll('.card'), (card) => {
       card.addEventListener('pointermove', (e) => {
-        var r = card.getBoundingClientRect()
-        card.style.setProperty('--mx', ((e.clientX - r.left) / r.width) * 100 + '%')
-        card.style.setProperty('--my', ((e.clientY - r.top) / r.height) * 100 + '%')
+        const r = card.getBoundingClientRect()
+        card.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`)
+        card.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`)
       })
     })
   }
@@ -100,16 +100,15 @@
   /* ---------- dataflow packet geometry ---------- */
   function layoutPackets() {
     Array.prototype.forEach.call(document.querySelectorAll('.flow'), (flow) => {
-      var nodes = flow.querySelectorAll('.node .pin')
-      var packet = flow.querySelector('.packet')
+      const nodes = flow.querySelectorAll('.node .pin')
+      const packet = flow.querySelector('.packet')
       if (!packet || nodes.length < 2) return
-      var base = nodes[0].getBoundingClientRect()
-      var origin = base.left + base.width / 2
-      packet.style.left =
-        origin - flow.querySelector('.nodes').getBoundingClientRect().left - 5.5 + 'px'
-      for (var i = 1; i < nodes.length; i++) {
-        var r = nodes[i].getBoundingClientRect()
-        packet.style.setProperty('--p' + i, r.left + r.width / 2 - origin + 'px')
+      const base = nodes[0].getBoundingClientRect()
+      const origin = base.left + base.width / 2
+      packet.style.left = `${origin - flow.querySelector('.nodes').getBoundingClientRect().left - 5.5}px`
+      for (let i = 1; i < nodes.length; i++) {
+        const r = nodes[i].getBoundingClientRect()
+        packet.style.setProperty(`--p${i}`, `${r.left + r.width / 2 - origin}px`)
       }
     })
   }
@@ -117,8 +116,8 @@
   addEventListener('resize', layoutPackets, { passive: true })
 
   /* ---------- live stats (count-up) ---------- */
-  var REPO = 'kdrgny-dev/justjson'
-  var PKG = '@kdrgny/justjson'
+  const REPO = 'kdrgny-dev/justjson'
+  const PKG = '@kdrgny/justjson'
 
   function fmt(n) {
     return n.toLocaleString('en-US')
@@ -129,12 +128,12 @@
       el.textContent = fmt(target)
       return
     }
-    var dur = 1100
-    var start = null
+    const dur = 1100
+    let start = null
     function step(ts) {
       if (start === null) start = ts
-      var t = Math.min(1, (ts - start) / dur)
-      var eased = 1 - Math.pow(1 - t, 3)
+      const t = Math.min(1, (ts - start) / dur)
+      const eased = 1 - (1 - t) ** 3
       el.textContent = fmt(Math.round(target * eased))
       if (t < 1) requestAnimationFrame(step)
     }
@@ -142,34 +141,34 @@
   }
 
   function initStats() {
-    var els = document.querySelectorAll('.stat-num[data-source]')
+    const els = document.querySelectorAll('.stat-num[data-source]')
     if (!els.length) return
 
     // Scoped packages return 0 from the downloads point/range API (a known npm
     // limitation); the per-version endpoint reports real counts, so we sum it.
-    var PKG_ENC = PKG.replace('/', '%2F')
+    const PKG_ENC = PKG.replace('/', '%2F')
     function json(url) {
       return fetch(url)
         .then((r) => (r.ok ? r.json() : {}))
         .catch(() => ({}))
     }
     function sumVersions(body) {
-      var d = body && body.downloads
+      const d = body?.downloads
       if (!d || typeof d !== 'object') return undefined
-      var t = 0
-      for (var k in d) t += d[k]
+      let t = 0
+      for (const k in d) t += d[k]
       return t
     }
 
-    var valuesReady = null
+    let valuesReady = null
     function loadValues() {
       if (valuesReady) return valuesReady
       valuesReady = Promise.all([
-        json('https://api.github.com/repos/' + REPO),
-        json('https://api.npmjs.org/versions/' + PKG_ENC + '/last-week'),
-        json('https://api.npmjs.org/versions/' + PKG_ENC + '/last-month'),
+        json(`https://api.github.com/repos/${REPO}`),
+        json(`https://api.npmjs.org/versions/${PKG_ENC}/last-week`),
+        json(`https://api.npmjs.org/versions/${PKG_ENC}/last-month`),
       ]).then((res) => {
-        var g = res[0] || {}
+        const g = res[0] || {}
         return {
           'github-stars': g.stargazers_count,
           'github-forks': g.forks_count,
@@ -183,23 +182,23 @@
     function reveal() {
       loadValues().then((values) => {
         Array.prototype.forEach.call(els, (el) => {
-          var v = values[el.getAttribute('data-source')]
+          const v = values[el.getAttribute('data-source')]
           if (typeof v === 'number') countUp(el, v)
           else el.textContent = '—'
         })
       })
     }
 
-    var band = els[0].closest('.band') || els[0]
+    const band = els[0].closest('.band') || els[0]
     if ('IntersectionObserver' in window) {
-      var so = new IntersectionObserver(
+      const so = new IntersectionObserver(
         (entries) => {
-          entries.forEach((e) => {
+          for (const e of entries) {
             if (e.isIntersecting) {
               so.unobserve(e.target)
               reveal()
             }
-          })
+          }
         },
         { threshold: 0.3 },
       )
@@ -211,7 +210,7 @@
   initStats()
 
   /* ---------- segments ---------- */
-  var SEGMENTS = [
+  const SEGMENTS = [
     {
       id: 'blog',
       label: 'Blog',
@@ -330,17 +329,17 @@
     },
   ]
 
-  var DWELL = 9000
-  var tabsEl = document.getElementById('tabs')
-  var rowsEl = document.getElementById('rows')
-  var jsonEl = document.getElementById('json')
-  var pathEl = document.getElementById('wirePath')
-  var capEl = document.getElementById('segCaption')
-  var collEl = document.getElementById('segCollection')
-  var index = 0
-  var auto = true
-  var advanceTimer = null
-  var liveTimers = []
+  const DWELL = 9000
+  const tabsEl = document.getElementById('tabs')
+  const rowsEl = document.getElementById('rows')
+  const jsonEl = document.getElementById('json')
+  const pathEl = document.getElementById('wirePath')
+  const capEl = document.getElementById('segCaption')
+  const collEl = document.getElementById('segCollection')
+  let index = 0
+  let auto = true
+  let advanceTimer = null
+  let liveTimers = []
 
   function esc(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -351,19 +350,19 @@
     liveTimers = []
   }
   function later(fn, ms) {
-    var t = setTimeout(fn, ms)
+    const t = setTimeout(fn, ms)
     liveTimers.push(t)
     return t
   }
 
   function buildTabs() {
     SEGMENTS.forEach((seg, i) => {
-      var b = document.createElement('button')
+      const b = document.createElement('button')
       b.className = 'tab'
       b.type = 'button'
       b.setAttribute('role', 'tab')
       b.setAttribute('aria-selected', i === 0 ? 'true' : 'false')
-      b.innerHTML = esc(seg.label) + '<span class="bar"></span>'
+      b.innerHTML = `${esc(seg.label)}<span class="bar"></span>`
       b.addEventListener('click', () => {
         auto = false
         select(i)
@@ -374,48 +373,31 @@
 
   function renderRows(seg) {
     rowsEl.innerHTML = ''
-    seg.fields.forEach((f) => {
-      var row = document.createElement('div')
-      row.className = 'row-field' + (f.key === seg.live.key ? ' live' : '')
+    for (const f of seg.fields) {
+      const row = document.createElement('div')
+      row.className = `row-field${f.key === seg.live.key ? ' live' : ''}`
       row.setAttribute('data-key', f.key)
-      var value =
-        f.type === 'select' ? '<span class="chip">' + esc(f.value) + '</span>' : esc(f.value)
-      row.innerHTML =
-        '<span class="k">' +
-        esc(f.key) +
-        '</span><span class="ty">' +
-        esc(f.type) +
-        '</span><span class="v">' +
-        value +
-        '</span>'
+      const value = f.type === 'select' ? `<span class="chip">${esc(f.value)}</span>` : esc(f.value)
+      row.innerHTML = `<span class="k">${esc(f.key)}</span><span class="ty">${esc(f.type)}</span><span class="v">${value}</span>`
       rowsEl.appendChild(row)
-    })
+    }
   }
 
   function jsonValue(f) {
-    if (f.type === 'number') return '<span class="num">' + esc(f.value) + '</span>'
-    return '<span class="str">"' + esc(f.value) + '"</span>'
+    if (f.type === 'number') return `<span class="num">${esc(f.value)}</span>`
+    return `<span class="str">"${esc(f.value)}"</span>`
   }
 
   function renderJson(seg) {
-    var pad = Math.max.apply(
+    const pad = Math.max.apply(
       null,
       seg.fields.map((f) => f.key.length),
     )
-    var lines = ['<span class="ln"><span class="pun">{</span></span>']
+    const lines = ['<span class="ln"><span class="pun">{</span></span>']
     seg.fields.forEach((f, i) => {
-      var gap = new Array(pad - f.key.length + 1).join(' ')
+      const gap = new Array(pad - f.key.length + 1).join(' ')
       lines.push(
-        '<span class="ln" data-key="' +
-          esc(f.key) +
-          '">  <span class="key">"' +
-          esc(f.key) +
-          '"</span><span class="pun">:</span>' +
-          gap +
-          ' ' +
-          jsonValue(f) +
-          (i < seg.fields.length - 1 ? '<span class="pun">,</span>' : '') +
-          '</span>',
+        `<span class="ln" data-key="${esc(f.key)}">  <span class="key">"${esc(f.key)}"</span><span class="pun">:</span>${gap} ${jsonValue(f)}${i < seg.fields.length - 1 ? '<span class="pun">,</span>' : ''}</span>`,
       )
     })
     lines.push('<span class="ln"><span class="pun">}</span></span>')
@@ -423,9 +405,9 @@
   }
 
   function stagger(seg) {
-    var rows = rowsEl.querySelectorAll('.row-field')
-    var lines = jsonEl.querySelectorAll('.ln')
-    var step = reduce ? 0 : 60
+    const rows = rowsEl.querySelectorAll('.row-field')
+    const lines = jsonEl.querySelectorAll('.ln')
+    const step = reduce ? 0 : 60
     Array.prototype.forEach.call(rows, (r, i) => {
       later(() => {
         r.classList.add('on')
@@ -441,10 +423,8 @@
 
   function liveTargets(key) {
     return {
-      row: rowsEl.querySelector('.row-field[data-key="' + key + '"] .v'),
-      line: jsonEl.querySelector(
-        '.ln[data-key="' + key + '"] .str, .ln[data-key="' + key + '"] .num',
-      ),
+      row: rowsEl.querySelector(`.row-field[data-key="${key}"] .v`),
+      line: jsonEl.querySelector(`.ln[data-key="${key}"] .str, .ln[data-key="${key}"] .num`),
     }
   }
 
@@ -456,14 +436,14 @@
   }
 
   function runType(seg, startAt) {
-    var t = liveTargets(seg.live.key)
+    const t = liveTargets(seg.live.key)
     if (!t.row || !t.line) return
-    var values = seg.live.values
-    var vi = 0
+    const values = seg.live.values
+    let vi = 0
 
     function write(text, caret) {
       t.row.innerHTML = esc(text) + (caret ? '<span class="tcaret"></span>' : '')
-      t.line.textContent = '"' + text + '"'
+      t.line.textContent = `"${text}"`
     }
 
     function erase(text, done) {
@@ -500,17 +480,17 @@
   }
 
   function runSwap(seg, startAt) {
-    var t = liveTargets(seg.live.key)
+    const t = liveTargets(seg.live.key)
     if (!t.row || !t.line) return
-    var values = seg.live.values
-    var vi = 0
-    var isNum = seg.live.mode === 'number'
+    const values = seg.live.values
+    let vi = 0
+    const isNum = seg.live.mode === 'number'
 
     function tick() {
       vi = (vi + 1) % values.length
-      var v = values[vi]
-      t.row.innerHTML = isNum ? esc(v) : '<span class="chip">' + esc(v) + '</span>'
-      t.line.textContent = isNum ? String(v) : '"' + v + '"'
+      const v = values[vi]
+      t.row.innerHTML = isNum ? esc(v) : `<span class="chip">${esc(v)}</span>`
+      t.line.textContent = isNum ? String(v) : `"${v}"`
       pulse(isNum ? t.row : t.row.firstChild)
       pulse(t.line)
       later(tick, 1900)
@@ -520,7 +500,7 @@
 
   function select(i) {
     index = i
-    var seg = SEGMENTS[i]
+    const seg = SEGMENTS[i]
     clearLive()
 
     Array.prototype.forEach.call(tabsEl.children, (b, k) => {
@@ -534,15 +514,15 @@
     capEl.textContent = seg.caption
     collEl.textContent = seg.collection
 
-    var after = stagger(seg)
+    const after = stagger(seg)
     if (!reduce) {
       if (seg.live.mode === 'type') runType(seg, after)
       else runSwap(seg, after)
     }
 
     if (auto && !reduce) {
-      var tab = tabsEl.children[i]
-      tab.style.setProperty('--dwell', DWELL + 'ms')
+      const tab = tabsEl.children[i]
+      tab.style.setProperty('--dwell', `${DWELL}ms`)
       void tab.offsetWidth
       tab.classList.add('timing')
       clearTimeout(advanceTimer)

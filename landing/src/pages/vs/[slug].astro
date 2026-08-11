@@ -14,11 +14,13 @@ export async function getStaticPaths() {
     { default: P }
   >
   const items: P[] = Object.entries(g).map(([path, m]) => ({
-    slug: path.split('/').pop()!.replace('.json', ''),
+    slug: path.split('/').pop()?.replace('.json', ''),
     ...m.default,
   }))
   const us = items.find((p) => p.isUs)
-  return items.filter((p) => !p.isUs).map((p) => ({ params: { slug: p.slug }, props: { competitor: p, us } }))
+  return items
+    .filter((p) => !p.isUs)
+    .map((p) => ({ params: { slug: p.slug }, props: { competitor: p, us } }))
 }
 
 const { competitor, us } = Astro.props

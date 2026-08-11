@@ -1,6 +1,6 @@
 ---
-import { marked } from 'marked'
 import Analytics from '@vercel/analytics/astro'
+import { marked } from 'marked'
 import Foot from '../../components/Foot.astro'
 import Nav from '../../components/Nav.astro'
 import Seo from '../../components/Seo.astro'
@@ -10,7 +10,10 @@ import '../../styles/site.css'
 type Doc = Record<string, any>
 
 const all = Object.values(
-  import.meta.glob('../../../content/docs/*.json', { eager: true }) as Record<string, { default: Doc }>,
+  import.meta.glob('../../../content/docs/*.json', { eager: true }) as Record<
+    string,
+    { default: Doc }
+  >,
 )
   .map((m) => m.default)
   .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))

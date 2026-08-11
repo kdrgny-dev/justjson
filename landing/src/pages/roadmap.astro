@@ -1,6 +1,6 @@
 ---
-import { marked } from 'marked'
 import Analytics from '@vercel/analytics/astro'
+import { marked } from 'marked'
 import Foot from '../components/Foot.astro'
 import Nav from '../components/Nav.astro'
 import Seo from '../components/Seo.astro'
@@ -25,7 +25,14 @@ const groups = [
 ]
 
 const fmtDate = (d: string) =>
-  d ? new Date(d + 'T00:00:00Z').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }) : ''
+  d
+    ? new Date(`${d}T00:00:00Z`).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'UTC',
+      })
+    : ''
 
 const title = 'JustJSON — roadmap & releases'
 const description =

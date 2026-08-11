@@ -7,7 +7,15 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "ignore": ["**/components/ui/**", "**/dist/**", "**/node_modules/**"]
+    "ignore": [
+      "**/components/ui/**",
+      "**/dist/**",
+      "**/node_modules/**",
+      "**/.astro/**",
+      "**/.obsidian/**",
+      ".remember/**",
+      "landing/public/studio/**"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -26,5 +34,22 @@
       "quoteStyle": "single",
       "semicolons": "asNeeded"
     }
-  }
+  },
+  "json": {
+    "formatter": {
+      "enabled": false
+    }
+  },
+  "overrides": [
+    {
+      "include": ["landing/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    }
+  ]
 }
