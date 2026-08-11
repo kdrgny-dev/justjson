@@ -253,12 +253,6 @@ Landed in `1.3.0`:
 
 Ideas and issues welcome.
 
-## Star history
-
-<a href="https://star-history.com/#kdrgny-dev/justjson&Date">
-  <img src="https://api.star-history.com/svg?repos=kdrgny-dev/justjson&type=Date" alt="Star history chart" width="600" />
-</a>
-
 ## License
 
 [MIT](LICENSE) © Kadir Günay
