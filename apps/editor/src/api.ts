@@ -415,6 +415,7 @@ export async function pushToRepo(
   if (remote.length > 0 && repo.fingerprint(remote) !== synced) {
     throw new repo.StaleError('İçerik başka bir yerden değişmiş. Sayfayı yenileyip tekrar deneyin.')
   }
+  const remoteByPath = new Map(remote.map((file) => [file.path, file.text]))
 
   const local = await collectLocalContent()
   const files = Object.entries(local).map(([path, text]) => ({
@@ -425,7 +426,12 @@ export async function pushToRepo(
   const localRepoPaths = new Set(files.map((file) => file.path))
   const removed = remote.map((file) => file.path).filter((path) => !localRepoPaths.has(path))
 
-  const result = await repo.pushContent(link, token, files, removed, message)
+  // Yalnızca gerçekten değişen dosyalar gönderilir: her blob ayrı bir POST ve
+  // otuz küs istek peş peşe atılınca GitHub 503 dönebiliyor. base_tree
+  // değişmeyenleri zaten taşır.
+  const changed = files.filter((file) => remoteByPath.get(file.path) !== file.text)
+
+  const result = await repo.pushContent(link, token, changed, removed, message)
   repo.setSyncedCommit(activeProject().id, link, repo.fingerprint(files))
   return result
 }

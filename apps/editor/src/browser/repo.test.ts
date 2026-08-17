@@ -52,7 +52,7 @@ describe('base64', () => {
 // 60/saat. Burada istek sırası ve gövdeleri doğrulanıyor — asıl kırılgan yer o.
 
 import { afterEach, beforeEach, vi } from 'vitest'
-import { getSyncedCommit, pullContent, pushContent, setSyncedCommit } from './repo'
+import { checkRepo, getSyncedCommit, pullContent, pushContent, setSyncedCommit } from './repo'
 
 const LINK = { owner: 'kdrgny-dev', repo: 'site', branch: 'main', contentDir: 'content' }
 
@@ -198,5 +198,36 @@ describe('senkron damgası', () => {
 
   it('hiç çekilmemişse null döner', () => {
     expect(getSyncedCommit(project, LINK)).toBeNull()
+  })
+})
+
+describe('geçici hatalar', () => {
+  it('503 sonrası tekrar dener ve başarılı olur', async () => {
+    let attempts = 0
+    vi.stubGlobal('fetch', async (url: string) => {
+      if (url.endsWith('/git/ref/heads/main')) {
+        attempts++
+        if (attempts < 3) return new Response('busy', { status: 503, headers: new Headers() })
+        return new Response(JSON.stringify({ object: { sha: 'c1' } }), {
+          status: 200,
+          headers: new Headers(),
+        })
+      }
+      return new Response(JSON.stringify({ tree: { sha: 't1' } }), {
+        status: 200,
+        headers: new Headers(),
+      })
+    })
+    const head = await checkRepo(LINK, 'tok')
+    expect(head.commitSha).toBe('c1')
+    expect(attempts).toBe(3)
+  })
+
+  it('ısrarlı 5xx anlaşılır mesajla biter', async () => {
+    vi.stubGlobal(
+      'fetch',
+      async () => new Response('down', { status: 503, headers: new Headers() }),
+    )
+    await expect(checkRepo(LINK, 'tok')).rejects.toThrow(/yanıt vermiyor/)
   })
 })

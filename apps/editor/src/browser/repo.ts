@@ -147,7 +147,14 @@ async function call(
     'Content-Type': 'application/json',
   }
   if (token.trim()) headers.Authorization = `Bearer ${token.trim()}`
-  const res = await fetch(`${GH}${path}`, { ...init, headers })
+  // 5xx ve ikincil kota GitHub'da geçici; tek denemede pes etmek kullanıcıya
+  // "yayınlanamadı" demek olur. Üstel bekleyerek birkaç kez dene.
+  let res = await fetch(`${GH}${path}`, { ...init, headers })
+  for (let attempt = 0; attempt < 3 && (res.status >= 500 || res.status === 429); attempt++) {
+    const after = Number(res.headers.get('retry-after') ?? 0)
+    await new Promise((r) => setTimeout(r, after ? after * 1000 : 700 * 2 ** attempt))
+    res = await fetch(`${GH}${path}`, { ...init, headers })
+  }
   if (!res.ok) {
     const detail = await res.text()
     // 403 hem yetkisizlik hem kota aşımı demek olabiliyor; ikisini ayır,
@@ -170,6 +177,9 @@ async function call(
     }
     if (res.status === 404) {
       throw new RepoError('Repo, dal ya da klasör bulunamadı.')
+    }
+    if (res.status >= 500) {
+      throw new RepoError('GitHub şu an yanıt vermiyor. Birkaç dakika sonra tekrar deneyin.')
     }
     throw new RepoError(`GitHub ${res.status}: ${detail.slice(0, 160)}`)
   }
