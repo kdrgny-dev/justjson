@@ -18,6 +18,7 @@ import {
 } from '@justjson/core'
 import { IdbAdapter, clearProject } from './browser/idb'
 import * as proj from './browser/project'
+import * as repo from './browser/repo'
 import { setSelectedThemeId } from './browser/theme-store'
 import blog from './templates/blog.json'
 import catalog from './templates/catalog.json'
@@ -184,8 +185,8 @@ export async function importProject(raw: unknown): Promise<void> {
 
 export const exportUrl = '#'
 
-export async function downloadExport(): Promise<void> {
-  // No server/zip: bundle every stored file into a single JSON download.
+/** Depodaki tüm içerik dosyaları, yol -> metin. Dışa aktarma ve repo senkronu paylaşır. */
+export async function collectLocalContent(): Promise<Record<string, string>> {
   const files: Record<string, string> = {}
   const s = await schema()
   files[`${CONTENT}/_schema.json`] = (await adapter.read(`${CONTENT}/_schema.json`)) ?? ''
@@ -200,6 +201,12 @@ export async function downloadExport(): Promise<void> {
     const data = await cs.readSingleton(sg.name)
     if (data) files[`${CONTENT}/${sg.path}`] = JSON.stringify(data, null, 2)
   }
+  return files
+}
+
+export async function downloadExport(): Promise<void> {
+  // No server/zip: bundle every stored file into a single JSON download.
+  const files = await collectLocalContent()
   const blob = new Blob([JSON.stringify(files, null, 2)], { type: 'application/json' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
@@ -337,4 +344,71 @@ export async function startPreview(): Promise<PreviewState> {
 }
 export async function stopPreview(): Promise<PreviewState> {
   return { status: 'idle' }
+}
+
+// ─── Repo içerik senkronu ────────────────────────────────────────────────────
+// Studio'nun sanal dosya düzeni repo'nun `content/` klasörüyle birebir aynı;
+// senkron bu yüzden düz bir kopyalama. Repo tarafındaki kod ve tema
+// dosyalarına dokunulmaz.
+
+export type { RepoLink, PushResult } from './browser/repo'
+export {
+  RepoError,
+  checkRepo,
+  getRepoLink,
+  getRepoToken,
+  parseRepoInput,
+  setRepoLink,
+  setRepoToken,
+} from './browser/repo'
+
+/** Repo yolunu studio yoluna çevirir: `icerik/x.json` -> `content/x.json`. */
+function toLocalPath(repoPath: string, contentDir: string): string {
+  return `${CONTENT}/${repoPath.slice(contentDir.length + 1)}`
+}
+
+function toRepoPath(localPath: string, contentDir: string): string {
+  return `${contentDir}/${localPath.slice(CONTENT.length + 1)}`
+}
+
+/** Repo'daki içeriği studio'ya alır. Yereldeki fazlalık dosyalar silinir. */
+export async function pullFromRepo(
+  link: repo.RepoLink,
+  token: string,
+): Promise<{ pulled: number; dropped: number }> {
+  const remote = await repo.pullContent(link, token)
+
+  const before = await collectLocalContent()
+  const incoming = new Set(remote.map((file) => toLocalPath(file.path, link.contentDir)))
+
+  for (const file of remote) {
+    await adapter.write(toLocalPath(file.path, link.contentDir), file.text)
+  }
+  // Repo'da olmayan yerel kayıt bir sonraki push'ta geri dirilmesin.
+  let dropped = 0
+  for (const path of Object.keys(before)) {
+    if (incoming.has(path)) continue
+    await adapter.delete(path)
+    dropped++
+  }
+  return { pulled: remote.length, dropped }
+}
+
+/** Studio'daki içeriği repo'ya commit'ler. */
+export async function pushToRepo(
+  link: repo.RepoLink,
+  token: string,
+  message: string,
+): Promise<repo.PushResult> {
+  const local = await collectLocalContent()
+  const files = Object.entries(local).map(([path, text]) => ({
+    path: toRepoPath(path, link.contentDir),
+    text,
+  }))
+
+  const remote = await repo.pullContent(link, token).catch(() => [])
+  const localRepoPaths = new Set(files.map((file) => file.path))
+  const removed = remote.map((file) => file.path).filter((path) => !localRepoPaths.has(path))
+
+  return repo.pushContent(link, token, files, removed, message)
 }

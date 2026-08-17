@@ -58,6 +58,7 @@ import {
   Eye,
   FileCog,
   FolderGit2,
+  GitBranch,
   Image as ImageIcon,
   Link2,
   Menu,
@@ -77,6 +78,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { LivePreview } from './LivePreview'
 import { Preview } from './Preview'
+import { Repo } from './Repo'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
 import { Ship } from './Ship'
@@ -105,6 +107,7 @@ type Selection =
   | { kind: 'theme' }
   | { kind: 'preview' }
   | { kind: 'ship' }
+  | { kind: 'repo' }
   | { kind: 'collection'; name: string }
   | { kind: 'entry'; collection: string; slug: string }
   | { kind: 'newEntry'; collection: string }
@@ -191,6 +194,10 @@ function AppShell() {
           setGallery(false)
           setSelection({ kind: 'schema' })
         }}
+        onRepo={() => {
+          setGallery(false)
+          setSelection({ kind: 'repo' })
+        }}
       />
     )
   }
@@ -264,6 +271,7 @@ function crumbsFor(
   if (selection.kind === 'schema') return [{ label: t('Schema') }]
   if (selection.kind === 'json') return [{ label: t('Raw JSON') }]
   if (selection.kind === 'ship') return [{ label: t('Ship it') }]
+  if (selection.kind === 'repo') return [{ label: t('Repository') }]
   if (selection.kind === 'theme') return [{ label: t('Design') }]
   if (selection.kind === 'preview') return [{ label: t('Preview') }]
   if (selection.kind === 'collection') {
@@ -458,6 +466,13 @@ function Sidebar({
             onClick={() => onSelect({ kind: 'ship' })}
           >
             {t('Publish')}
+          </NavItem>
+          <NavItem
+            icon={<GitBranch className="h-4 w-4" />}
+            active={selection?.kind === 'repo'}
+            onClick={() => onSelect({ kind: 'repo' })}
+          >
+            {t('Repository')}
           </NavItem>
         </NavSection>
 
@@ -803,6 +818,10 @@ function MainArea({
 
   if (selection.kind === 'ship') {
     return <Ship schema={schema} />
+  }
+
+  if (selection.kind === 'repo') {
+    return <Repo onChanged={() => void onReload()} />
   }
 
   if (selection.kind === 'theme') {

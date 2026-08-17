@@ -168,9 +168,11 @@ function DetectedLine() {
 export function TemplateGallery({
   onApplied,
   onScratch,
+  onRepo,
 }: {
   onApplied: () => void
   onScratch: () => void
+  onRepo?: () => void
 }) {
   const [templates, setTemplates] = useState<TemplateMeta[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -227,7 +229,12 @@ export function TemplateGallery({
 
         <TemplateCarousel templates={templates} applying={applying} onPick={apply} />
 
-        <StartOptions onImported={onApplied} onScratch={onScratch} disabled={busy} />
+        <StartOptions
+          onImported={onApplied}
+          onScratch={onScratch}
+          onRepo={onRepo}
+          disabled={busy}
+        />
       </div>
     </div>
   )

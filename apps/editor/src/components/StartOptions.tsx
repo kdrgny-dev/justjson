@@ -252,10 +252,13 @@ function ImportOption({ onImported, disabled }: { onImported: () => void; disabl
 export function StartOptions({
   onImported,
   onScratch,
+  onRepo,
   disabled,
 }: {
   onImported: () => void
   onScratch: () => void
+  /** Var olan bir repo'nun içerik klasörüne bağlan. */
+  onRepo?: () => void
   disabled: boolean
 }) {
   return (
@@ -271,6 +274,22 @@ export function StartOptions({
         <ImportOption onImported={onImported} disabled={disabled} />
         <ScratchOption onScratch={onScratch} disabled={disabled} />
       </div>
+
+      {onRepo && (
+        <button
+          type="button"
+          onClick={onRepo}
+          disabled={disabled}
+          className="mt-4 w-full rounded-lg border border-dashed px-4 py-3 text-left text-sm transition-colors hover:bg-accent disabled:opacity-50"
+        >
+          <span className="font-medium">{t('Connect a repository')}</span>
+          <span className="mt-0.5 block text-xs text-muted-foreground">
+            {t(
+              'The site already exists and keeps its content in a repository — pull it in and edit.',
+            )}
+          </span>
+        </button>
+      )}
     </section>
   )
 }
