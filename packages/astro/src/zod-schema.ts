@@ -12,6 +12,9 @@ function base(field: Field): z.ZodTypeAny {
       return z.array(z.string())
     case 'group':
       return fieldsToZod(field.fields ?? [])
+    case 'repeater':
+      // Repeater = aynı alan setinin tekrarı; her satır kendi kurallarını taşır.
+      return z.array(fieldsToZod(field.fields ?? []))
     case 'select': {
       const options = field.options ?? []
       // Seçenekler literal union verir; boş bırakılmışsa serbest metne düşer.

@@ -93,6 +93,7 @@ export const collections = {
 | `select` | `enum` of your options (or `string` if none) |
 | `relation` · `list` | `string[]` |
 | `group` | nested object |
+| `repeater` | array of nested objects |
 
 Format checks (is this a real URL?) are left to `justjson validate` on purpose,
 so a typo in one entry never breaks your build in a surprising place.

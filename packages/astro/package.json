@@ -1,6 +1,6 @@
 {
   "name": "@kdrgny/justjson-astro",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Astro content loader for JustJSON \u2014 turn your content/ folder into typed Astro content collections.",
   "type": "module",
   "license": "MIT",

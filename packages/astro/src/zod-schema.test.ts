@@ -64,6 +64,47 @@ describe('fieldsToZod', () => {
     expect(schema.safeParse({ address: { no: 5 } }).success).toBe(false)
   })
 
+  it('repeater alanını nesne dizisine çevirir', () => {
+    const fields: Field[] = [
+      {
+        key: 'table',
+        type: 'repeater',
+        required: true,
+        fields: [
+          { key: 'label', type: 'text', required: true },
+          { key: 'value', type: 'number', required: true },
+          { key: 'note', type: 'text' },
+        ],
+      },
+    ]
+    const schema = fieldsToZod(fields)
+    expect(
+      schema.parse({
+        table: [
+          { label: 'Ocak', value: 12 },
+          { label: 'Şubat', value: 9, note: 'revize' },
+        ],
+      }),
+    ).toEqual({
+      table: [
+        { label: 'Ocak', value: 12 },
+        { label: 'Şubat', value: 9, note: 'revize' },
+      ],
+    })
+    // satırın kendi alan kuralları da geçerli
+    expect(schema.safeParse({ table: [{ label: 'Ocak' }] }).success).toBe(false)
+    // düz metin repeater değildir
+    expect(schema.safeParse({ table: 'Ocak' }).success).toBe(false)
+  })
+
+  it('zorunlu olmayan repeater eksik olabilir, boş dizi geçerlidir', () => {
+    const schema = fieldsToZod([
+      { key: 'rows', type: 'repeater', fields: [{ key: 'label', type: 'text' }] },
+    ])
+    expect(schema.safeParse({}).success).toBe(true)
+    expect(schema.parse({ rows: [] })).toEqual({ rows: [] })
+  })
+
   it('_status alanını korur, şema dışı anahtarları atar', () => {
     const schema = fieldsToZod([{ key: 'title', type: 'text', required: true }])
     expect(schema.parse({ title: 'x', _status: 'draft', bilinmeyen: 1 })).toEqual({
