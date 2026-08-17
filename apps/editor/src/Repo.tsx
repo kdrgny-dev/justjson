@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CloudUpload, ExternalLink, Link2, Loader2, RefreshCw } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import * as api from './api'
 import { PageBody, PageHeader, PageShell, Surface } from './components/PageShell'
@@ -30,7 +30,7 @@ export function Repo({ onChanged }: { onChanged: () => void }) {
   const [ready, setReady] = useState(() =>
     saved ? Boolean(api.getSyncedCommit(project.id, saved)) : false,
   )
-  const [showSettings, setShowSettings] = useState(!saved)
+  const [showSettings, setShowSettings] = useState(!saved || !ready)
 
   function readLink(): api.RepoLink | null {
     const parsed = api.parseRepoInput(address)
@@ -64,17 +64,11 @@ export function Repo({ onChanged }: { onChanged: () => void }) {
     [onChanged, project.id],
   )
 
-  // Bağlantı kuruluysa içerik açılışta bir kez sessizce yüklenir. Bayrak şart:
-  // `load` her render'da yeniden yaratıldığı için efekt aksi hâlde tekrar tekrar
-  // koşar ve GitHub'a durmadan istek atar.
+  // Açılışta OTOMATİK ÇEKME YOK. İçerik zaten tarayıcıda duruyor; panele her
+  // girişte repodan çekmek, kullanıcının henüz yayınlamadığı düzenlemeyi
+  // sessizce siliyordu — sonra Publish "değişen yok" diyordu.
+  // Repodan tazeleme yalnızca açık istekle ("Reload from the site") yapılır.
   const bootstrapped = useRef(false)
-  useEffect(() => {
-    if (bootstrapped.current) return
-    const link = api.getRepoLink(project.id)
-    if (!link || !api.getRepoToken(project.id)) return
-    bootstrapped.current = true
-    void load(link, true)
-  }, [project.id, load])
 
   function onConnect() {
     const link = readLink()
