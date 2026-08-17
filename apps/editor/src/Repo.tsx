@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CloudUpload, ExternalLink, Link2, Loader2, RefreshCw } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import * as api from './api'
 import { PageBody, PageHeader, PageShell, Surface } from './components/PageShell'
@@ -17,7 +17,9 @@ import { t } from './i18n'
 
 export function Repo({ onChanged }: { onChanged: () => void }) {
   const project = api.activeProject()
-  const saved = api.getRepoLink(project.id)
+  // State olarak tutulur: her render'da yeni bir nesne üretmek, aşağıdaki
+  // efektin bağımlılığını her seferinde değiştirip sonsuz döngü yaratıyordu.
+  const [saved, setSaved] = useState(() => api.getRepoLink(project.id))
 
   const [address, setAddress] = useState(saved ? `${saved.owner}/${saved.repo}` : '')
   const [branch, setBranch] = useState(saved?.branch ?? 'main')
@@ -62,12 +64,17 @@ export function Repo({ onChanged }: { onChanged: () => void }) {
     [onChanged, project.id],
   )
 
-  // Bağlantı kuruluysa içerik açılışta sessizce tazelenir; kimse bir şey
-  // "çekmek" zorunda kalmasın.
+  // Bağlantı kuruluysa içerik açılışta bir kez sessizce yüklenir. Bayrak şart:
+  // `load` her render'da yeniden yaratıldığı için efekt aksi hâlde tekrar tekrar
+  // koşar ve GitHub'a durmadan istek atar.
+  const bootstrapped = useRef(false)
   useEffect(() => {
-    if (!saved || !api.getRepoToken(project.id)) return
-    void load(saved, true)
-  }, [saved, project.id, load])
+    if (bootstrapped.current) return
+    const link = api.getRepoLink(project.id)
+    if (!link || !api.getRepoToken(project.id)) return
+    bootstrapped.current = true
+    void load(link, true)
+  }, [project.id, load])
 
   function onConnect() {
     const link = readLink()
@@ -78,6 +85,8 @@ export function Repo({ onChanged }: { onChanged: () => void }) {
     }
     api.setRepoLink(project.id, link)
     api.setRepoToken(project.id, token)
+    setSaved(link)
+    bootstrapped.current = true
     void load(link, false)
   }
 
