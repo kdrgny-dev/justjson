@@ -1,11 +1,15 @@
 // Repo paneli — studio'yu var olan bir GitHub repo'sunun içerik klasörüne bağlar.
 // Publish sekmesinden farkı: burada site render edilmez, yalnızca content/*.json
 // alınır ve geri commit'lenir. Site kendi build'ini (Astro, Next, ne ise) çalıştırır.
+//
+// Kullanan kişi bir emlakçı, bir doktor, bir kuaför olabilir; "pull/push" onun
+// sözlüğünde yok. Bağlantı bir kez kurulduktan sonra tek düğme kalır: Yayınla.
+// İçerik açılışta kendiliğinden tazelenir.
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { CloudDownload, CloudUpload, ExternalLink, Link2, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { CloudUpload, ExternalLink, Link2, Loader2, RefreshCw } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import * as api from './api'
 import { PageBody, PageHeader, PageShell, Surface } from './components/PageShell'
@@ -19,8 +23,12 @@ export function Repo({ onChanged }: { onChanged: () => void }) {
   const [branch, setBranch] = useState(saved?.branch ?? 'main')
   const [contentDir, setContentDir] = useState(saved?.contentDir ?? 'content')
   const [token, setTokenValue] = useState(() => api.getRepoToken(project.id))
-  const [busy, setBusy] = useState<'pull' | 'push' | 'check' | null>(null)
+  const [busy, setBusy] = useState<'load' | 'publish' | null>(null)
   const [lastCommit, setLastCommit] = useState<string | null>(null)
+  const [ready, setReady] = useState(() =>
+    saved ? Boolean(api.getSyncedCommit(project.id, saved)) : false,
+  )
+  const [showSettings, setShowSettings] = useState(!saved)
 
   function readLink(): api.RepoLink | null {
     const parsed = api.parseRepoInput(address)
@@ -36,134 +44,180 @@ export function Repo({ onChanged }: { onChanged: () => void }) {
     }
   }
 
-  function persist(link: api.RepoLink) {
-    api.setRepoLink(project.id, link)
-    api.setRepoToken(project.id, token)
-  }
+  const load = useCallback(
+    async (link: api.RepoLink, quiet: boolean) => {
+      setBusy('load')
+      try {
+        const result = await api.pullFromRepo(link, api.getRepoToken(project.id))
+        setReady(true)
+        setShowSettings(false)
+        onChanged()
+        if (!quiet) toast.success(`${result.pulled} ${t('files loaded from the site.')}`)
+      } catch (error) {
+        if (!quiet) toast.error(error instanceof Error ? error.message : String(error))
+      } finally {
+        setBusy(null)
+      }
+    },
+    [onChanged, project.id],
+  )
 
-  async function run<T>(kind: 'pull' | 'push' | 'check', job: (link: api.RepoLink) => Promise<T>) {
+  // Bağlantı kuruluysa içerik açılışta sessizce tazelenir; kimse bir şey
+  // "çekmek" zorunda kalmasın.
+  useEffect(() => {
+    if (!saved || !api.getRepoToken(project.id)) return
+    void load(saved, true)
+  }, [saved, project.id, load])
+
+  function onConnect() {
     const link = readLink()
     if (!link) return
-    // Okuma public repo'da tokensiz çalışır; yazma her hâlükârda token ister.
-    if (kind === 'push' && !token.trim()) {
+    if (!token.trim()) {
       toast.error(t('Paste a GitHub token with write access to this repository.'))
       return
     }
-    persist(link)
-    setBusy(kind)
-    try {
-      return await job(link)
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : String(error))
-      return undefined
-    } finally {
-      setBusy(null)
-    }
+    api.setRepoLink(project.id, link)
+    api.setRepoToken(project.id, token)
+    void load(link, false)
   }
 
-  const onCheck = () =>
-    run('check', async (link) => {
-      await api.checkRepo(link, token)
-      toast.success(t('Connected.'))
-    })
-
-  const onPull = () =>
-    run('pull', async (link) => {
-      const result = await api.pullFromRepo(link, token)
-      onChanged()
-      toast.success(`${result.pulled} ${t('files pulled from the repository.')}`)
-    })
-
-  const onPush = () =>
-    run('push', async (link) => {
-      const result = await api.pushToRepo(link, token, 'content: update from JustJSON Studio')
+  async function onPublish() {
+    const link = saved ?? readLink()
+    if (!link) return
+    setBusy('publish')
+    try {
+      const result = await api.pushToRepo(
+        link,
+        api.getRepoToken(project.id),
+        'content: update from JustJSON Studio',
+      )
       if (result.changed === 0 && result.removed === 0) {
         toast.info(t('Nothing to publish.'))
         return
       }
       setLastCommit(result.commitUrl)
-      toast.success(t('Published. The site rebuilds on its own.'))
-    })
+      toast.success(t('Published. The site updates in about a minute.'))
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error))
+    } finally {
+      setBusy(null)
+    }
+  }
 
   return (
     <PageShell>
       <PageHeader
-        title={t('Repository')}
-        subtitle={t('Edit the content of a site that lives in its own repository.')}
-      />
-      <PageBody>
-        <Surface className="grid gap-5 p-5">
-          <div className="grid gap-2">
-            <Label htmlFor="repo-address">{t('Repository')}</Label>
-            <Input
-              id="repo-address"
-              value={address}
-              placeholder="kdrgny-dev/omerguzey.com"
-              onChange={(event) => setAddress(event.target.value)}
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="repo-branch">{t('Branch')}</Label>
-              <Input
-                id="repo-branch"
-                value={branch}
-                onChange={(event) => setBranch(event.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="repo-dir">{t('Content folder')}</Label>
-              <Input
-                id="repo-dir"
-                value={contentDir}
-                onChange={(event) => setContentDir(event.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="repo-token">{t('GitHub token')}</Label>
-            <Input
-              id="repo-token"
-              type="password"
-              value={token}
-              placeholder="github_pat_…"
-              onChange={(event) => setTokenValue(event.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              {t(
-                'Use a fine-grained token limited to this repository with read and write access to contents. It stays in this browser tab only.',
-              )}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={onCheck} disabled={busy !== null}>
-              {busy === 'check' ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Link2 className="h-4 w-4" />
-              )}
-              {t('Check connection')}
-            </Button>
-            <Button variant="outline" onClick={onPull} disabled={busy !== null}>
-              {busy === 'pull' ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <CloudDownload className="h-4 w-4" />
-              )}
-              {t('Pull content')}
-            </Button>
-            <Button onClick={onPush} disabled={busy !== null}>
-              {busy === 'push' ? (
+        title={t('Publish')}
+        subtitle={
+          ready
+            ? t('Your changes go live on the site.')
+            : t('Connect the site once; after that this page only publishes.')
+        }
+        actions={
+          ready ? (
+            <Button onClick={onPublish} disabled={busy !== null}>
+              {busy === 'publish' ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <CloudUpload className="h-4 w-4" />
               )}
-              {t('Publish content')}
+              {t('Publish')}
             </Button>
-          </div>
+          ) : undefined
+        }
+      />
+      <PageBody>
+        <Surface className="grid gap-5 p-5">
+          {ready && !showSettings && (
+            <div className="grid gap-3">
+              <p className="text-sm text-muted-foreground">
+                {t('Edit your content on the left, then press Publish.')}
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => saved && void load(saved, false)}
+                  disabled={busy !== null}
+                >
+                  {busy === 'load' ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  {t('Reload from the site')}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowSettings(true)}>
+                  {t('Connection settings')}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {showSettings && (
+            <>
+              <div className="grid gap-2">
+                <Label htmlFor="repo-address">{t('Repository')}</Label>
+                <Input
+                  id="repo-address"
+                  value={address}
+                  placeholder="kdrgny-dev/omerguzey.com"
+                  onChange={(event) => setAddress(event.target.value)}
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="repo-branch">{t('Branch')}</Label>
+                  <Input
+                    id="repo-branch"
+                    value={branch}
+                    onChange={(event) => setBranch(event.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="repo-dir">{t('Content folder')}</Label>
+                  <Input
+                    id="repo-dir"
+                    value={contentDir}
+                    onChange={(event) => setContentDir(event.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="repo-token">{t('GitHub token')}</Label>
+                <Input
+                  id="repo-token"
+                  type="password"
+                  value={token}
+                  placeholder="github_pat_…"
+                  onChange={(event) => setTokenValue(event.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t(
+                    'Use a fine-grained token limited to this repository with read and write access to contents. It stays in this browser tab only.',
+                  )}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={onConnect} disabled={busy !== null}>
+                  {busy === 'load' ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Link2 className="h-4 w-4" />
+                  )}
+                  {t('Connect')}
+                </Button>
+                {ready && (
+                  <Button variant="ghost" onClick={() => setShowSettings(false)}>
+                    {t('Cancel')}
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
 
           {lastCommit && (
             <a
@@ -172,16 +226,10 @@ export function Repo({ onChanged }: { onChanged: () => void }) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              {t('See the commit')}
+              {t('See the change')}
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           )}
-
-          <p className="text-xs text-muted-foreground">
-            {t(
-              'Pulling replaces what is in the editor with the repository. Publishing writes only the content folder — the rest of the repository is left untouched.',
-            )}
-          </p>
         </Surface>
       </PageBody>
     </PageShell>

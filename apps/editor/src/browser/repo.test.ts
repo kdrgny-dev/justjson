@@ -52,7 +52,7 @@ describe('base64', () => {
 // 60/saat. Burada istek sırası ve gövdeleri doğrulanıyor — asıl kırılgan yer o.
 
 import { afterEach, beforeEach, vi } from 'vitest'
-import { pullContent, pushContent } from './repo'
+import { getSyncedCommit, pullContent, pushContent, setSyncedCommit } from './repo'
 
 const LINK = { owner: 'kdrgny-dev', repo: 'site', branch: 'main', contentDir: 'content' }
 
@@ -168,5 +168,35 @@ describe('pushContent', () => {
     const result = await pushContent(LINK, 'tok', [], [], 'bos')
     expect(result.changed).toBe(0)
     expect(calls.some((c) => c.method === 'POST')).toBe(false)
+  })
+})
+
+describe('senkron damgası', () => {
+  const project = 'p1'
+
+  // Testler node ortamında koşuyor; damga localStorage'da tutuluyor.
+  beforeEach(() => {
+    const store = new Map<string, string>()
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => void store.set(key, value),
+      removeItem: (key: string) => void store.delete(key),
+      clear: () => store.clear(),
+    })
+  })
+
+  it('aynı repo için çekilen commit hatırlanır', () => {
+    setSyncedCommit(project, LINK, 'abc')
+    expect(getSyncedCommit(project, LINK)).toBe('abc')
+  })
+
+  it('farklı dal ya da klasör aynı damgayı kullanmaz', () => {
+    setSyncedCommit(project, LINK, 'abc')
+    expect(getSyncedCommit(project, { ...LINK, branch: 'draft' })).toBeNull()
+    expect(getSyncedCommit(project, { ...LINK, contentDir: 'icerik' })).toBeNull()
+  })
+
+  it('hiç çekilmemişse null döner', () => {
+    expect(getSyncedCommit(project, LINK)).toBeNull()
   })
 })

@@ -271,7 +271,7 @@ function crumbsFor(
   if (selection.kind === 'schema') return [{ label: t('Schema') }]
   if (selection.kind === 'json') return [{ label: t('Raw JSON') }]
   if (selection.kind === 'ship') return [{ label: t('Ship it') }]
-  if (selection.kind === 'repo') return [{ label: t('Repository') }]
+  if (selection.kind === 'repo') return [{ label: t('Publish to site') }]
   if (selection.kind === 'theme') return [{ label: t('Design') }]
   if (selection.kind === 'preview') return [{ label: t('Preview') }]
   if (selection.kind === 'collection') {
@@ -472,7 +472,7 @@ function Sidebar({
             active={selection?.kind === 'repo'}
             onClick={() => onSelect({ kind: 'repo' })}
           >
-            {t('Repository')}
+            {t('Publish to site')}
           </NavItem>
         </NavSection>
 
@@ -1539,6 +1539,17 @@ function EntryEditor({
       setSaving(false)
     }
   }
+
+  // Yazdıktan sonra kaydetmeyi unutmak, "değiştirdim ama yayında yok" demek.
+  // Geçerli bir kayıt kısa bir duraklamadan sonra kendiliğinden yazılır;
+  // Save düğmesi yerinde kalır, artık yalnızca bir teyit.
+  const saveRef = useRef(save)
+  saveRef.current = save
+  useEffect(() => {
+    if (isNew || !dirty || saving || !result.ok) return
+    const timer = setTimeout(() => void saveRef.current(), 900)
+    return () => clearTimeout(timer)
+  }, [currentJson, dirty, saving, result.ok, isNew])
 
   const remove = async () => {
     if (isNew) return

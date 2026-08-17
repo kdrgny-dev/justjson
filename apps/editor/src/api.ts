@@ -353,8 +353,12 @@ export async function stopPreview(): Promise<PreviewState> {
 
 export type { RepoLink, PushResult } from './browser/repo'
 export {
+  NotSyncedError,
   RepoError,
+  StaleError,
   checkRepo,
+  fingerprint,
+  getSyncedCommit,
   getRepoLink,
   getRepoToken,
   parseRepoInput,
@@ -391,6 +395,7 @@ export async function pullFromRepo(
     await adapter.delete(path)
     dropped++
   }
+  repo.setSyncedCommit(activeProject().id, link, repo.fingerprint(remote))
   return { pulled: remote.length, dropped }
 }
 
@@ -400,15 +405,27 @@ export async function pushToRepo(
   token: string,
   message: string,
 ): Promise<repo.PushResult> {
+  // Yazmadan önce bu tarayıcının repo'nun güncel hâlinden çekmiş olduğunu doğrula;
+  // yoksa buradaki proje sitenin içeriğini sessizce eziyor.
+  const synced = repo.getSyncedCommit(activeProject().id, link)
+  if (!synced) {
+    throw new repo.NotSyncedError('Bu depodan henüz içerik alınmadı.')
+  }
+  const remote = await repo.pullContent(link, token).catch(() => [])
+  if (remote.length > 0 && repo.fingerprint(remote) !== synced) {
+    throw new repo.StaleError('İçerik başka bir yerden değişmiş. Sayfayı yenileyip tekrar deneyin.')
+  }
+
   const local = await collectLocalContent()
   const files = Object.entries(local).map(([path, text]) => ({
     path: toRepoPath(path, link.contentDir),
     text,
   }))
 
-  const remote = await repo.pullContent(link, token).catch(() => [])
   const localRepoPaths = new Set(files.map((file) => file.path))
   const removed = remote.map((file) => file.path).filter((path) => !localRepoPaths.has(path))
 
-  return repo.pushContent(link, token, files, removed, message)
+  const result = await repo.pushContent(link, token, files, removed, message)
+  repo.setSyncedCommit(activeProject().id, link, repo.fingerprint(files))
+  return result
 }

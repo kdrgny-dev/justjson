@@ -32,6 +32,53 @@ export class RepoError extends Error {}
 
 const linkKey = (projectId: string) => `jj.repo.${projectId}`
 const tokenKey = (projectId: string) => `jj.repo.token.${projectId}`
+const syncKey = (projectId: string) => `jj.repo.sync.${projectId}`
+
+/**
+ * En son çekilen İÇERİĞİN parmak izi. Publish bunu kontrol eder: hiç
+ * çekilmemişse ya da o günden beri içerik başka yerden değişmişse yazmayı
+ * reddeder — aksi hâlde tarayıcıdaki eski proje sitenin içeriğini eziyor.
+ *
+ * Commit sha'sı yerine içerik izi tutulur: siteye kod commit'i atılması
+ * içeriği değiştirmez, kullanıcıyı gereksiz yere durdurmamalı.
+ */
+export function fingerprint(files: RepoFile[]): string {
+  const body = [...files]
+    .sort((a, b) => a.path.localeCompare(b.path))
+    .map((file) => `${file.path}\u0000${file.text}`)
+    .join('\u0001')
+  // Kısa, çakışması pratikte önemsiz bir özet — kriptografik amaç yok.
+  let h1 = 0x811c9dc5
+  let h2 = 0x01000193
+  for (let i = 0; i < body.length; i++) {
+    const code = body.charCodeAt(i)
+    h1 = Math.imul(h1 ^ code, 0x01000193)
+    h2 = Math.imul(h2 + code, 0x85ebca6b)
+  }
+  return `${(h1 >>> 0).toString(36)}${(h2 >>> 0).toString(36)}:${files.length}`
+}
+
+export function getSyncedCommit(projectId: string, link: RepoLink): string | null {
+  const raw = localStorage.getItem(syncKey(projectId))
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw) as { key?: string; sha?: string }
+    return parsed.key === syncIdentity(link) ? (parsed.sha ?? null) : null
+  } catch {
+    return null
+  }
+}
+
+export function setSyncedCommit(projectId: string, link: RepoLink, sha: string): void {
+  localStorage.setItem(syncKey(projectId), JSON.stringify({ key: syncIdentity(link), sha }))
+}
+
+function syncIdentity(link: RepoLink): string {
+  return `${link.owner}/${link.repo}@${link.branch}:${link.contentDir}`
+}
+
+export class NotSyncedError extends RepoError {}
+export class StaleError extends RepoError {}
 
 export function getRepoLink(projectId: string): RepoLink | null {
   const raw = localStorage.getItem(linkKey(projectId))
