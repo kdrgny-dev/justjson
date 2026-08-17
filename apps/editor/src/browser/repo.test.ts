@@ -123,11 +123,10 @@ describe('pullContent', () => {
 })
 
 describe('pushContent', () => {
-  it('repo kodunu korur: yeni ağaç base_tree üstüne kurulur', async () => {
+  it('repo kodunu korur: içerik satır içi, base_tree üstüne, blob POST yok', async () => {
     const calls = mockGithub({
       'GET /repos/kdrgny-dev/site/git/ref/heads/main': { object: { sha: 'commit1' } },
       'GET /repos/kdrgny-dev/site/git/commits/commit1': { tree: { sha: 'tree1' } },
-      'POST /repos/kdrgny-dev/site/git/blobs': { sha: 'newBlob' },
       'POST /repos/kdrgny-dev/site/git/trees': { sha: 'newTree' },
       'POST /repos/kdrgny-dev/site/git/commits': { sha: 'commit2', html_url: 'https://x/commit2' },
       'PATCH /repos/kdrgny-dev/site/git/refs/heads/main': { ref: 'refs/heads/main' },
@@ -141,12 +140,15 @@ describe('pushContent', () => {
       'content: güncelleme',
     )
 
+    // 503 veren endpoint hiç çağrılmamalı.
+    expect(calls.some((c) => c.url.endsWith('/git/blobs'))).toBe(false)
+
     const treeCall = calls.find((c) => c.method === 'POST' && c.url.endsWith('/git/trees'))
     expect(treeCall?.body?.base_tree).toBe('tree1')
 
-    const entries = treeCall?.body?.tree as { path: string; sha: string | null }[]
+    const entries = treeCall?.body?.tree as { path: string; content?: string; sha?: null }[]
     expect(entries).toEqual([
-      { path: 'content/articles/a.json', mode: '100644', type: 'blob', sha: 'newBlob' },
+      { path: 'content/articles/a.json', mode: '100644', type: 'blob', content: '{"title":"Köyceğiz"}' },
       { path: 'content/articles/eski.json', mode: '100644', type: 'blob', sha: null },
     ])
 

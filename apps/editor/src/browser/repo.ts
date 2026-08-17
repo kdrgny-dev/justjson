@@ -254,14 +254,16 @@ export async function pushContent(
 ): Promise<PushResult> {
   const { commitSha, treeSha } = await checkRepo(link, token)
 
-  const entries: Record<string, unknown>[] = []
-  for (const file of files) {
-    const blob = (await call(token, `/repos/${link.owner}/${link.repo}/git/blobs`, {
-      method: 'POST',
-      body: JSON.stringify({ content: encodeBase64(file.text), encoding: 'base64' }),
-    })) as { sha: string }
-    entries.push({ path: file.path, mode: '100644', type: 'blob', sha: blob.sha })
-  }
+  // İçerik satır içi gönderilir: create-tree, `content` alanı verilince blob'u
+  // kendi içinde oluşturur. Böylece dosya başına ayrı `POST /git/blobs` YOK —
+  // o endpoint yük altında 503 dönüyordu; tek tree çağrısıyla tümü hallolur.
+  // JSON zaten UTF-8 metin; base64'e gerek yok.
+  const entries: Record<string, unknown>[] = files.map((file) => ({
+    path: file.path,
+    mode: '100644',
+    type: 'blob',
+    content: file.text,
+  }))
   // sha: null bir yolu ağaçtan siler — editörde silinen kayıt repo'da da gitsin.
   for (const path of removed) entries.push({ path, mode: '100644', type: 'blob', sha: null })
 
