@@ -118,3 +118,10 @@ export async function hostedTranslate(
   })
   return json.translated
 }
+
+export async function hostedPull(): Promise<{ path: string; text: string }[]> {
+  const res = await fetch('/api/content', { cache: 'no-store', credentials: 'same-origin' })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(messageFor((json as { error?: string }).error))
+  return (json as { files: { path: string; text: string }[] }).files
+}

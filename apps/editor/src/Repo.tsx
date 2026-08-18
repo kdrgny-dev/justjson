@@ -25,7 +25,7 @@ export function Repo({ onChanged }: { onChanged: () => void }) {
     getHostedConfig().then((config) => setMode(config ? 'hosted' : 'direct'))
   }, [])
   if (mode === 'loading') return null
-  if (mode === 'hosted') return <Hosted />
+  if (mode === 'hosted') return <Hosted onChanged={onChanged} />
   return <RepoDirect onChanged={onChanged} />
 }
 

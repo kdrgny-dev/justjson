@@ -376,6 +376,21 @@ function toRepoPath(localPath: string, contentDir: string): string {
 }
 
 /** Repo'daki içeriği studio'ya alır. Yereldeki fazlalık dosyalar silinir. */
+export async function pullFromHosted(): Promise<{ pulled: number; dropped: number }> {
+  const { hostedPull } = await import('./browser/hosted')
+  const remote = await hostedPull()
+  const before = await collectLocalContent()
+  const incoming = new Set(remote.map((file) => file.path))
+  for (const file of remote) await adapter.write(file.path, file.text)
+  let dropped = 0
+  for (const path of Object.keys(before)) {
+    if (incoming.has(path)) continue
+    await adapter.delete(path)
+    dropped++
+  }
+  return { pulled: remote.length, dropped }
+}
+
 export async function pullFromRepo(
   link: repo.RepoLink,
   token: string,

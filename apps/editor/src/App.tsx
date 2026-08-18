@@ -161,15 +161,21 @@ function AppShell() {
   }, [])
 
   useEffect(() => {
-    api
-      .getSchema()
-      .then((s) => {
+    void (async () => {
+      try {
+        const s = await api.getSchema()
         setSchema(s)
         if (s.collections.length === 0 && s.singletons.length === 0) {
-          setGallery(true)
+          // Hosted sitede boş yerel = yeni cihaz. Preset picker yerine giriş
+          // panelini aç; oradan siteye bağlanıp içerik çekilir.
+          const cfg = await getHostedConfig()
+          if (cfg) setSelection({ kind: 'repo' })
+          else setGallery(true)
         }
-      })
-      .catch(() => setError(t('Could not load the schema. Is `justjson serve` running?')))
+      } catch {
+        setError(t('Could not load the schema. Is `justjson serve` running?'))
+      }
+    })()
   }, [])
 
   useEffect(() => {

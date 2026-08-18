@@ -2,23 +2,45 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { CloudUpload, KeyRound, Loader2, LogIn } from 'lucide-react'
+import { CloudUpload, KeyRound, Loader2, LogIn, RefreshCw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { PageBody, PageHeader, PageShell, Surface } from './components/PageShell'
+import * as api from './api'
 import { hostedLogin, hostedPublish, hostedSession, hostedSetPassword } from './browser/hosted'
 
 type Phase = 'loading' | 'login' | 'setpw' | 'ready'
 
-export function Hosted() {
+export function Hosted({ onChanged }: { onChanged?: () => void }) {
   const [phase, setPhase] = useState<Phase>('loading')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [busy, setBusy] = useState(false)
+  const [pulling, setPulling] = useState(false)
+
+  // Yeni cihaz/tarayıcı: yerel boşsa siteden içeriği çek. Doluysa DOKUNMA —
+  // kullanıcının yayınlamadığı düzenlemeyi ezmemek için (force ile açık istek hariç).
+  async function loadFromSite(force: boolean) {
+    const schema = await api.getSchema().catch(() => null)
+    const hasContent = Boolean(schema && (schema.collections.length || schema.singletons.length))
+    if (hasContent && !force) return
+    setPulling(true)
+    try {
+      const res = await api.pullFromHosted()
+      onChanged?.()
+      if (force) toast.success(`${res.pulled} dosya siteden alındı.`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e))
+    } finally {
+      setPulling(false)
+    }
+  }
 
   useEffect(() => {
     let alive = true
-    hostedSession().then((s) => {
+    hostedSession().then(async (s) => {
+      if (!alive) return
+      if (s.authed) await loadFromSite(false)
       if (!alive) return
       setPhase(s.authed ? (s.hasPassword ? 'ready' : 'setpw') : 'login')
     })
@@ -33,6 +55,7 @@ export function Hosted() {
     try {
       const { mustSetPassword } = await hostedLogin(password)
       setPassword('')
+      if (!mustSetPassword) await loadFromSite(false)
       setPhase(mustSetPassword ? 'setpw' : 'ready')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e))
@@ -49,6 +72,7 @@ export function Hosted() {
       await hostedSetPassword(password)
       setPassword('')
       setConfirm('')
+      await loadFromSite(false)
       setPhase('ready')
       toast.success('Parola belirlendi.')
     } catch (e) {
@@ -155,12 +179,28 @@ export function Hosted() {
           {phase === 'ready' && (
             <div className="grid gap-3">
               <p className="text-sm text-muted-foreground">
-                İçeriği soldaki menüden düzenle. Bittiğinde üstteki Yayınla’ya bas.
+                {pulling
+                  ? 'İçerik siteden alınıyor…'
+                  : 'İçeriği soldaki menüden düzenle. Bittiğinde üstteki Yayınla’ya bas.'}
               </p>
-              <Button variant="ghost" size="sm" className="justify-self-start" onClick={() => setPhase('setpw')}>
-                <KeyRound className="h-4 w-4" />
-                Parolayı değiştir
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pulling}
+                  onClick={() => {
+                    if (window.confirm('Sitedeki güncel içerik alınacak. Yayınlanmamış değişiklikler kaybolur. Devam?'))
+                      void loadFromSite(true)
+                  }}
+                >
+                  {pulling ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  Siteden içeriği yenile
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setPhase('setpw')}>
+                  <KeyRound className="h-4 w-4" />
+                  Parolayı değiştir
+                </Button>
+              </div>
             </div>
           )}
         </Surface>
