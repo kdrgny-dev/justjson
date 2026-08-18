@@ -6,7 +6,7 @@
 
 No database · no account · no lock-in.
 
-[**Website**](https://justjson.vercel.app)
+[**Website**](https://justjson.dev)
 
 [![npm](https://img.shields.io/npm/v/@kdrgny/justjson?color=e0a72e&label=npm)](https://www.npmjs.com/package/@kdrgny/justjson)
 &nbsp;·&nbsp;
