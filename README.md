@@ -213,6 +213,17 @@ pnpm test
 
 Small, need-driven improvements shipped as releases.
 
+Landed in `1.10.0`:
+
+- **Hosted publish mode** — edit a repository that owns its own site from the
+  browser with a password; the GitHub token stays on the server. One button
+  saves and publishes only what changed, with a real live preview of the page.
+
+Landed in `1.9.0`:
+
+- **Themes + real live preview** — pick a theme and see it on your own content;
+  multi-page sites, repeater fields, and rich text with inline links/images.
+
 Landed in `1.8.0`:
 
 - **Design** — a small theme editor (palette, accent, font, corners, density)

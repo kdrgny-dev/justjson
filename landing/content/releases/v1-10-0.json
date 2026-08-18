@@ -1,0 +1,7 @@
+{
+  "version": "1.10.0",
+  "date": "2026-08-18",
+  "title": "Studio: hosted publish mode",
+  "order": -4,
+  "body": "**Edit a live site straight from the browser — no GitHub token, no setup.** Studio can now own a repository's content end to end.\n\n- **Hosted publish mode.** Sign in with a password and edit the content of a repository that already owns its site — the GitHub token stays on the server, never in the browser.\n- **One button to publish.** Save what you typed and ship it in a single click; Studio pushes only what actually changed via a single create-tree call, and rides out GitHub hiccups instead of failing the whole publish.\n- **Real live preview.** The inline preview shows the actual published page, not the generic renderer.\n- **Content-first, multi-device.** A content-only sidebar in hosted mode, content pulled back from the site on a fresh browser, and one-click auto-translation for hosted entries.\n- **Astro fixes.** Repeater fields now map to arrays of nested objects, and Astro 7 is allowed as a peer."
+}

@@ -7,6 +7,6 @@
     "dev": "justjson serve --port 5180"
   },
   "devDependencies": {
-    "@kdrgny/justjson": "^1.8.0"
+    "@kdrgny/justjson": "^1.10.0"
   }
 }

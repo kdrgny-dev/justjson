@@ -5,7 +5,7 @@ import { siteTemplateFiles } from './site-templates'
 
 /** Üretilen sitenin sabitlediği sürümler; kullanıcı sonra kendi günceller. */
 const ASTRO_VERSION = '^5.18.0'
-const LOADER_VERSION = '^1.8.0'
+const LOADER_VERSION = '^1.10.0'
 
 const LAYOUT = `---
 import { parseTheme, themeCss } from '@kdrgny/justjson-astro/theme'
