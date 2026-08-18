@@ -79,7 +79,9 @@ import { toast } from 'sonner'
 import { LivePreview } from './LivePreview'
 import { Preview } from './Preview'
 import { Repo } from './Repo'
+import { HostedPreview } from './HostedPreview'
 import { TranslateButton } from './TranslateButton'
+import { getHostedConfig } from './browser/hosted'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
 import { Ship } from './Ship'
@@ -176,6 +178,13 @@ function AppShell() {
       .catch(() => {})
   }, [])
 
+  // Hosted mod: site kendi yayın uçlarını sunuyorsa Ömer'e sade panel — yapı,
+  // tasarım, ücretsiz-host yayını gizlenir; sadece içerik + Çevir + Yayınla kalır.
+  const [hosted, setHosted] = useState(false)
+  useEffect(() => {
+    getHostedConfig().then((c) => setHosted(Boolean(c)))
+  }, [])
+
   if (error) return <Centered>{error}</Centered>
   if (!schema) return <Centered>{t('Loading…')}</Centered>
 
@@ -237,6 +246,7 @@ function AppShell() {
         onExport={exportProject}
         onReset={resetSchema}
         open={navOpen}
+        hosted={hosted}
       />
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-muted/30">
         <ContextBar
@@ -254,6 +264,7 @@ function AppShell() {
             addSeq={addSeq}
             addKind={addKind}
             onBrowseTemplates={schemaEmpty ? () => setGallery(true) : undefined}
+            hosted={hosted}
           />
         </div>
       </main>
@@ -361,12 +372,14 @@ function Sidebar({
   onExport,
   onReset,
   open,
+  hosted,
 }: {
   project: api.ProjectInfo | null
   schema: Schema
   selection: Selection | null
   onSelect: (s: Selection) => void
   onOpenSchema: (add?: 'collection' | 'singleton') => void
+  hosted?: boolean
   onExport: () => void
   onReset: () => Promise<void>
   open: boolean
@@ -402,7 +415,7 @@ function Sidebar({
         <NavSection
           label={t('Content')}
           addLabel={t('Add collection')}
-          onAdd={() => onOpenSchema('collection')}
+          onAdd={hosted ? undefined : () => onOpenSchema('collection')}
         >
           {schema.collections.length === 0 ? (
             <EmptyNavHint onClick={() => onOpenSchema('collection')}>
@@ -425,7 +438,7 @@ function Sidebar({
         <NavSection
           label={t('Details')}
           addLabel={t('Add singleton')}
-          onAdd={() => onOpenSchema('singleton')}
+          onAdd={hosted ? undefined : () => onOpenSchema('singleton')}
         >
           {schema.singletons.length === 0 ? (
             <EmptyNavHint onClick={() => onOpenSchema('singleton')}>
@@ -447,13 +460,15 @@ function Sidebar({
 
         {/* Site tools */}
         <NavSection label={t('Site')}>
-          <NavItem
-            icon={<Palette className="h-4 w-4" />}
-            active={selection?.kind === 'theme'}
-            onClick={() => onSelect({ kind: 'theme' })}
-          >
-            {t('Design')}
-          </NavItem>
+          {!hosted && (
+            <NavItem
+              icon={<Palette className="h-4 w-4" />}
+              active={selection?.kind === 'theme'}
+              onClick={() => onSelect({ kind: 'theme' })}
+            >
+              {t('Design')}
+            </NavItem>
+          )}
           <NavItem
             icon={<Eye className="h-4 w-4" />}
             active={selection?.kind === 'preview'}
@@ -461,13 +476,15 @@ function Sidebar({
           >
             {t('Preview')}
           </NavItem>
-          <NavItem
-            icon={<Rocket className="h-4 w-4" />}
-            active={selection?.kind === 'ship'}
-            onClick={() => onSelect({ kind: 'ship' })}
-          >
-            {t('Publish')}
-          </NavItem>
+          {!hosted && (
+            <NavItem
+              icon={<Rocket className="h-4 w-4" />}
+              active={selection?.kind === 'ship'}
+              onClick={() => onSelect({ kind: 'ship' })}
+            >
+              {t('Publish')}
+            </NavItem>
+          )}
           <NavItem
             icon={<GitBranch className="h-4 w-4" />}
             active={selection?.kind === 'repo'}
@@ -478,6 +495,7 @@ function Sidebar({
         </NavSection>
 
         {/* Advanced — structure + raw files; a non-dev rarely needs these. */}
+        {!hosted && (
         <NavSection label={t('Advanced')}>
           <NavItem
             icon={<PencilRuler className="h-4 w-4" />}
@@ -494,6 +512,7 @@ function Sidebar({
             {t('Raw JSON')}
           </NavItem>
         </NavSection>
+        )}
       </nav>
     </aside>
   )
@@ -788,6 +807,7 @@ function MainArea({
   addSeq,
   addKind,
   onBrowseTemplates,
+  hosted,
 }: {
   schema: Schema
   selection: Selection | null
@@ -797,6 +817,7 @@ function MainArea({
   addSeq: number
   addKind: 'collection' | 'singleton' | null
   onBrowseTemplates?: () => void
+  hosted?: boolean
 }) {
   if (!selection)
     return <ProjectHome schema={schema} onSelect={onSelect} onOpenSchema={onOpenSchema} />
@@ -830,7 +851,7 @@ function MainArea({
   }
 
   if (selection.kind === 'preview') {
-    return <Preview schema={schema} />
+    return hosted ? <HostedPreview /> : <Preview schema={schema} />
   }
 
   if (selection.kind === 'collection') {

@@ -12,6 +12,7 @@ export interface HostedI18n {
 export interface HostedConfig {
   publish: 'hosted'
   i18n?: HostedI18n
+  site?: string
 }
 
 let cache: HostedConfig | null | undefined
