@@ -9,13 +9,27 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CloudUpload, ExternalLink, Link2, Loader2, RefreshCw } from 'lucide-react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import * as api from './api'
 import { PageBody, PageHeader, PageShell, Surface } from './components/PageShell'
 import { t } from './i18n'
+import { Hosted } from './Hosted'
+import { getHostedConfig } from './browser/hosted'
 
 export function Repo({ onChanged }: { onChanged: () => void }) {
+  // Site kendi yayın uçlarını sunuyorsa (studio-config), GitHub panelini hiç
+  // gösterme; Ömer'e parolalı hosted panel gelir.
+  const [mode, setMode] = useState<'loading' | 'hosted' | 'direct'>('loading')
+  useEffect(() => {
+    getHostedConfig().then((config) => setMode(config ? 'hosted' : 'direct'))
+  }, [])
+  if (mode === 'loading') return null
+  if (mode === 'hosted') return <Hosted />
+  return <RepoDirect onChanged={onChanged} />
+}
+
+function RepoDirect({ onChanged }: { onChanged: () => void }) {
   const project = api.activeProject()
   // State olarak tutulur: her render'da yeni bir nesne üretmek, aşağıdaki
   // efektin bağımlılığını her seferinde değiştirip sonsuz döngü yaratıyordu.
