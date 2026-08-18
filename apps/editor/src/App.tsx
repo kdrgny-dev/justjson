@@ -413,7 +413,7 @@ function Sidebar({
       </div>
       {project && (
         <div className="px-3 pt-3">
-          <ProjectMenu project={project} onExport={onExport} onReset={onReset} />
+          <ProjectMenu project={project} onExport={onExport} onReset={onReset} hosted={hosted} />
         </div>
       )}
 
@@ -529,11 +529,23 @@ function ProjectMenu({
   project,
   onExport,
   onReset,
+  hosted,
 }: {
   project: api.ProjectInfo
   onExport: () => void
   onReset: () => Promise<void>
+  hosted?: boolean
 }) {
+  // Hosted teslim: tüm proje yönetimi (sıfırla, sil, yeni site, AI ayarı) gizli.
+  // Ömer tek siteyle çalışır; menü yerine düz etiket.
+  if (hosted) {
+    return (
+      <div className="flex w-full items-center gap-1.5 rounded-lg border bg-muted/50 px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
+        <FolderGit2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+        <span className="truncate">{project.name}</span>
+      </div>
+    )
+  }
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [resetting, setResetting] = useState(false)
   const [nameMode, setNameMode] = useState<'new' | 'rename' | null>(null)
