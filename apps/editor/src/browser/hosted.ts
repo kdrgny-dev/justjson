@@ -3,8 +3,15 @@
 // yapar, içerik sunucu üstünden yayınlanır. Token tarayıcıya hiç inmez.
 import { collectLocalContent } from '../api'
 
+export interface HostedI18n {
+  locales: string[]
+  localeField?: string
+  groupField?: string
+}
+
 export interface HostedConfig {
   publish: 'hosted'
+  i18n?: HostedI18n
 }
 
 let cache: HostedConfig | null | undefined
@@ -71,4 +78,17 @@ export function hostedSetPassword(password: string) {
 export async function hostedPublish(): Promise<{ changed: number; removed: number; commitUrl?: string }> {
   const files = await collectLocalContent()
   return post('/api/publish', { files })
+}
+
+export async function hostedTranslate(
+  fields: Record<string, string>,
+  source: string,
+  target: string,
+): Promise<Record<string, string>> {
+  const json = await post<{ ok: true; translated: Record<string, string> }>('/api/translate', {
+    fields,
+    source,
+    target,
+  })
+  return json.translated
 }

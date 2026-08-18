@@ -79,6 +79,7 @@ import { toast } from 'sonner'
 import { LivePreview } from './LivePreview'
 import { Preview } from './Preview'
 import { Repo } from './Repo'
+import { TranslateButton } from './TranslateButton'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
 import { Ship } from './Ship'
@@ -1618,6 +1619,7 @@ function EntryEditor({
                 <Trash2 /> {t('Delete')}
               </Button>
             )}
+            <TranslateButton collection={collection} data={data} disabled={isNew} />
             <Button onClick={save} disabled={saving || !result.ok || (!isNew && !dirty)}>
               {saving ? t('Saving…') : !isNew && !dirty ? t('Saved') : t('Save')}
             </Button>
