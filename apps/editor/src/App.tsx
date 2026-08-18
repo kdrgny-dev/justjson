@@ -80,6 +80,7 @@ import { LivePreview } from './LivePreview'
 import { Preview } from './Preview'
 import { Repo } from './Repo'
 import { HostedPreview } from './HostedPreview'
+import { HostedEntryPreview } from './HostedEntryPreview'
 import { TranslateButton } from './TranslateButton'
 import { getHostedConfig } from './browser/hosted'
 import { RichText } from './RichText'
@@ -876,6 +877,7 @@ function MainArea({
         schema={schema}
         collection={col}
         slug={slug}
+        hosted={hosted}
         onSaved={(s) => onSelect({ kind: 'entry', collection: col.name, slug: s })}
         onDeleted={() => onSelect({ kind: 'collection', name: col.name })}
       />
@@ -884,7 +886,7 @@ function MainArea({
 
   const s = schema.singletons.find((x) => x.name === selection.name)
   if (!s) return <Centered>{t('This singleton no longer exists.')}</Centered>
-  return <SingletonEditor key={s.name} schema={schema} singleton={s} />
+  return <SingletonEditor key={s.name} schema={schema} singleton={s} hosted={hosted} />
 }
 
 // The project's home when nothing is selected: a friendly, non-technical
@@ -1503,12 +1505,14 @@ function EntryEditor({
   slug,
   onSaved,
   onDeleted,
+  hosted,
 }: {
   schema: Schema
   collection: Collection
   slug: string | null
   onSaved: (slug: string) => void
   onDeleted: () => void
+  hosted?: boolean
 }) {
   const isNew = slug === null
   const load = useCallback(
@@ -1685,7 +1689,13 @@ function EntryEditor({
           </div>
         </div>
         <aside className="hidden min-h-0 w-1/2 shrink-0 flex-col border-l bg-muted/20 lg:flex">
-          {showJson ? (
+          {hosted ? (
+            <HostedEntryPreview
+              collection={collection.name}
+              locale={typeof data.locale === 'string' ? data.locale : undefined}
+              slug={typeof data.slug === 'string' ? data.slug : undefined}
+            />
+          ) : showJson ? (
             <div className="min-h-0 flex-1 overflow-y-auto p-4">
               <JsonPreview path={`${collection.name}/${effectiveSlug}.json`} data={data} />
             </div>
@@ -1705,7 +1715,15 @@ function EntryEditor({
   )
 }
 
-function SingletonEditor({ schema, singleton }: { schema: Schema; singleton: Singleton }) {
+function SingletonEditor({
+  schema,
+  singleton,
+  hosted,
+}: {
+  schema: Schema
+  singleton: Singleton
+  hosted?: boolean
+}) {
   const load = useCallback(() => api.getSingleton(singleton.name), [singleton.name])
   // tekil dosyası henüz yoksa boş form doğrudur; sadece istek hatasında uyarırız
   const { data, setData, loading, failed, retry } = useEntryData(load, false)
@@ -1781,12 +1799,14 @@ function SingletonEditor({ schema, singleton }: { schema: Schema; singleton: Sin
         }
         actions={
           <>
-            <Button
-              variant={showJson ? 'secondary' : 'outline'}
-              onClick={() => setShowJson((v) => !v)}
-            >
-              <Braces /> JSON
-            </Button>
+            {!hosted && (
+              <Button
+                variant={showJson ? 'secondary' : 'outline'}
+                onClick={() => setShowJson((v) => !v)}
+              >
+                <Braces /> JSON
+              </Button>
+            )}
             <Button onClick={save} disabled={saving || !result.ok || !dirty}>
               {saving ? t('Saving…') : !dirty ? t('Saved') : t('Save')}
             </Button>
@@ -1813,7 +1833,13 @@ function SingletonEditor({ schema, singleton }: { schema: Schema; singleton: Sin
           </div>
         </div>
         <aside className="hidden min-h-0 w-1/2 shrink-0 flex-col border-l bg-muted/20 lg:flex">
-          {showJson ? (
+          {hosted ? (
+            <HostedEntryPreview
+              collection={singleton.name}
+              locale={typeof data.locale === 'string' ? data.locale : undefined}
+              slug={typeof data.slug === 'string' ? data.slug : undefined}
+            />
+          ) : showJson ? (
             <div className="min-h-0 flex-1 overflow-y-auto p-4">
               <JsonPreview path={`${singleton.name}.json`} data={data} />
             </div>

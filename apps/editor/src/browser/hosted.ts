@@ -7,12 +7,37 @@ export interface HostedI18n {
   locales: string[]
   localeField?: string
   groupField?: string
+  defaultLocale?: string
+}
+
+export interface HostedPreviewConfig {
+  /** koleksiyon adı -> site yolu şablonu; ':slug' kayıt slug'ıyla değişir. */
+  routes?: Record<string, string>
 }
 
 export interface HostedConfig {
   publish: 'hosted'
   i18n?: HostedI18n
   site?: string
+  preview?: HostedPreviewConfig
+}
+
+/** Bir kaydın YAYINDAKI sayfa URL'i (varsa). Draft değil; son yayınlanan hâl. */
+export function hostedEntryUrl(
+  config: HostedConfig | null,
+  collection: string,
+  locale: string | undefined,
+  slug: string | undefined,
+): string | null {
+  if (!config?.site) return null
+  const tpl = config.preview?.routes?.[collection]
+  if (tpl === undefined) return null
+  const def = config.i18n?.defaultLocale ?? 'tr'
+  const loc = locale || def
+  const prefix = loc && loc !== def ? `/${loc}` : ''
+  const rel = tpl.replace(':slug', slug ?? '').replace(/\/$/, '')
+  const path = rel === '/' ? '' : rel
+  return `${config.site}${prefix}${path}` || config.site
 }
 
 let cache: HostedConfig | null | undefined
