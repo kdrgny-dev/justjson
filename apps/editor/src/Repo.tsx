@@ -98,16 +98,23 @@ function RepoDirect({ onChanged }: { onChanged: () => void }) {
     void load(link, false)
   }
 
+  const [publishStep, setPublishStep] = useState<number | null>(null)
+
   async function onPublish() {
     const link = saved ?? readLink()
     if (!link) return
     setBusy('publish')
+    setPublishStep(1)
     try {
+      await new Promise((r) => setTimeout(r, 300))
+      setPublishStep(2)
       const result = await api.pushToRepo(
         link,
         api.getRepoToken(project.id),
         'content: update from JustJSON Studio',
       )
+      setPublishStep(3)
+      await new Promise((r) => setTimeout(r, 300))
       if (result.changed === 0 && result.removed === 0) {
         toast.info(t('Nothing to publish.'))
         return
@@ -118,13 +125,14 @@ function RepoDirect({ onChanged }: { onChanged: () => void }) {
       toast.error(error instanceof Error ? error.message : String(error))
     } finally {
       setBusy(null)
+      setPublishStep(null)
     }
   }
 
   return (
     <PageShell>
       <PageHeader
-        title={t('Publish')}
+        title={t('Publish to site')}
         subtitle={
           ready
             ? t('Your changes go live on the site.')
@@ -132,19 +140,41 @@ function RepoDirect({ onChanged }: { onChanged: () => void }) {
         }
         actions={
           ready ? (
-            <Button onClick={onPublish} disabled={busy !== null}>
+            <Button onClick={onPublish} disabled={busy !== null} className="gap-2 shadow-xs">
               {busy === 'publish' ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <CloudUpload className="h-4 w-4" />
               )}
-              {t('Publish')}
+              {t('Publish to site')}
             </Button>
           ) : undefined
         }
       />
       <PageBody>
         <Surface className="grid gap-5 p-5">
+          {publishStep !== null && (
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <p className="mb-2 text-xs font-semibold text-primary">
+                {t('Publishing in progress')}
+              </p>
+              <div className="space-y-1.5 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <span className={`h-3.5 w-3.5 rounded-full ${publishStep >= 1 ? 'bg-primary text-primary-foreground' : 'border border-border'}`} />
+                  <span>{t('Step 1: Gathering changes…')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`h-3.5 w-3.5 rounded-full ${publishStep >= 2 ? 'bg-primary text-primary-foreground' : 'border border-border'}`} />
+                  <span>{t('Step 2: Packaging content…')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`h-3.5 w-3.5 rounded-full ${publishStep >= 3 ? 'bg-primary text-primary-foreground' : 'border border-border'}`} />
+                  <span>{t('Step 3: Deploying to site…')}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {ready && !showSettings && (
             <div className="grid gap-3">
               <p className="text-sm text-muted-foreground">

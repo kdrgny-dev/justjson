@@ -3,6 +3,16 @@
 // yapar, içerik sunucu üstünden yayınlanır. Token tarayıcıya hiç inmez.
 import { collectLocalContent } from '../api'
 
+export interface BrandConfig {
+  name?: string
+  title?: string
+  logo?: string
+  favicon?: string
+  welcomeMessage?: string
+  tagline?: string
+  accentColor?: string
+}
+
 export interface HostedI18n {
   locales: string[]
   localeField?: string
@@ -20,6 +30,10 @@ export interface HostedConfig {
   i18n?: HostedI18n
   site?: string
   preview?: HostedPreviewConfig
+  brand?: BrandConfig
+  name?: string
+  title?: string
+  logo?: string
 }
 
 /** Bir kaydın YAYINDAKI sayfa URL'i (varsa). Draft değil; son yayınlanan hâl. */

@@ -82,7 +82,7 @@ import { Repo } from './Repo'
 import { HostedPreview } from './HostedPreview'
 import { HostedEntryPreview } from './HostedEntryPreview'
 import { TranslateButton } from './TranslateButton'
-import { getHostedConfig } from './browser/hosted'
+import { getHostedConfig, type BrandConfig } from './browser/hosted'
 import { RichText } from './RichText'
 import { SchemaBuilder } from './SchemaBuilder'
 import { Ship } from './Ship'
@@ -104,6 +104,9 @@ import { SKELETON_KEYS, Skeleton } from './components/Skeleton'
 import { FIELD_META } from './field-types'
 import { LANGS, getLang, setLang, t, tp, useLang } from './i18n'
 import { fileToWebpBase64 } from './lib/media'
+import { MediaCardInput } from './components/MediaCardInput'
+import { FieldGroupTabBar, useFieldGroups } from './components/FieldGroupTabs'
+import { GripVertical, Layers, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen, ShieldCheck } from 'lucide-react'
 
 type Selection =
   | { kind: 'schema' }
@@ -185,12 +188,34 @@ function AppShell() {
       .catch(() => {})
   }, [])
 
-  // Hosted mod: site kendi yayın uçlarını sunuyorsa Ömer'e sade panel — yapı,
-  // tasarım, ücretsiz-host yayını gizlenir; sadece içerik + Çevir + Yayınla kalır.
+  // Hosted mod & Brand config
   const [hosted, setHosted] = useState(false)
+  const [brand, setBrand] = useState<BrandConfig | null>(null)
+
   useEffect(() => {
-    getHostedConfig().then((c) => setHosted(Boolean(c)))
+    getHostedConfig().then((c) => {
+      setHosted(Boolean(c))
+      if (c?.brand) setBrand(c.brand)
+      else if (c?.name || c?.title || c?.logo) {
+        setBrand({
+          name: c.name,
+          title: c.title,
+          logo: c.logo,
+        })
+      }
+    })
   }, [])
+
+  useEffect(() => {
+    const siteTitle =
+      brand?.title ||
+      (brand?.name
+        ? `${brand.name} — Studio`
+        : project?.name
+          ? `${project.name} — JustJSON Studio`
+          : 'JustJSON Studio')
+    document.title = siteTitle
+  }, [brand, project])
 
   if (error) return <Centered>{error}</Centered>
   if (!schema) return <Centered>{t('Loading…')}</Centered>
@@ -245,6 +270,7 @@ function AppShell() {
         />
       )}
       <Sidebar
+        brand={brand}
         project={project}
         schema={schema}
         selection={selection}
@@ -257,6 +283,7 @@ function AppShell() {
       />
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-muted/30">
         <ContextBar
+          brand={brand}
           project={project}
           crumbs={crumbsFor(schema, selection, select)}
           onMenu={() => setNavOpen(true)}
@@ -312,16 +339,18 @@ function crumbsFor(
 }
 
 function ContextBar({
+  brand,
   project,
   crumbs,
   onMenu,
 }: {
+  brand?: BrandConfig | null
   project: api.ProjectInfo | null
   crumbs: Crumb[]
   onMenu: () => void
 }) {
   return (
-    <header className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b bg-card px-4 text-xs sm:px-8">
+    <header className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b border-border/80 bg-card px-4 text-xs sm:px-8">
       <button
         type="button"
         aria-label={t('Open menu')}
@@ -332,10 +361,10 @@ function ContextBar({
       </button>
       <span
         title={project?.path}
-        className="inline-flex shrink-0 items-center gap-1.5 text-muted-foreground"
+        className="inline-flex shrink-0 items-center gap-1.5 font-medium text-foreground/80"
       >
-        <FolderGit2 className="h-3.5 w-3.5 text-muted-foreground/70" />
-        {project?.name ?? '…'}
+        <FolderGit2 className="h-3.5 w-3.5 text-primary" />
+        {brand?.name || project?.name || '…'}
       </span>
       {crumbs.map((c) => (
         <span key={c.label} className="inline-flex shrink-0 items-center gap-1">
@@ -344,12 +373,12 @@ function ContextBar({
             <button
               type="button"
               onClick={c.onClick}
-              className="rounded text-muted-foreground transition-colors hover:text-primary"
+              className="rounded font-medium text-muted-foreground transition-colors hover:text-primary"
             >
               {c.label}
             </button>
           ) : (
-            <span className="font-medium text-foreground/80">{c.label}</span>
+            <span className="font-semibold text-foreground">{c.label}</span>
           )}
           {c.tag && (
             <Badge variant="secondary" className="ml-0.5 font-normal">
@@ -371,6 +400,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 function Sidebar({
+  brand,
   project,
   schema,
   selection,
@@ -381,6 +411,7 @@ function Sidebar({
   open,
   hosted,
 }: {
+  brand?: BrandConfig | null
   project: api.ProjectInfo | null
   schema: Schema
   selection: Selection | null
@@ -402,14 +433,27 @@ function Sidebar({
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r bg-card transition-transform duration-200 md:static md:z-auto md:translate-x-0',
+        'fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-border/80 bg-sidebar transition-transform duration-200 md:static md:z-auto md:translate-x-0',
         open ? 'translate-x-0 shadow-xl' : '-translate-x-full',
       )}
     >
-      <div className="flex h-12 shrink-0 items-center border-b px-5">
-        <div className="font-mono text-[15px] font-bold tracking-tight text-foreground">
-          Just<span className="text-primary">JSON</span>
-        </div>
+      <div className="flex h-12 shrink-0 items-center border-b border-border/80 px-4">
+        {brand?.logo ? (
+          <img
+            src={brand.logo}
+            alt={brand.name || 'Studio'}
+            className="h-6 w-auto max-w-[140px] object-contain"
+          />
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs">
+              {(brand?.name || project?.name || 'J')[0]?.toUpperCase()}
+            </div>
+            <div className="text-sm font-semibold tracking-tight text-foreground">
+              {brand?.name ? brand.name : <>Just<span className="text-primary font-normal">JSON</span></>}
+            </div>
+          </div>
+        )}
       </div>
       {project && (
         <div className="px-3 pt-3">
@@ -1506,13 +1550,13 @@ function StatusToggle({
 function SaveState({ state }: { state: 'dirty' | 'saved' }) {
   if (state === 'saved')
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-        <Check className="h-3 w-3 text-primary" /> {t('Saved')}
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+        <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> {t('All changes saved')}
       </span>
     )
   return (
-    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600">
-      <span className="inline-block size-1.5 rounded-full bg-amber-500" /> {t('Unsaved changes')}
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+      <span className="inline-block size-1.5 rounded-full bg-amber-500 animate-pulse" /> {t('Unsaved changes')}
     </span>
   )
 }
@@ -1542,6 +1586,9 @@ function EntryEditor({
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [showJson, setShowJson] = useState(false)
+  const [focusMode, setFocusMode] = useState(false)
+
+  const { groups, activeTab, setActiveTab, visibleFields, hasMultipleGroups } = useFieldGroups(collection.fields)
 
   // Dirty tracking: baseline = last saved snapshot (set once on load, and after
   // each save). New entries baseline to '{}', so any typed field marks dirty.
@@ -1584,9 +1631,6 @@ function EntryEditor({
     }
   }
 
-  // Yazdıktan sonra kaydetmeyi unutmak, "değiştirdim ama yayında yok" demek.
-  // Geçerli bir kayıt kısa bir duraklamadan sonra kendiliğinden yazılır;
-  // Save düğmesi yerinde kalır, artık yalnızca bir teyit.
   const saveRef = useRef(save)
   saveRef.current = save
   useEffect(() => {
@@ -1647,6 +1691,16 @@ function EntryEditor({
         }
         actions={
           <>
+            <Button
+              variant={focusMode ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={() => setFocusMode((f) => !f)}
+              title={focusMode ? t('Split View') : t('Focus Mode')}
+              className="gap-1.5 shadow-xs"
+            >
+              {focusMode ? <PanelLeftOpen className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              <span>{focusMode ? t('Split View') : t('Focus Mode')}</span>
+            </Button>
             <StatusToggle
               status={entryStatus(data)}
               onToggle={() => setField(STATUS_KEY, entryStatus(data) === 'draft' ? '' : 'draft')}
@@ -1671,17 +1725,26 @@ function EntryEditor({
       />
       <div className="flex min-h-0 flex-1">
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8">
+          <div className={cn('mx-auto space-y-5 px-4 py-6 sm:px-8', focusMode ? 'max-w-4xl' : 'max-w-2xl')}>
             {saveError && <AlertPanel title={t('Could not save')}>{saveError}</AlertPanel>}
+
+            {hasMultipleGroups && (
+              <FieldGroupTabBar
+                groups={groups}
+                activeTab={activeTab}
+                onSelectTab={setActiveTab}
+              />
+            )}
+
             <FormCard>
               {isNew && (
-                <div className="mb-6 rounded-lg border bg-muted/40 p-4">
+                <div className="mb-6 rounded-xl border bg-muted/40 p-4">
                   <FieldShell label={t('File name')} hint={`${effectiveSlug}.json`}>
                     <Input
                       value={newSlug}
                       onChange={(e) => setNewSlug(e.target.value)}
                       placeholder={t('automatic')}
-                      className="bg-card font-mono"
+                      className="bg-card font-sans"
                     />
                   </FieldShell>
                   <p className="mt-2 text-xs text-muted-foreground">
@@ -1692,7 +1755,7 @@ function EntryEditor({
                 </div>
               )}
               <div className="space-y-6">
-                {collection.fields.map((field) => (
+                {visibleFields.map((field) => (
                   <FieldEditor
                     key={field.key}
                     field={field}
@@ -1706,28 +1769,30 @@ function EntryEditor({
             <Issues result={result} />
           </div>
         </div>
-        <aside className="hidden min-h-0 w-1/2 shrink-0 flex-col border-l bg-muted/20 lg:flex">
-          {hosted ? (
-            <HostedEntryPreview
-              collection={collection.name}
-              locale={typeof data.locale === 'string' ? data.locale : undefined}
-              slug={typeof data.slug === 'string' ? data.slug : undefined}
-            />
-          ) : showJson ? (
-            <div className="min-h-0 flex-1 overflow-y-auto p-4">
-              <JsonPreview path={`${collection.name}/${effectiveSlug}.json`} data={data} />
-            </div>
-          ) : (
-            <LivePreview
-              schema={schema}
-              kind="entry"
-              name={collection.name}
-              path={collection.path}
-              slug={isNew ? '' : effectiveSlug}
-              data={data}
-            />
-          )}
-        </aside>
+        {!focusMode && (
+          <aside className="hidden min-h-0 w-1/2 shrink-0 flex-col border-l bg-muted/20 lg:flex">
+            {hosted ? (
+              <HostedEntryPreview
+                collection={collection.name}
+                locale={typeof data.locale === 'string' ? data.locale : undefined}
+                slug={typeof data.slug === 'string' ? data.slug : undefined}
+              />
+            ) : showJson ? (
+              <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                <JsonPreview path={`${collection.name}/${effectiveSlug}.json`} data={data} />
+              </div>
+            ) : (
+              <LivePreview
+                schema={schema}
+                kind="entry"
+                name={collection.name}
+                path={collection.path}
+                slug={isNew ? '' : effectiveSlug}
+                data={data}
+              />
+            )}
+          </aside>
+        )}
       </div>
     </PageShell>
   )
@@ -1743,10 +1808,12 @@ function SingletonEditor({
   hosted?: boolean
 }) {
   const load = useCallback(() => api.getSingleton(singleton.name), [singleton.name])
-  // tekil dosyası henüz yoksa boş form doğrudur; sadece istek hatasında uyarırız
   const { data, setData, loading, failed, retry } = useEntryData(load, false)
   const [saving, setSaving] = useState(false)
   const [showJson, setShowJson] = useState(false)
+  const [focusMode, setFocusMode] = useState(false)
+
+  const { groups, activeTab, setActiveTab, visibleFields, hasMultipleGroups } = useFieldGroups(singleton.fields)
 
   const currentJson = JSON.stringify(data)
   const savedJson = useRef<string | null>(null)
@@ -1817,6 +1884,16 @@ function SingletonEditor({
         }
         actions={
           <>
+            <Button
+              variant={focusMode ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={() => setFocusMode((f) => !f)}
+              title={focusMode ? t('Split View') : t('Focus Mode')}
+              className="gap-1.5 shadow-xs"
+            >
+              {focusMode ? <PanelLeftOpen className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              <span>{focusMode ? t('Split View') : t('Focus Mode')}</span>
+            </Button>
             {!hosted && (
               <Button
                 variant={showJson ? 'secondary' : 'outline'}
@@ -1833,10 +1910,18 @@ function SingletonEditor({
       />
       <div className="flex min-h-0 flex-1">
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8">
+          <div className={cn('mx-auto space-y-5 px-4 py-6 sm:px-8', focusMode ? 'max-w-4xl' : 'max-w-2xl')}>
+            {hasMultipleGroups && (
+              <FieldGroupTabBar
+                groups={groups}
+                activeTab={activeTab}
+                onSelectTab={setActiveTab}
+              />
+            )}
+
             <FormCard>
               <div className="space-y-6">
-                {singleton.fields.map((field) => (
+                {visibleFields.map((field) => (
                   <FieldEditor
                     key={field.key}
                     field={field}
@@ -1850,21 +1935,23 @@ function SingletonEditor({
             <Issues result={result} />
           </div>
         </div>
-        <aside className="hidden min-h-0 w-1/2 shrink-0 flex-col border-l bg-muted/20 lg:flex">
-          {hosted ? (
-            <HostedEntryPreview
-              collection={singleton.name}
-              locale={typeof data.locale === 'string' ? data.locale : undefined}
-              slug={typeof data.slug === 'string' ? data.slug : undefined}
-            />
-          ) : showJson ? (
-            <div className="min-h-0 flex-1 overflow-y-auto p-4">
-              <JsonPreview path={`${singleton.name}.json`} data={data} />
-            </div>
-          ) : (
-            <LivePreview schema={schema} kind="singleton" name={singleton.name} data={data} />
-          )}
-        </aside>
+        {!focusMode && (
+          <aside className="hidden min-h-0 w-1/2 shrink-0 flex-col border-l bg-muted/20 lg:flex">
+            {hosted ? (
+              <HostedEntryPreview
+                collection={singleton.name}
+                locale={typeof data.locale === 'string' ? data.locale : undefined}
+                slug={typeof data.slug === 'string' ? data.slug : undefined}
+              />
+            ) : showJson ? (
+              <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                <JsonPreview path={`${singleton.name}.json`} data={data} />
+              </div>
+            ) : (
+              <LivePreview schema={schema} kind="singleton" name={singleton.name} data={data} />
+            )}
+          </aside>
+        )}
       </div>
     </PageShell>
   )
@@ -2070,7 +2157,7 @@ function FieldInput({
     case 'relation':
       return <RelationInput field={field} value={value} onChange={onChange} />
     case 'image':
-      return <ImageInput value={value} onChange={(v) => onChange(k, v)} />
+      return <MediaCardInput value={value} onChange={(v) => onChange(k, v)} />
     case 'url':
       return (
         <Input
@@ -2171,7 +2258,7 @@ function ColorInput({
   const hex = typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value : ''
   return (
     <div className="flex items-center gap-2">
-      <label className="relative size-9 shrink-0 cursor-pointer overflow-hidden rounded-lg border shadow-sm">
+      <label className="relative size-9 shrink-0 cursor-pointer overflow-hidden rounded-lg border shadow-xs">
         <span className="block size-full" style={{ backgroundColor: hex || '#ffffff' }} />
         <input
           type="color"
@@ -2182,7 +2269,7 @@ function ColorInput({
         />
       </label>
       <Input
-        className="w-[140px] font-mono"
+        className="w-[140px] font-mono text-xs"
         placeholder="#000000"
         value={(value as string) ?? ''}
         onChange={(e) => onChange(e.target.value)}
@@ -2232,7 +2319,7 @@ function ListInput({
       {items.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {items.map((item, i) => (
-            <Badge key={item} variant="secondary" className="gap-1 pr-1">
+            <Badge key={item} variant="secondary" className="gap-1 pr-1 font-medium">
               {item}
               <button
                 type="button"
@@ -2282,7 +2369,7 @@ function GroupInput({
     onChange(Object.keys(next).length ? next : '')
   }
   return (
-    <div className="space-y-5 rounded-lg border border-dashed bg-muted/20 p-4">
+    <div className="space-y-5 rounded-xl border border-border/80 bg-muted/20 p-5 shadow-2xs">
       {(field.fields ?? []).map((sub) => (
         <FieldShell
           key={sub.key}
@@ -2310,6 +2397,8 @@ function RepeaterInput({
   const rows: Record<string, unknown>[] = Array.isArray(value)
     ? (value as Record<string, unknown>[])
     : []
+  const [collapsed, setCollapsed] = useState<Record<number, boolean>>({})
+
   const commit = (next: Record<string, unknown>[]) => onChange(next.length ? next : '')
   const setCell = (i: number, key: string, v: unknown) =>
     commit(
@@ -2322,6 +2411,12 @@ function RepeaterInput({
       }),
     )
   const addRow = () => commit([...rows, {}])
+  const duplicateRow = (i: number) => {
+    const cloned = { ...rows[i] }
+    const next = [...rows.slice(0, i + 1), cloned, ...rows.slice(i + 1)]
+    commit(next)
+    toast.success(t('Duplicate'))
+  }
   const removeRow = (i: number) => commit(rows.filter((_, idx) => idx !== i))
   const move = (i: number, dir: -1 | 1) => {
     const j = i + dir
@@ -2330,71 +2425,119 @@ function RepeaterInput({
     ;[n[i], n[j]] = [n[j] as Record<string, unknown>, n[i] as Record<string, unknown>]
     commit(n)
   }
+  const toggleCollapse = (i: number) => setCollapsed((prev) => ({ ...prev, [i]: !prev[i] }))
 
   return (
     <div className="space-y-3">
-      {rows.map((row, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: satırların kararlı kimliği yok; sıra indeksi editör içi yeter
-        <div key={i} className="rounded-lg border bg-muted/30 p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
-              {t('Row {n}', { n: i + 1 })}
-            </span>
-            <div className="flex items-center gap-0.5">
-              <Button
+      {rows.map((row, i) => {
+        const isCollapsed = Boolean(collapsed[i])
+        // Extract title or first non-empty text string for summary
+        const rowTitle =
+          typeof row.title === 'string' && row.title
+            ? row.title
+            : typeof row.name === 'string' && row.name
+              ? row.name
+              : typeof row.label === 'string' && row.label
+                ? row.label
+                : null
+
+        return (
+          // biome-ignore lint/suspicious/noArrayIndexKey: satırların kararlı kimliği yok; sıra indeksi editör içi yeter
+          <div
+            key={i}
+            className="group rounded-xl border border-border/80 bg-card shadow-xs transition-all hover:border-primary/30"
+          >
+            <div className="flex items-center justify-between border-b border-border/60 bg-muted/30 px-3.5 py-2.5">
+              <button
                 type="button"
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => move(i, -1)}
-                disabled={i === 0}
-                className="text-muted-foreground"
+                onClick={() => toggleCollapse(i)}
+                className="flex items-center gap-2 text-left font-medium text-xs text-foreground hover:text-primary transition-colors"
               >
-                <ChevronUp />
-                <span className="sr-only">{t('Move up')}</span>
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => move(i, 1)}
-                disabled={i === rows.length - 1}
-                className="text-muted-foreground"
-              >
-                <ChevronDown />
-                <span className="sr-only">{t('Move down')}</span>
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => removeRow(i)}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 />
-                <span className="sr-only">{t('Remove row')}</span>
-              </Button>
+                <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50" />
+                <span className="font-semibold text-muted-foreground">#{i + 1}</span>
+                <span className="truncate max-w-[200px] sm:max-w-xs">
+                  {rowTitle || t('Row {n}', { n: i + 1 })}
+                </span>
+                {isCollapsed ? (
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/60" />
+                ) : (
+                  <ChevronUp className="h-3.5 w-3.5 text-muted-foreground/60" />
+                )}
+              </button>
+
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => duplicateRow(i)}
+                  title={t('Duplicate row')}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Copy />
+                  <span className="sr-only">{t('Duplicate')}</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => move(i, -1)}
+                  disabled={i === 0}
+                  title={t('Move up')}
+                  className="text-muted-foreground"
+                >
+                  <ChevronUp />
+                  <span className="sr-only">{t('Move up')}</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => move(i, 1)}
+                  disabled={i === rows.length - 1}
+                  title={t('Move down')}
+                  className="text-muted-foreground"
+                >
+                  <ChevronDown />
+                  <span className="sr-only">{t('Move down')}</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => removeRow(i)}
+                  title={t('Remove row')}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 />
+                  <span className="sr-only">{t('Remove row')}</span>
+                </Button>
+              </div>
             </div>
+
+            {!isCollapsed && (
+              <div className="space-y-4 p-4">
+                {subs.map((sub) => (
+                  <FieldShell
+                    key={sub.key}
+                    label={sub.label || sub.key}
+                    required={sub.required}
+                    type={sub.type}
+                  >
+                    <FieldInput
+                      field={sub}
+                      value={row[sub.key]}
+                      onChange={(key, v) => setCell(i, key, v)}
+                    />
+                  </FieldShell>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="space-y-4">
-            {subs.map((sub) => (
-              <FieldShell
-                key={sub.key}
-                label={sub.label || sub.key}
-                required={sub.required}
-                type={sub.type}
-              >
-                <FieldInput
-                  field={sub}
-                  value={row[sub.key]}
-                  onChange={(key, v) => setCell(i, key, v)}
-                />
-              </FieldShell>
-            ))}
-          </div>
-        </div>
-      ))}
-      <Button type="button" variant="outline" onClick={addRow}>
-        <Plus /> {t('Add row')}
+        )
+      })}
+      <Button type="button" variant="outline" size="sm" onClick={addRow} className="gap-1.5 shadow-xs">
+        <Plus className="h-3.5 w-3.5" /> {t('Add new item')}
       </Button>
     </div>
   )
@@ -2438,7 +2581,7 @@ function RelationInput({
       {selected.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {selected.map((slug) => (
-            <Badge key={slug} variant="secondary" className="gap-1 pr-1 font-mono">
+            <Badge key={slug} variant="secondary" className="gap-1 pr-1 font-medium">
               {slug}
               <button
                 type="button"
@@ -2454,8 +2597,8 @@ function RelationInput({
       )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline">
-            <Link2 /> {t('Add link')}
+          <Button variant="outline" size="sm" className="gap-1.5 shadow-xs">
+            <Link2 className="h-3.5 w-3.5" /> {t('Add link')}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="max-h-72 w-56 overflow-y-auto">
@@ -2469,7 +2612,7 @@ function RelationInput({
               checked={selected.includes(slug)}
               onCheckedChange={() => toggle(slug)}
               onSelect={(e) => e.preventDefault()}
-              className="font-mono text-xs"
+              className="text-xs"
             >
               {slug}
             </DropdownMenuCheckboxItem>
@@ -2480,64 +2623,3 @@ function RelationInput({
   )
 }
 
-function ImageInput({ value, onChange }: { value: unknown; onChange: (v: unknown) => void }) {
-  const [busy, setBusy] = useState(false)
-  const path = typeof value === 'string' ? value : ''
-  const src = path ? `/media/${path.split('/').pop()}` : null
-
-  const upload = async (file: File) => {
-    setBusy(true)
-    try {
-      onChange(await api.uploadMedia(await fileToWebpBase64(file), file.name))
-      toast.success(t('Image uploaded'))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <div className="flex items-center gap-4 rounded-lg border bg-muted/30 p-3">
-      <div
-        className={cn(
-          'flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-card',
-          !src && 'border-dashed',
-        )}
-      >
-        {src ? (
-          <img src={src} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <ImageIcon className="h-6 w-6 text-muted-foreground/60" />
-        )}
-      </div>
-      <div className="min-w-0 space-y-2">
-        <label className={cn(buttonVariants({ variant: 'outline' }), 'cursor-pointer bg-card')}>
-          <Upload />
-          {busy ? t('Uploading…') : t('Upload image')}
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) void upload(f)
-            }}
-          />
-        </label>
-        {path && (
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="truncate font-mono text-xs text-muted-foreground">{path}</span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              onClick={() => onChange('')}
-              className="text-muted-foreground hover:text-destructive"
-            >
-              {t('remove')}
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}

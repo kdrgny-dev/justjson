@@ -4,44 +4,45 @@
 @import "@fontsource/space-mono/400.css";
 @import "@fontsource/space-mono/700.css";
 @import "@fontsource-variable/public-sans";
+@import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
   color-scheme: light;
-  /* Card Catalog — warm paper/kraft palette, shared with the marketing site */
-  --background: #f2ecdc;
-  --foreground: #241c10;
-  --card: #fbf8ef;
-  --card-foreground: #241c10;
-  --popover: #fbf8ef;
-  --popover-foreground: #241c10;
-  --primary: #d69a1f;
-  --primary-foreground: #241c10;
-  --secondary: #eae1c8;
-  --secondary-foreground: #241c10;
-  --muted: #eae1c8;
-  --muted-foreground: #6e6248;
-  --accent: #ecdfba;
-  --accent-foreground: #6a4f22;
-  --destructive: #a8431f;
-  --border: #ded0ac;
-  --input: #ded0ac;
-  --ring: #c98a17;
-  --chart-1: #d69a1f;
-  --chart-2: #a8431f;
-  --chart-3: #566338;
-  --chart-4: #8a6b36;
-  --chart-5: #6e6248;
-  --radius: 0.5rem;
-  --sidebar: #fbf8ef;
-  --sidebar-foreground: #241c10;
-  --sidebar-primary: #d69a1f;
-  --sidebar-primary-foreground: #241c10;
-  --sidebar-accent: #ecdfba;
-  --sidebar-accent-foreground: #6a4f22;
-  --sidebar-border: #ded0ac;
-  --sidebar-ring: #c98a17;
+  /* Editorial Studio — refined warm-neutral luxury palette (Notion/Linear/Sanity aesthetic) */
+  --background: #fbfaf8;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #1c1917;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f1ea;
+  --secondary-foreground: #1c1917;
+  --muted: #f4f1ea;
+  --muted-foreground: #78716c;
+  --accent: #ebe7de;
+  --accent-foreground: #1c1917;
+  --destructive: #e11d48;
+  --border: #e7e4dc;
+  --input: #e7e4dc;
+  --ring: #1c1917;
+  --chart-1: #d97706;
+  --chart-2: #e11d48;
+  --chart-3: #16a34a;
+  --chart-4: #2563eb;
+  --chart-5: #78716c;
+  --radius: 0.625rem;
+  --sidebar: #f7f5ef;
+  --sidebar-foreground: #1c1917;
+  --sidebar-primary: #1c1917;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ebe7de;
+  --sidebar-accent-foreground: #1c1917;
+  --sidebar-border: #e7e4dc;
+  --sidebar-ring: #1c1917;
 }
 
 html,
@@ -50,42 +51,52 @@ body {
   height: 100%;
   background: var(--background);
   color: var(--foreground);
-  font-family: "Public Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    sans-serif;
+  font-family: "Geist Variable", "Public Sans Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
   height: 100%;
 }
 
-/* rich text editor content */
+/* Editorial rich text styling */
+.tiptap {
+  outline: none;
+}
 .tiptap :first-child {
   margin-top: 0;
 }
 .tiptap p {
-  margin: 0.5em 0;
-  line-height: 1.6;
+  margin: 0.65em 0;
+  line-height: 1.7;
+  font-size: 0.9375rem;
 }
 .tiptap h1 {
-  font-size: 1.5rem;
+  font-size: 1.625rem;
   font-weight: 700;
-  margin: 0.8em 0 0.3em;
+  letter-spacing: -0.025em;
+  margin: 1.2em 0 0.4em;
+  color: var(--foreground);
 }
 .tiptap h2 {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 600;
-  margin: 0.8em 0 0.3em;
+  letter-spacing: -0.02em;
+  margin: 1.1em 0 0.35em;
+  color: var(--foreground);
 }
 .tiptap h3 {
-  font-size: 1.05rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  margin: 0.7em 0 0.3em;
+  letter-spacing: -0.015em;
+  margin: 0.9em 0 0.3em;
+  color: var(--foreground);
 }
 .tiptap ul,
 .tiptap ol {
-  padding-left: 1.4em;
-  margin: 0.5em 0;
+  padding-left: 1.5em;
+  margin: 0.6em 0;
 }
 .tiptap ul {
   list-style: disc;
@@ -93,35 +104,43 @@ body {
 .tiptap ol {
   list-style: decimal;
 }
+.tiptap li {
+  margin: 0.3em 0;
+  line-height: 1.6;
+}
 .tiptap blockquote {
   border-left: 3px solid var(--primary);
-  padding-left: 0.9em;
+  padding-left: 1rem;
+  font-style: italic;
   color: var(--muted-foreground);
-  margin: 0.6em 0;
+  margin: 0.8em 0;
 }
 .tiptap pre {
-  background: #1c1710;
-  color: #ede4cc;
-  border-radius: 0.5rem;
-  padding: 0.8em 1em;
+  background: #181716;
+  color: #f5f4f0;
+  border-radius: 0.625rem;
+  padding: 0.9em 1.1em;
   font-family: var(--font-mono, ui-monospace, monospace);
   font-size: 0.85em;
   overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .tiptap code {
-  background: var(--accent);
-  color: var(--accent-foreground);
-  border-radius: 0.3em;
-  padding: 0.1em 0.35em;
-  font-size: 0.88em;
+  background: var(--secondary);
+  color: var(--foreground);
+  border-radius: 0.35em;
+  padding: 0.15em 0.4em;
+  font-size: 0.875em;
+  font-family: var(--font-mono, ui-monospace, monospace);
 }
 .tiptap pre code {
   background: transparent;
   color: inherit;
   padding: 0;
+  border-radius: 0;
 }
 .tiptap p.is-editor-empty:first-child::before {
-  content: "İçerik yaz…";
+  content: "İçerik yazmaya başlayın…";
   color: var(--muted-foreground);
   float: left;
   height: 0;
@@ -131,35 +150,35 @@ body {
 /* json preview */
 .jk-pre {
   margin: 0;
-  padding: 0.9rem 1rem;
-  background: #1c1710;
-  color: #ede4cc;
+  padding: 1rem 1.25rem;
+  background: #181716;
+  color: #f5f4f0;
   font-family: var(--font-mono, ui-monospace, monospace);
   font-size: 12.5px;
   line-height: 1.75;
 }
 .dark .jk-pre {
-  background: #120d08;
+  background: #11100f;
 }
 .jk-key {
-  color: #e8ae3e;
+  color: #f59e0b;
 }
 .jk-str {
-  color: #a9c08c;
+  color: #84cc16;
 }
 .jk-num {
-  color: #e0956b;
+  color: #fb923c;
 }
 .jk-bool {
-  color: #c58fd6;
+  color: #c084fc;
 }
 .jk-null {
-  color: #8a7c5e;
+  color: #a8a29e;
 }
 
 @theme inline {
-  --font-heading: var(--font-mono);
-  --font-sans: "Public Sans Variable", sans-serif;
+  --font-heading: "Geist Variable", "Public Sans Variable", sans-serif;
+  --font-sans: "Geist Variable", "Public Sans Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "Space Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -195,45 +214,45 @@ body {
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-xl: calc(var(--radius) * 1.3);
+  --radius-2xl: calc(var(--radius) * 1.7);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 .dark {
   color-scheme: dark;
-  --background: #17130d;
-  --foreground: #f1e8d2;
-  --card: #201a11;
-  --card-foreground: #f1e8d2;
-  --popover: #201a11;
-  --popover-foreground: #f1e8d2;
-  --primary: #e8ae3e;
-  --primary-foreground: #211703;
-  --secondary: #241d12;
-  --secondary-foreground: #f1e8d2;
-  --muted: #241d12;
-  --muted-foreground: #b7a883;
-  --accent: #362b1a;
-  --accent-foreground: #f6c567;
-  --destructive: #e07a4e;
-  --border: #362b1a;
-  --input: #362b1a;
-  --ring: #e8ae3e;
-  --chart-1: #e8ae3e;
-  --chart-2: #e07a4e;
-  --chart-3: #9cae79;
-  --chart-4: #8a6b36;
-  --chart-5: #b7a883;
-  --sidebar: #120e09;
-  --sidebar-foreground: #f1e8d2;
-  --sidebar-primary: #e8ae3e;
-  --sidebar-primary-foreground: #211703;
-  --sidebar-accent: #241d12;
-  --sidebar-accent-foreground: #f6c567;
-  --sidebar-border: #362b1a;
-  --sidebar-ring: #e8ae3e;
+  --background: #0c0a09;
+  --foreground: #f5f5f4;
+  --card: #141211;
+  --card-foreground: #f5f5f4;
+  --popover: #141211;
+  --popover-foreground: #f5f5f4;
+  --primary: #f5f5f4;
+  --primary-foreground: #0c0a09;
+  --secondary: #1f1d1b;
+  --secondary-foreground: #f5f5f4;
+  --muted: #1f1d1b;
+  --muted-foreground: #a8a29e;
+  --accent: #292624;
+  --accent-foreground: #f5f5f4;
+  --destructive: #f43f5e;
+  --border: #262422;
+  --input: #262422;
+  --ring: #f5f5f4;
+  --chart-1: #f59e0b;
+  --chart-2: #f43f5e;
+  --chart-3: #22c55e;
+  --chart-4: #3b82f6;
+  --chart-5: #a8a29e;
+  --sidebar: #100e0d;
+  --sidebar-foreground: #f5f5f4;
+  --sidebar-primary: #f5f5f4;
+  --sidebar-primary-foreground: #0c0a09;
+  --sidebar-accent: #1f1d1b;
+  --sidebar-accent-foreground: #f5f5f4;
+  --sidebar-border: #262422;
+  --sidebar-ring: #f5f5f4;
 }
 
 @layer base {
